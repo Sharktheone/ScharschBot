@@ -2,17 +2,19 @@ package main
 
 import (
 	"flag"
+	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/bwmarrin/discordgo"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/signal"
 )
 
 var (
+	err               error
+	config            = conf.GetConf()
 	bot               *discordgo.Session
 	DefaultPermission = true
-	GuildID           = flag.String("guild", "796764100532109312", "Guild ID")
+	GuildID           = flag.String("guild", config.Discord.ServerID, "Guild ID")
 	commands          = []*discordgo.ApplicationCommand{
 		{
 			Name:              "whitelistadd",
@@ -54,18 +56,15 @@ var (
 )
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file:", err)
-	}
 	var BotToken string
-	flag.StringVar(&BotToken, "token", os.Getenv("BOT_TOKEN"), "Bot Token")
+	flag.StringVar(&BotToken, "token", config.Discord.Token, "Bot Token")
 	flag.Parse()
 
 	bot, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
 		log.Fatal("Invalid Bot Configuration:", err)
 	}
+
 }
 
 func main() {
@@ -80,13 +79,13 @@ func main() {
 		log.Fatal("Cannot open connection:", err)
 	}
 	log.Println("Adding Commands")
-	commandRegistrator := make([]*discordgo.ApplicationCommand, len(commands))
+	commandRegistration := make([]*discordgo.ApplicationCommand, len(commands))
 	for i, rawCommand := range commands {
 		command, err := bot.ApplicationCommandCreate(bot.State.User.ID, *GuildID, rawCommand)
 		if err != nil {
 			log.Fatalf("Failed to create %v: %v", rawCommand.Name, err)
 		}
-		commandRegistrator[i] = command
+		commandRegistration[i] = command
 	}
 	defer func(bot *discordgo.Session) {
 		err := bot.Close()

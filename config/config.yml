@@ -1,0 +1,26 @@
+reconfigure: false
+enabled: true
+discord:
+  serverID: <Server GuildID>
+  token: <Bot Token>
+whitelist:
+  enabled: true
+  roles:
+    enabled: true
+    RoleID: <role ID>
+    removeUserWithout: true
+    removeTimeout: 12h
+  pterodactyl:
+    enabled: true
+    APIKey: <API KEY>
+    PanelURL: <Panel URL>
+    serverID: <server ID>
+    whitelistCommand: whitelist {username}
+  luckperms:
+    enabled: false
+    setRole: <Whitelisted Role>
+    databaseHost: <Database Host>
+    databasePort: 1234
+    databaseUser: <Database User>
+    databasePass: <Database Pass>
+
