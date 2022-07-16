@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/commands"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"os"
@@ -10,49 +11,10 @@ import (
 )
 
 var (
-	err               error
-	config            = conf.GetConf()
-	bot               *discordgo.Session
-	DefaultPermission = true
-	GuildID           = flag.String("guild", config.Discord.ServerID, "Guild ID")
-	commands          = []*discordgo.ApplicationCommand{
-		{
-			Name:              "whitelistadd",
-			Description:       "Add your account to the Whitelist",
-			DefaultPermission: &DefaultPermission,
-			Options: []*discordgo.ApplicationCommandOption{
-
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "name",
-					Description: "Name of the account to add",
-					Required:    true,
-				},
-			},
-		},
-	}
-
-	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		"whitelistadd": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			options := i.ApplicationCommandData().Options
-			optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
-			for _, opt := range options {
-				optionMap[opt.Name] = opt
-			}
-			name := optionMap["name"].StringValue()
-			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "Adding " + name + " to Whitelist",
-				},
-			})
-			if err != nil {
-				return
-			}
-			whitelistadd(name)
-
-		},
-	}
+	err     error
+	config  = conf.GetConf()
+	bot     *discordgo.Session
+	GuildID = flag.String("guild", config.Discord.ServerID, "Guild ID")
 )
 
 func init() {
@@ -68,9 +30,8 @@ func init() {
 }
 
 func main() {
-
 	bot.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
+		if h, ok := commands.Handlers[i.ApplicationCommandData().Name]; ok {
 			h(s, i)
 		}
 	})
@@ -79,8 +40,8 @@ func main() {
 		log.Fatal("Cannot open connection:", err)
 	}
 	log.Println("Adding Commands")
-	commandRegistration := make([]*discordgo.ApplicationCommand, len(commands))
-	for i, rawCommand := range commands {
+	commandRegistration := make([]*discordgo.ApplicationCommand, len(commands.Commands))
+	for i, rawCommand := range commands.Commands {
 		command, err := bot.ApplicationCommandCreate(bot.State.User.ID, *GuildID, rawCommand)
 		if err != nil {
 			log.Fatalf("Failed to create %v: %v", rawCommand.Name, err)
@@ -98,8 +59,4 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	log.Println("Press Ctrl+C to exit")
 	<-stop
-}
-
-func whitelistadd(username string) {
-	log.Println("*Add " + username + " to whitelist")
 }
