@@ -3,6 +3,7 @@ package commands
 import (
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist"
 	"github.com/bwmarrin/discordgo"
+	"log"
 )
 
 var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
@@ -20,9 +21,9 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			},
 		})
 		if err != nil {
-			return
+			log.Printf("Failed execute command whitelistadd: %v", err)
 		}
-		whitelist.Add(name)
+		whitelist.Add(name, i.Member.User.ID)
 
 	},
 }

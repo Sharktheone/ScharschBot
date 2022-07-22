@@ -5,6 +5,13 @@ discord:
   token: <Bot Token>
 whitelist:
   enabled: true
+  mongodb:
+    mongodbHost: <Database Host>
+    mongodbPort: 1234
+    mongodbUser: <Database User>
+    mongodbPass: <Database Pass>
+    mongodbDatabaseName: scharschbot
+    mongodbCollectionName: whitelist
   roles:
     enabled: true
     RoleID: <role ID>

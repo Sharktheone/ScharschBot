@@ -7,20 +7,29 @@ type Format struct {
 		ServerID string
 		Token    string
 	}
+	Pterodactyl struct {
+		Enabled          bool   `yaml:"enabled"`
+		APIKey           string `yaml:"APIKey"`
+		PanelURL         string `yaml:"panelURL"`
+		ServerID         string `yaml:"serverID"`
+		WhitelistCommand string `yaml:"whitelistCommand"`
+	}
 	Whitelist struct {
 		Enabled bool `yaml:"enabled"`
-		Roles   struct {
+		Mongodb struct {
+			MongodbHost           string `yaml:"mongodbHost"`
+			MongodbPort           uint16 `yaml:"mongodbPort"`
+			MongodbUser           string `yaml:"mongodbUser"`
+			MongodbPass           string `yaml:"mongodbPass"`
+			MongodbDatabaseName   string `yaml:"mongodbDatabaseName"`
+			MongodbCollectionName string `yaml:"mongodbCollectionName"`
+		}
+
+		Roles struct {
 			Enabled           bool   `yaml:"enabled"`
 			RoleID            int64  `yaml:"roleID"`
 			RemoveUserWithout bool   `yaml:"removeUserWithout"`
 			RemoveTimeout     string `yaml:"removeTimeout"`
-		}
-		Pterodactyl struct {
-			Enabled          bool   `yaml:"enabled"`
-			APIKey           string `yaml:"APIKey"`
-			PanelURL         string `yaml:"panelURL"`
-			ServerID         string `yaml:"serverID"`
-			WhitelistCommand string `yaml:"whitelistCommand"`
 		}
 		Luckperms struct {
 			Enabled      bool   `yaml:"enabled"`
