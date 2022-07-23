@@ -4,8 +4,10 @@ type Format struct {
 	Reconfigure bool `yaml:"reconfigure"`
 	Enabled     bool `yaml:"enabled"`
 	Discord     struct {
-		ServerID string
-		Token    string
+		ServerID              string `yaml:"serverID"`
+		Token                 string `yaml:"token"`
+		WhitelistRemoveRoleID string `yaml:"adminWhitelistRemoveRoleID"`
+		WhitelistWhoisRoleID  string `yaml:"adminWhitelistWhoisRoleID"`
 	}
 	Pterodactyl struct {
 		Enabled          bool   `yaml:"enabled"`
