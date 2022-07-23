@@ -13,13 +13,20 @@ var (
 	collection = config.Whitelist.Mongodb.MongodbCollectionName
 )
 
-func Add(username string, userID string) {
-	mongodb.Write(collection, bson.D{
-		{"dcUserID", userID},
-		{"mcAccount", username},
+func Add(username string, userID string) (alreadyListed bool) {
+	_, found := mongodb.Read(collection, bson.M{
+		"mcAccount": username,
 	})
+	if !found {
 
-	log.Println(userID + "is adding " + username + " to whitelist")
+		mongodb.Write(collection, bson.D{
+			{"dcUserID", userID},
+			{"mcAccount", username},
+		})
+
+		log.Println(userID + "is adding " + username + " to whitelist")
+	}
+	return found
 }
 
 func Remove(username string, userID string, roles []string) (allowed bool) {
@@ -65,7 +72,9 @@ func Whois(username string, userID string, roles []string) (dcUserID string, all
 		result, dataFound = mongodb.Read(collection, bson.M{
 			"mcAccount": username,
 		})
-		dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
+		if dataFound {
+			dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
+		}
 	}
 	return dcUser, whoisAllowed, dataFound
 }

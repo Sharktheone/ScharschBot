@@ -65,19 +65,15 @@ func Read(collection string, filter bson.M) (data []bson.M, found bool) {
 	)
 	ctx, Cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	cursor, err := readColl.Find(ctx, filter)
-	if err != mongo.ErrNoDocuments {
-		dataFound = true
-	}
+
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			dataFound = false
-		}
-		log.Printf("Failed o find data: %v \n", err)
+		log.Printf("Failed to find data: %v \n", err)
 	}
 	var read []bson.M
 	if err = cursor.All(ctx, &read); err != nil {
 		log.Printf("Failed to read mongo Cursor: %v \n", err)
 	}
+	dataFound = len(read) > 0
 	return read, dataFound
 }
 

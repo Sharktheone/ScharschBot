@@ -15,16 +15,23 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			optionMap[opt.Name] = opt
 		}
 		name := optionMap["name"].StringValue()
+		alreadyListed := whitelist.Add(name, i.Member.User.ID)
+		var message string
+		if alreadyListed {
+			message = fmt.Sprintf("%v is already on Whitelist", name)
+		} else {
+			message = fmt.Sprintf("Adding %v to Whitelist", name)
+		}
+
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "Adding " + name + " to Whitelist",
+				Content: message,
 			},
 		})
 		if err != nil {
 			log.Printf("Failed execute command whitelistadd: %v", err)
 		}
-		whitelist.Add(name, i.Member.User.ID)
 
 	},
 	"whitelistremove": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -54,7 +61,6 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			optionMap[opt.Name] = opt
 		}
 		name := optionMap["name"].StringValue()
-		whitelist.Whois(name, i.Member.User.ID, i.Member.Roles)
 		userID, allowed, found := whitelist.Whois(name, i.Member.User.ID, i.Member.Roles)
 		var message string
 		if allowed {
