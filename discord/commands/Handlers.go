@@ -5,6 +5,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"log"
+	"strings"
 )
 
 var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
@@ -14,17 +15,17 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		for _, opt := range options {
 			optionMap[opt.Name] = opt
 		}
-		name := optionMap["name"].StringValue()
+		name := strings.ToLower(optionMap["name"].StringValue())
 		alreadyListed, existingAcc := whitelist.Add(name, i.Member.User.ID)
 		var message string
 		if existingAcc {
 			if alreadyListed {
-				message = fmt.Sprintf("%v is already on Whitelist", name)
+				message = fmt.Sprintf("%v is already on whitelist", name)
 			} else {
-				message = fmt.Sprintf("Adding %v to Whitelist", name)
+				message = fmt.Sprintf("Adding %v to whitelist", name)
 			}
 		} else {
-			message = fmt.Sprintf("Account %v is not Existing", name)
+			message = fmt.Sprintf("Account %v is not existing", name)
 		}
 
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -44,13 +45,25 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		for _, opt := range options {
 			optionMap[opt.Name] = opt
 		}
-		name := optionMap["name"].StringValue()
-		whitelist.Remove(name, i.Member.User.ID, i.Member.Roles)
+
+		name := strings.ToLower(optionMap["name"].StringValue())
+		allowed, onWhitelist := whitelist.Remove(name, i.Member.User.ID, i.Member.Roles)
+		var message string
+		if allowed {
+			if onWhitelist {
+				message = fmt.Sprintf("Removing %v from whitelist", name)
+			} else {
+				message = fmt.Sprintf("%v is not on the whitelist", name)
+			}
+		} else {
+			message = "Operation not permitted!"
+		}
+
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 
-				Content: "Removing " + name + " from Whitelist",
+				Content: message,
 			},
 		})
 		if err != nil {
@@ -64,7 +77,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		for _, opt := range options {
 			optionMap[opt.Name] = opt
 		}
-		name := optionMap["name"].StringValue()
+		name := strings.ToLower(optionMap["name"].StringValue())
 		userID, allowed, found := whitelist.Whois(name, i.Member.User.ID, i.Member.Roles)
 		var message string
 		if allowed {

@@ -36,30 +36,29 @@ func Add(username string, userID string) (alreadyListed bool, existing bool) {
 	return found, existingAcc
 }
 
-func Remove(username string, userID string, roles []string) (allowed bool) {
+func Remove(username string, userID string, roles []string) (allowed bool, onWhitelist bool) {
 	var removeAllowed = false
 	for _, role := range roles {
 		if role == config.Discord.WhitelistRemoveRoleID {
 			removeAllowed = true
 		}
 	}
-
+	entry, found := mongodb.Read(collection, bson.M{
+		"dcUserID":  userID,
+		"mcAccount": username,
+	})
 	if !removeAllowed {
-		entry, found := mongodb.Read(collection, bson.M{
-			"dcUserID":  userID,
-			"mcAccount": username,
-		})
 		if entry[0]["dcUserID"] == userID && found {
 			removeAllowed = true
 		}
 	}
-	if removeAllowed {
+	if removeAllowed && found {
 		mongodb.Remove(collection, bson.M{
 			"mcAccount": username,
 		})
 		log.Printf("%v is removing %v from whitelist", userID, username)
 	}
-	return removeAllowed
+	return removeAllowed, found
 }
 
 func Whois(username string, userID string, roles []string) (dcUserID string, allowed bool, found bool) {
