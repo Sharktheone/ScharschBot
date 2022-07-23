@@ -15,12 +15,16 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			optionMap[opt.Name] = opt
 		}
 		name := optionMap["name"].StringValue()
-		alreadyListed := whitelist.Add(name, i.Member.User.ID)
+		alreadyListed, existingAcc := whitelist.Add(name, i.Member.User.ID)
 		var message string
-		if alreadyListed {
-			message = fmt.Sprintf("%v is already on Whitelist", name)
+		if existingAcc {
+			if alreadyListed {
+				message = fmt.Sprintf("%v is already on Whitelist", name)
+			} else {
+				message = fmt.Sprintf("Adding %v to Whitelist", name)
+			}
 		} else {
-			message = fmt.Sprintf("Adding %v to Whitelist", name)
+			message = fmt.Sprintf("Account %v is not Existing", name)
 		}
 
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
