@@ -84,6 +84,33 @@ func Whois(username string, userID string, roles []string) (dcUserID string, all
 	}
 	return dcUser, whoisAllowed, dataFound
 }
+func HasListed(lookupID string, userID string, roles []string) (accounts []string, allowed bool, found bool) {
+	var listedAllowed = false
+	for _, role := range roles {
+		if role == config.Discord.WhitelistRemoveRoleID {
+			listedAllowed = true
+		}
+	}
+	var (
+		results   []bson.M
+		dataFound bool
+	)
+	var listedAcc []string
+	if listedAllowed {
+		log.Printf("%v is looking on whitelisted accounts of %v ", userID, lookupID)
+
+		results, dataFound = mongodb.Read(collection, bson.M{
+			"dcUserID": lookupID,
+		})
+		listedAccounts := make([]string, len(results), 10)
+		for i, result := range results {
+			listedAccounts[i] = fmt.Sprintf("%v", result["mcAccount"])
+
+		}
+		listedAcc = listedAccounts
+	}
+	return listedAcc, listedAllowed, dataFound
+}
 
 func existingAccount(username string) (existing bool) {
 	url := fmt.Sprintf("https://api.mojang.com/users/profiles/minecraft/%v", username)

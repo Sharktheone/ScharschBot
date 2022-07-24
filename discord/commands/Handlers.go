@@ -101,4 +101,63 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		}
 
 	},
+	"whitelistuser": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+		userID := optionMap["userid"].StringValue()
+		accounts, allowed, found := whitelist.HasListed(userID, i.Member.User.ID, i.Member.Roles)
+		var message string
+		if allowed {
+			if found {
+				message = fmt.Sprintf("UserID %v has whitelisted players %v", userID, accounts)
+			} else {
+				message = fmt.Sprintf("UserID %v was not found on Whitelist", userID)
+			}
+		} else {
+			message = "Operation not permitted!"
+		}
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+
+				Content: message,
+			},
+		})
+		if err != nil {
+			log.Printf("Failed execute command whitelistwhois: %v", err)
+		}
+
+	},
+	"whitelistmyaccounts": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+		accounts, allowed, found := whitelist.HasListed(i.Member.User.ID, i.Member.User.ID, i.Member.Roles)
+		var message string
+		if allowed {
+			if found {
+				message = fmt.Sprintf("You have whitelisted players %v", accounts)
+			} else {
+				message = "You have no whitelisted players"
+			}
+		} else {
+			message = "Operation not permitted!"
+		}
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+
+				Content: message,
+			},
+		})
+		if err != nil {
+			log.Printf("Failed execute command whitelistwhois: %v", err)
+		}
+
+	},
 }

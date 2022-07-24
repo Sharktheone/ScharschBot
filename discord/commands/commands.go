@@ -47,5 +47,24 @@ var (
 				},
 			},
 		},
+		{
+			Name:              "whitelistuser",
+			Description:       "Look which Discord member has whitelisted which accounts",
+			DefaultPermission: &DefaultPermission,
+			Options: []*discordgo.ApplicationCommandOption{
+
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "userid",
+					Description: "ID of the account to lookup",
+					Required:    true,
+				},
+			},
+		},
+		{
+			Name:              "whitelistmyaccounts",
+			Description:       "Look which accounts you have whitelisted",
+			DefaultPermission: &DefaultPermission,
+		},
 	}
 )
