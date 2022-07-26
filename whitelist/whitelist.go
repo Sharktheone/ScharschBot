@@ -15,10 +15,23 @@ var (
 	collection = config.Whitelist.Mongodb.MongodbCollectionName
 )
 
-func Add(username string, userID string) (alreadyListed bool, existing bool) {
+func Add(username string, userID string, roles []string) (alreadyListed bool, existing bool, accountFree bool, allowed bool) {
+	var addAllowed = false
+	for _, role := range roles {
+		if role == config.Discord.WhitelistRemoveRoleID {
+			addAllowed = true
+		}
+	}
+	var hasFreeAccount = false
+	result, _ := mongodb.Read(collection, bson.M{"dcUserID": userID})
+	if config.Whitelist.MaxAccounts <= len(result) {
+		hasFreeAccount = false
+	} else {
+		hasFreeAccount = true
+	}
 	var found bool
 	existingAcc := existingAccount(username)
-	if existingAcc {
+	if existingAcc && hasFreeAccount {
 		_, found = mongodb.Read(collection, bson.M{
 			"mcAccount": username,
 		})
@@ -29,11 +42,11 @@ func Add(username string, userID string) (alreadyListed bool, existing bool) {
 				{"mcAccount", username},
 			})
 
-			log.Println(userID + "is adding " + username + " to whitelist")
+			log.Println(userID + " is adding " + username + " to whitelist")
 		}
 
 	}
-	return found, existingAcc
+	return found, existingAcc, hasFreeAccount, addAllowed
 }
 
 func Remove(username string, userID string, roles []string) (allowed bool, onWhitelist bool) {
@@ -58,6 +71,32 @@ func Remove(username string, userID string, roles []string) (allowed bool, onWhi
 		})
 		log.Printf("%v is removing %v from whitelist", userID, username)
 	}
+	return removeAllowed, found
+}
+
+func RemoveAll(userID string, roles []string) (allowed bool, onWhitelist bool) {
+	var removeAllowed = false
+	for _, role := range roles {
+		if role == config.Discord.WhitelistRemoveRoleID {
+			removeAllowed = true
+		}
+	}
+	entries, found := mongodb.Read(collection, bson.M{
+		"dcUserID":  bson.M{"$exists": true},
+		"mcAccount": bson.M{"$exists": true},
+	})
+
+	if removeAllowed && found {
+		log.Printf("%v is removing all accounts from whitelist", userID)
+		for _, entry := range entries {
+			mongodb.Remove(collection, bson.M{
+				"mcAccount": entry["mcAccount"],
+			})
+
+		}
+
+	}
+
 	return removeAllowed, found
 }
 

@@ -17,8 +17,9 @@ type Format struct {
 		WhitelistCommand string `yaml:"whitelistCommand"`
 	}
 	Whitelist struct {
-		Enabled bool `yaml:"enabled"`
-		Mongodb struct {
+		Enabled     bool `yaml:"enabled"`
+		MaxAccounts int  `yaml:"maxAccounts"`
+		Mongodb     struct {
 			MongodbHost           string `yaml:"mongodbHost"`
 			MongodbPort           uint16 `yaml:"mongodbPort"`
 			MongodbUser           string `yaml:"mongodbUser"`
@@ -28,10 +29,13 @@ type Format struct {
 		}
 
 		Roles struct {
-			Enabled           bool   `yaml:"enabled"`
-			RoleID            int64  `yaml:"roleID"`
-			RemoveUserWithout bool   `yaml:"removeUserWithout"`
-			RemoveTimeout     string `yaml:"removeTimeout"`
+			Enabled            bool   `yaml:"enabled"`
+			ServerRoleID       string `yaml:"serverRoleID"`
+			RemoveRoleOthersID string `yaml:"removeRoleOthersID"`
+			ListUserRoleID     string `yaml:"listUserRoleID"`
+			WhoisRoleID        string `yaml:"whoisRoleID"`
+			RemoveAllRoleID    string `yaml:"removeAllRoleID"`
+			RemoveUserWithout  bool   `yaml:"removeUserWithout"`
 		}
 		Luckperms struct {
 			Enabled      bool   `yaml:"enabled"`

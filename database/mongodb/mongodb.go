@@ -18,6 +18,7 @@ var (
 	Cancel             context.CancelFunc
 	connected          = false
 	db                 *mongo.Database
+	Ready              = false
 )
 
 func Connect() *mongo.Database {
@@ -34,8 +35,13 @@ func Connect() *mongo.Database {
 			connected = true
 		}
 	}
+	log.Println("Connected to MongoDB")
 	db = Client.Database(config.Whitelist.Mongodb.MongodbDatabaseName)
+	Ready = true
+	log.Printf("Using datbase %v", db.Name())
+
 	return db
+
 }
 
 func Disconnect() {

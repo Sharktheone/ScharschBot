@@ -66,5 +66,10 @@ var (
 			Description:       "Look which accounts you have whitelisted",
 			DefaultPermission: &DefaultPermission,
 		},
+		{
+			Name:              "whitelistremoveall",
+			Description:       "Remove all accounts from whitelist",
+			DefaultPermission: &DefaultPermission,
+		},
 	}
 )
