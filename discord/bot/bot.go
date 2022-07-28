@@ -1,8 +1,9 @@
-package commands
+package bot
 
 import (
 	"flag"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/commands"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )
@@ -11,6 +12,7 @@ var (
 	config  = conf.GetConf()
 	bot     *discordgo.Session
 	GuildID = flag.String("guild", config.Discord.ServerID, "Guild ID")
+	Session *discordgo.Session
 )
 
 func init() {
@@ -32,19 +34,20 @@ func init() {
 
 func Registration() *discordgo.Session {
 	bot.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if h, ok := Handlers[i.ApplicationCommandData().Name]; ok {
+		if h, ok := commands.Handlers[i.ApplicationCommandData().Name]; ok {
 			h(s, i)
 		}
 	})
 	log.Println("Adding Commands")
-	commandRegistration := make([]*discordgo.ApplicationCommand, len(Commands))
-	for i, rawCommand := range Commands {
+	commandRegistration := make([]*discordgo.ApplicationCommand, len(commands.Commands))
+	for i, rawCommand := range commands.Commands {
 		command, err := bot.ApplicationCommandCreate(bot.State.User.ID, *GuildID, rawCommand)
 		if err != nil {
 			log.Fatalf("Failed to create %v: %v", rawCommand.Name, err)
 		}
 		commandRegistration[i] = command
 	}
+	Session = bot
 	return bot
 
 }

@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
-	"github.com/Sharktheone/Scharsch-bot-discord/whitelist"
+	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"strings"
