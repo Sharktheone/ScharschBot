@@ -8,13 +8,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"net/url"
 	"time"
 )
 
 var (
 	config             = conf.GetConf()
-	url                = fmt.Sprintf("mongodb://%v:%v@%v:%v", config.Whitelist.Mongodb.MongodbUser, config.Whitelist.Mongodb.MongodbPass, config.Whitelist.Mongodb.MongodbHost, config.Whitelist.Mongodb.MongodbPort)
-	Client, connectErr = mongo.NewClient(options.Client().ApplyURI(url))
+	uri                = fmt.Sprintf("mongodb://%v:%v@%v:%v", url.QueryEscape(config.Whitelist.Mongodb.MongodbUser), url.QueryEscape(config.Whitelist.Mongodb.MongodbPass), config.Whitelist.Mongodb.MongodbHost, config.Whitelist.Mongodb.MongodbPort)
+	Client, connectErr = mongo.NewClient(options.Client().ApplyURI(uri))
 	Cancel             context.CancelFunc
 	connected          = false
 	db                 *mongo.Database
@@ -71,7 +72,6 @@ func Read(collection string, filter bson.M) (data []bson.M, found bool) {
 	)
 	ctx, Cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	cursor, err := readColl.Find(ctx, filter)
-
 	if err != nil {
 		log.Printf("Failed to find data: %v \n", err)
 	}

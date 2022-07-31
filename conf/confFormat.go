@@ -8,6 +8,10 @@ type Format struct {
 		Token                 string `yaml:"token"`
 		WhitelistRemoveRoleID string `yaml:"adminWhitelistRemoveRoleID"`
 		WhitelistWhoisRoleID  string `yaml:"adminWhitelistWhoisRoleID"`
+		WhitelistBanRoleID    string `yaml:"adminWhitelistBanRoleID"`
+		WhitelistServerRoleID string `yaml:"whitelistServerRoleID"`
+		EmbedErrorIcon        string `yaml:"embedErrorIcon"`
+		EmbedErrorAuthorURL   string `yaml:"embedErrorAuthorURL"`
 	}
 	Pterodactyl struct {
 		Enabled          bool   `yaml:"enabled"`
@@ -20,12 +24,13 @@ type Format struct {
 		Enabled     bool `yaml:"enabled"`
 		MaxAccounts int  `yaml:"maxAccounts"`
 		Mongodb     struct {
-			MongodbHost           string `yaml:"mongodbHost"`
-			MongodbPort           uint16 `yaml:"mongodbPort"`
-			MongodbUser           string `yaml:"mongodbUser"`
-			MongodbPass           string `yaml:"mongodbPass"`
-			MongodbDatabaseName   string `yaml:"mongodbDatabaseName"`
-			MongodbCollectionName string `yaml:"mongodbCollectionName"`
+			MongodbHost                    string `yaml:"mongodbHost"`
+			MongodbPort                    uint16 `yaml:"mongodbPort"`
+			MongodbUser                    string `yaml:"mongodbUser"`
+			MongodbPass                    string `yaml:"mongodbPass"`
+			MongodbDatabaseName            string `yaml:"mongodbDatabaseName"`
+			MongodbWhitelistCollectionName string `yaml:"mongodbWhitelistCollectionName"`
+			MongodbBanCollectionName       string `yaml:"mongodbBanCollectionName"`
 		}
 
 		Roles struct {

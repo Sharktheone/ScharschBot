@@ -34,10 +34,19 @@ func init() {
 
 func Registration() *discordgo.Session {
 	bot.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if h, ok := commands.Handlers[i.ApplicationCommandData().Name]; ok {
-			h(s, i)
+		switch i.Type {
+		case discordgo.InteractionApplicationCommand:
+			if h, ok := commands.Handlers[i.ApplicationCommandData().Name]; ok {
+				h(s, i)
+			}
+
+		case discordgo.InteractionMessageComponent:
+			if h, ok := commands.Handlers[i.MessageComponentData().CustomID]; ok {
+				h(s, i)
+			}
 		}
 	})
+
 	log.Println("Adding Commands")
 	commandRegistration := make([]*discordgo.ApplicationCommand, len(commands.Commands))
 	for i, rawCommand := range commands.Commands {

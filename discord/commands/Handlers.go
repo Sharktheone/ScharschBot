@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"log"
@@ -17,35 +17,41 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			optionMap[opt.Name] = opt
 		}
 		name := strings.ToLower(optionMap["name"].StringValue())
-		var message string
+		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
-			alreadyListed, existingAcc, freeAccount, allowed := whitelist.Add(name, i.Member.User.ID, i.Member.Roles)
+			alreadyListed, existingAcc, freeAccount, allowed, listedAccounts, mcBan, dcBan := whitelist.Add(name, i.Member.User.ID, i.Member.Roles)
 
-			if allowed {
-				if freeAccount {
-					if existingAcc {
-						if alreadyListed {
-							message = fmt.Sprintf("%v is already on whitelist", name)
+			if !mcBan && !dcBan {
+				if allowed {
+					if freeAccount {
+						if existingAcc {
+							if alreadyListed {
+								messageEmbed = embed.WhitelistAlreadyListed(name, listedAccounts)
+							} else {
+								messageEmbed = embed.WhitelistAdding(name, listedAccounts)
+							}
 						} else {
-							message = fmt.Sprintf("Adding %v to whitelist", name)
+							messageEmbed = embed.WhitelistNotExisting(name, listedAccounts)
 						}
 					} else {
-						message = fmt.Sprintf("Account %v is not existing", name)
+						messageEmbed = embed.WhitelistNoFreeAccounts(name, listedAccounts)
 					}
 				} else {
-					message = "You have no free Account anymore"
-				}
+					messageEmbed = embed.WhitelistAddNotAllowed(name)
 
+				}
 			} else {
-				message = "You are not allowed to add accounts"
+				messageEmbed = embed.WhitelistBanned(i.Member.User.AvatarURL("40"), i.Member.User.Username, name, dcBan)
 			}
 		} else {
-			message = "Database is not ready, please try again later"
+			messageEmbed = embed.DatabaseNotReady
 		}
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: message,
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
 			},
 		})
 		if err != nil {
@@ -61,30 +67,31 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		}
 
 		name := strings.ToLower(optionMap["name"].StringValue())
-		var message string
+		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
-			allowed, onWhitelist := whitelist.Remove(name, i.Member.User.ID, i.Member.Roles)
+			allowed, onWhitelist, listedAccounts := whitelist.Remove(name, i.Member.User.ID, i.Member.Roles)
 
 			if allowed {
 
 				if onWhitelist {
-					message = fmt.Sprintf("Removing %v from whitelist", name)
+					messageEmbed = embed.WhitelistRemoving(name, listedAccounts)
 				} else {
-					message = fmt.Sprintf("%v is not on the whitelist", name)
+					messageEmbed = embed.WhitelistNotListed(name, listedAccounts)
 				}
 
 			} else {
-				message = "Operation not permitted!"
+				messageEmbed = embed.WhitelistRemoveNotAllowed(name)
 			}
 		} else {
-			message = "Database is not ready, please try again later"
+			messageEmbed = embed.DatabaseNotReady
 		}
 
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-
-				Content: message,
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
 			},
 		})
 		if err != nil {
@@ -99,25 +106,27 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			optionMap[opt.Name] = opt
 		}
 		name := strings.ToLower(optionMap["name"].StringValue())
-		var message string
+		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
-			userID, allowed, found := whitelist.Whois(name, i.Member.User.ID, i.Member.Roles)
+			userID, allowed, found, listedAccounts := whitelist.Whois(name, i.Member.User.ID, i.Member.Roles)
 			if allowed {
 				if found {
-					message = fmt.Sprintf("Player %v was whitelisted by <@%v>", name, userID)
+					messageEmbed = embed.WhitelistIsListedBy(name, userID, listedAccounts)
 				} else {
-					message = fmt.Sprintf("Player %v was not found on Whitelist", name)
+					messageEmbed = embed.WhitelistNotListed(name, listedAccounts)
 				}
 			} else {
-				message = "Operation not permitted!"
+				messageEmbed = embed.WhitelistWhoisNotAllowed(name)
 			}
 		} else {
-			message = "Database is not ready, please try again later"
+			messageEmbed = embed.DatabaseNotReady
 		}
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: message,
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
 			},
 		})
 		if err != nil {
@@ -132,81 +141,266 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			optionMap[opt.Name] = opt
 		}
 		userID := optionMap["userid"].StringValue()
-		var message string
+		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
 			accounts, allowed, found := whitelist.HasListed(userID, i.Member.User.ID, i.Member.Roles)
 			if allowed {
 				if found {
-					message = fmt.Sprintf("<@%v> has whitelisted players %v", userID, accounts)
+					messageEmbed = embed.WhitelistHasListed(accounts, userID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 				} else {
-					message = fmt.Sprintf("UserID %v was not found on Whitelist", userID)
+					messageEmbed = embed.WhitelistNoAccounts(userID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 				}
 			} else {
-				message = "Operation not permitted!"
+				messageEmbed = embed.WhitelistUserNotAllowed(userID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 			}
 		} else {
-			message = "Database is not ready, please try again later"
+			messageEmbed = embed.DatabaseNotReady
 		}
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: message,
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
 			},
 		})
 		if err != nil {
-			log.Printf("Failed execute command whitelistwhois: %v", err)
+			log.Printf("Failed execute command whitelistuser: %v", err)
 		}
 	},
 	"whitelistmyaccounts": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		var message string
+		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
 			accounts, allowed, found := whitelist.HasListed(i.Member.User.ID, i.Member.User.ID, i.Member.Roles)
 			if allowed {
 				if found {
-					message = fmt.Sprintf("You have whitelisted players %v", accounts)
+					messageEmbed = embed.WhitelistHasListed(accounts, i.Member.User.ID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 				} else {
-					message = "You have no whitelisted players"
+					messageEmbed = embed.WhitelistNoAccounts(i.Member.User.ID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 				}
 			} else {
-				message = "Operation not permitted!"
+				messageEmbed = embed.WhitelistUserNotAllowed(i.Member.User.ID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 			}
 		} else {
-			message = "Database is not ready, please try again later"
+			messageEmbed = embed.DatabaseNotReady
 		}
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: message,
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
 			},
 		})
 		if err != nil {
-			log.Printf("Failed execute command whitelistwhois: %v", err)
+			log.Printf("Failed execute command whitelistmyaccounts: %v", err)
 		}
 	},
-	"whitelistremoveall": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		var message string
-		allowed, onWhitelist := whitelist.RemoveAll(i.Member.User.ID, i.Member.Roles)
+	"remove_yes": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
+			allowed, onWhitelist := whitelist.RemoveAll(i.Member.User.ID, i.Member.Roles)
 			if allowed {
 				if onWhitelist {
-					message = fmt.Sprintf("Removing everyone from whitelist")
+					messageEmbed = embed.WhitelistRemoveAll(i.Member.User.AvatarURL("40"), i.Member.User.Username)
 				} else {
-					message = fmt.Sprintf("No one is not on the whitelist")
+					messageEmbed = embed.WhitelistRemoveAllNoWhitelistEntries(i.Member.User.AvatarURL("40"), i.Member.User.Username)
 				}
 			} else {
-				message = "Operation not permitted!"
+				messageEmbed = embed.WhitelistRemoveAllNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username)
 			}
 		} else {
-			message = "Database is not ready, please try again later"
+			messageEmbed = embed.DatabaseNotReady
 		}
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: message,
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
 			},
 		})
 		if err != nil {
-			log.Printf("Failed execute command whitelistremove: %v", err)
+			log.Printf("Failed execute component remove_yes: %v", err)
+		}
+
+	},
+
+	"whitelistremoveall": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		var (
+			messageEmbed discordgo.MessageEmbed
+			err          error
+		)
+		if mongodb.Ready {
+			allowed := whitelist.RemoveAllAllowed(i.Member.Roles)
+			if allowed {
+				var button discordgo.Button
+				messageEmbed, button = embed.WhitelistRemoveAllSure(i.Member.User.AvatarURL("40"), i.Member.User.Username)
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{
+							&messageEmbed,
+						},
+						Components: []discordgo.MessageComponent{
+							discordgo.ActionsRow{
+								Components: []discordgo.MessageComponent{
+									&button,
+								},
+							},
+						},
+					},
+				})
+
+			} else {
+				messageEmbed = embed.WhitelistRemoveAllNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username)
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{
+							&messageEmbed,
+						},
+					},
+				})
+			}
+		} else {
+			messageEmbed = embed.DatabaseNotReady
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Embeds: []*discordgo.MessageEmbed{
+						&messageEmbed,
+					},
+				},
+			})
+		}
+
+		if err != nil {
+			log.Printf("Failed execute command whitelistremoveall: %v", err)
+		}
+
+	},
+	"whitelistbanuserid": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+		userID := optionMap["userid"].StringValue()
+		var messageEmbed discordgo.MessageEmbed
+		if mongodb.Ready {
+			allowed, listedAccounts := whitelist.BanUserID(i.Member.User.ID, i.Member.Roles, userID)
+			if allowed {
+				messageEmbed = embed.WhitelistBanUserID(listedAccounts, userID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+			} else {
+				messageEmbed = embed.WhitelistBanUserIDNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, userID)
+			}
+		} else {
+			messageEmbed = embed.DatabaseNotReady
+		}
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("Failed execute command whitelistbanuserid: %v", err)
+		}
+
+	},
+	"whitelistbanaccount": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+		name := strings.ToLower(optionMap["name"].StringValue())
+		var messageEmbed discordgo.MessageEmbed
+		if mongodb.Ready {
+			allowed, listedAccounts, userID := whitelist.BanAccount(i.Member.User.ID, i.Member.Roles, name)
+			if allowed {
+				messageEmbed = embed.WhitelistBanAccount(name, listedAccounts, userID)
+			} else {
+				messageEmbed = embed.WhitelistBanAccountNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, name)
+			}
+		} else {
+			messageEmbed = embed.DatabaseNotReady
+		}
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("Failed execute command whitelistbanaccount: %v", err)
+		}
+
+	},
+	"whitelistunbanuserid": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+		userID := optionMap["userid"].StringValue()
+		var messageEmbed discordgo.MessageEmbed
+		if mongodb.Ready {
+			allowed := whitelist.UnBanUserID(i.Member.User.ID, i.Member.Roles, userID)
+			if allowed {
+				messageEmbed = embed.WhitelistUnBanUserID(userID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+			} else {
+				messageEmbed = embed.WhitelistBanUserIDNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, userID)
+			}
+		} else {
+			messageEmbed = embed.DatabaseNotReady
+		}
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("Failed execute command whitelistunbanuserid: %v", err)
+		}
+
+	},
+	"whitelistunbanaccount": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+		name := strings.ToLower(optionMap["name"].StringValue())
+		var messageEmbed discordgo.MessageEmbed
+		if mongodb.Ready {
+			allowed, listedAccounts := whitelist.UnBanAccount(i.Member.User.ID, i.Member.Roles, name)
+			if allowed {
+				messageEmbed = embed.WhitelistUnBanAccount(name, listedAccounts)
+			} else {
+				messageEmbed = embed.WhitelistBanAccountNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, name)
+			}
+		} else {
+			messageEmbed = embed.DatabaseNotReady
+		}
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{
+					&messageEmbed,
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("Failed execute command whitelistunbanaccount: %v", err)
 		}
 
 	},

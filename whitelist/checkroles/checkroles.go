@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	collection = config.Whitelist.Mongodb.MongodbCollectionName
+	collection = config.Whitelist.Mongodb.MongodbWhitelistCollectionName
 	config     = conf.GetConf()
 )
 

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/checkroles"
 	"github.com/bwmarrin/discordgo"
 	"github.com/robfig/cron"
@@ -20,7 +21,7 @@ func main() {
 
 		}
 	}(dcBot)
-
+	embed.BotAvatarURL = dcBot.State.User.AvatarURL("40")
 	mongodb.Connect()
 	defer mongodb.Disconnect()
 	defer mongodb.Cancel()

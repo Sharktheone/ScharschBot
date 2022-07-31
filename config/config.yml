@@ -3,6 +3,17 @@ enabled: true
 discord:
   serverID: <Server GuildID>
   token: <Bot Token>
+  adminWhitelistRemoveRoleID: <Role ID>
+  adminWhitelistWhoisRoleID: <Role ID>
+  adminWhitelistBanID: <Role ID>
+  whitelistServerRoleID: <Role ID>
+  discordEmbedErrorIcon: https://cdn.discordapp.com/emojis/841343837054173191.gif
+  embedErrorAuthorURL: https://youtu.be/dQw4w9WgXcQ
+pterodactyl:
+  enabled: true
+  APIKey: <API KEY>
+  PanelURL: <Panel URL>
+  serverID: <server ID>
 whitelist:
   enabled: true
   maxAccounts: 5
@@ -21,12 +32,6 @@ whitelist:
     whoisRoleID: <role ID>
     removeAllRoleID: <role ID>
     removeUserWithout: true
-  pterodactyl:
-    enabled: true
-    APIKey: <API KEY>
-    PanelURL: <Panel URL>
-    serverID: <server ID>
-    whitelistCommand: whitelist {username}
   luckperms:
     enabled: false
     setRole: <Whitelisted Role>
