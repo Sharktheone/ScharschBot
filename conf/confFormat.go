@@ -21,9 +21,10 @@ type Format struct {
 		WhitelistCommand string `yaml:"whitelistCommand"`
 	}
 	Whitelist struct {
-		Enabled     bool `yaml:"enabled"`
-		MaxAccounts int  `yaml:"maxAccounts"`
-		Mongodb     struct {
+		Enabled                  bool `yaml:"enabled"`
+		MaxAccounts              int  `yaml:"maxAccounts"`
+		BannedUsersToMaxAccounts bool `yaml:"bannedUsersToMaxAccounts"`
+		Mongodb                  struct {
 			MongodbHost                    string `yaml:"mongodbHost"`
 			MongodbPort                    uint16 `yaml:"mongodbPort"`
 			MongodbUser                    string `yaml:"mongodbUser"`

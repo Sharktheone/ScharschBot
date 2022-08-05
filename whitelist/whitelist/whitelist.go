@@ -16,7 +16,7 @@ var (
 	banCollection       = config.Whitelist.Mongodb.MongodbBanCollectionName
 )
 
-func Add(username string, userID string, roles []string) (alreadyListed bool, existing bool, accountFree bool, allowed bool, accountsListed []string, mcBanned bool, dcBanned bool) {
+func Add(username string, userID string, roles []string) (alreadyListed bool, existing bool, accountFree bool, allowed bool, mcBanned bool, dcBanned bool) {
 	var addAllowed = false
 	mcBan, dcBan := checkBanned(username, userID)
 	if !mcBan && !dcBan {
@@ -28,7 +28,7 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 	}
 	var hasFreeAccount = false
 	result, _ := mongodb.Read(whitelistCollection, bson.M{"dcUserID": userID})
-	if config.Whitelist.MaxAccounts <= len(result) {
+	if config.Whitelist.MaxAccounts <= (len(result) + len(CheckBans(userID))) {
 		hasFreeAccount = false
 	} else {
 		hasFreeAccount = true
@@ -50,10 +50,10 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 		}
 
 	}
-	return found, existingAcc, hasFreeAccount, addAllowed, listedAccountsOf(userID), mcBan, dcBan
+	return found, existingAcc, hasFreeAccount, addAllowed, mcBan, dcBan
 }
 
-func Remove(username string, userID string, roles []string) (allowed bool, onWhitelist bool, accountsListed []string) {
+func Remove(username string, userID string, roles []string) (allowed bool, onWhitelist bool) {
 	var removeAllowed = false
 	for _, role := range roles {
 		if role == config.Discord.WhitelistRemoveRoleID {
@@ -69,13 +69,13 @@ func Remove(username string, userID string, roles []string) (allowed bool, onWhi
 			removeAllowed = true
 		}
 	}
-	if removeAllowed && found && allowed {
+	if removeAllowed && found {
 		mongodb.Remove(whitelistCollection, bson.M{
 			"mcAccount": username,
 		})
 		log.Printf("%v is removing %v from whitelist", userID, username)
 	}
-	return removeAllowed, found, listedAccountsOf(userID)
+	return removeAllowed, found
 }
 
 func RemoveAll(userID string, roles []string) (allowed bool, onWhitelist bool) {
@@ -113,7 +113,7 @@ func RemoveAllAllowed(roles []string) (allowed bool) {
 	return removeAllowed
 }
 
-func Whois(username string, userID string, roles []string) (dcUserID string, allowed bool, found bool, accountsListed []string) {
+func Whois(username string, userID string, roles []string) (dcUserID string, allowed bool, found bool) {
 	var whoisAllowed = false
 	for _, role := range roles {
 		if role == config.Discord.WhitelistRemoveRoleID {
@@ -134,9 +134,9 @@ func Whois(username string, userID string, roles []string) (dcUserID string, all
 			dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
 		}
 	}
-	return dcUser, whoisAllowed, dataFound, listedAccountsOf(userID)
+	return dcUser, whoisAllowed, dataFound
 }
-func HasListed(lookupID string, userID string, roles []string) (accounts []string, allowed bool, found bool) {
+func HasListed(lookupID string, userID string, roles []string) (accounts []string, allowed bool, found bool, bannedPlayers []string) {
 	var listedAllowed = false
 	for _, role := range roles {
 		if role == config.Discord.WhitelistRemoveRoleID {
@@ -161,7 +161,7 @@ func HasListed(lookupID string, userID string, roles []string) (accounts []strin
 		}
 		listedAcc = listedAccounts
 	}
-	return listedAcc, listedAllowed, dataFound
+	return listedAcc, listedAllowed, dataFound, CheckBans(userID)
 }
 
 func existingAccount(username string) (existing bool) {
@@ -182,7 +182,7 @@ func existingAccount(username string) (existing bool) {
 	}
 
 }
-func listedAccountsOf(userID string) (Accounts []string) {
+func ListedAccountsOf(userID string) (Accounts []string) {
 	results, dataFound := mongodb.Read(whitelistCollection, bson.M{
 		"dcUserID": userID,
 	})
@@ -198,7 +198,7 @@ func listedAccountsOf(userID string) (Accounts []string) {
 
 func BanUserID(userID string, roles []string, banID string) (allowed bool, accountsListed []string) {
 	banAllowed := false
-	listedAccounts := listedAccountsOf(userID)
+	listedAccounts := ListedAccountsOf(userID)
 	for _, role := range roles {
 		if role == config.Discord.WhitelistBanRoleID {
 			banAllowed = true
@@ -215,17 +215,11 @@ func BanUserID(userID string, roles []string, banID string) (allowed bool, accou
 
 func BanAccount(userID string, roles []string, account string) (allowed bool, accountsListed []string, ownerID string) {
 	banAllowed := false
-	listedAccounts := listedAccountsOf(userID)
+	listedAccounts := ListedAccountsOf(userID)
 	for _, role := range roles {
 		if role == config.Discord.WhitelistBanRoleID {
 			banAllowed = true
 		}
-	}
-	if banAllowed {
-		log.Printf("%v is banning %v", userID, account)
-		mongodb.Write(banCollection, bson.D{
-			{"mcAccount", account},
-		})
 	}
 
 	var result []bson.M
@@ -239,6 +233,14 @@ func BanAccount(userID string, roles []string, account string) (allowed bool, ac
 	if dataFound {
 		dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
 	}
+	if banAllowed {
+		log.Printf("%v is banning %v", userID, account)
+		mongodb.Write(banCollection, bson.D{
+			{"mcAccount", account},
+			{"dcUserID", dcUser},
+		})
+	}
+
 	return banAllowed, listedAccounts, dcUser
 }
 func UnBanUserID(userID string, roles []string, banID string) (allowed bool) {
@@ -259,7 +261,15 @@ func UnBanUserID(userID string, roles []string, banID string) (allowed bool) {
 
 func UnBanAccount(userID string, roles []string, account string) (allowed bool, accountsListed []string) {
 	unBanAllowed := false
-	listedAccounts := listedAccountsOf(userID)
+	var dcUser string
+	result, dataFound := mongodb.Read(whitelistCollection, bson.M{
+		"mcAccount": account,
+	})
+	if dataFound {
+		dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
+	}
+	listedAccounts := ListedAccountsOf(dcUser)
+
 	for _, role := range roles {
 		if role == config.Discord.WhitelistBanRoleID {
 			unBanAllowed = true
@@ -271,6 +281,7 @@ func UnBanAccount(userID string, roles []string, account string) (allowed bool, 
 			"mcAccount": account,
 		})
 	}
+
 	return unBanAllowed, listedAccounts
 }
 
@@ -288,10 +299,30 @@ func checkBanned(mcName string, userID string) (mcBanned bool, dcBanned bool) {
 	}
 
 	_, dataFound = mongodb.Read(banCollection, bson.M{
-		"dcUserID": userID,
+		"dcUserID":  userID,
+		"mcAccount": bson.M{"$exists": false},
 	})
 	if dataFound {
 		dc = true
 	}
 	return mc, dc
+}
+
+func CheckBans(userID string) (bannedPlayers []string) {
+	var (
+		dataFound bool
+		results   []bson.M
+	)
+	results, dataFound = mongodb.Read(banCollection, bson.M{
+		"dcUserID":  userID,
+		"mcAccount": bson.M{"$exists": true},
+	})
+
+	var bannedAccs = make([]string, len(results), 10)
+	if dataFound {
+		for i, result := range results {
+			bannedAccs[i] = fmt.Sprintf("%v", result["mcAccount"])
+		}
+	}
+	return bannedAccs
 }

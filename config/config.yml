@@ -17,6 +17,7 @@ pterodactyl:
 whitelist:
   enabled: true
   maxAccounts: 5
+  bannedUsersToMaxAccounts: true
   mongodb:
     mongodbHost: <Database Host>
     mongodbPort: 1234
