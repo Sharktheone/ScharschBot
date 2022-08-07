@@ -14,24 +14,26 @@ type Format struct {
 		EmbedErrorAuthorURL   string `yaml:"embedErrorAuthorURL"`
 	}
 	Pterodactyl struct {
-		Enabled          bool   `yaml:"enabled"`
-		APIKey           string `yaml:"APIKey"`
-		PanelURL         string `yaml:"panelURL"`
-		ServerID         string `yaml:"serverID"`
-		WhitelistCommand string `yaml:"whitelistCommand"`
+		Enabled                bool   `yaml:"enabled"`
+		APIKey                 string `yaml:"APIKey"`
+		PanelURL               string `yaml:"panelURL"`
+		ServerID               string `yaml:"serverID"`
+		WhitelistAddCommand    string `yaml:"whitelistAddCommand"`
+		WhitelistRemoveCommand string `yaml:"whitelistRemoveCommand"`
 	}
 	Whitelist struct {
 		Enabled                  bool `yaml:"enabled"`
 		MaxAccounts              int  `yaml:"maxAccounts"`
 		BannedUsersToMaxAccounts bool `yaml:"bannedUsersToMaxAccounts"`
 		Mongodb                  struct {
-			MongodbHost                    string `yaml:"mongodbHost"`
-			MongodbPort                    uint16 `yaml:"mongodbPort"`
-			MongodbUser                    string `yaml:"mongodbUser"`
-			MongodbPass                    string `yaml:"mongodbPass"`
-			MongodbDatabaseName            string `yaml:"mongodbDatabaseName"`
-			MongodbWhitelistCollectionName string `yaml:"mongodbWhitelistCollectionName"`
-			MongodbBanCollectionName       string `yaml:"mongodbBanCollectionName"`
+			MongodbHost                      string `yaml:"mongodbHost"`
+			MongodbPort                      uint16 `yaml:"mongodbPort"`
+			MongodbUser                      string `yaml:"mongodbUser"`
+			MongodbPass                      string `yaml:"mongodbPass"`
+			MongodbDatabaseName              string `yaml:"mongodbDatabaseName"`
+			MongodbWhitelistCollectionName   string `yaml:"mongodbWhitelistCollectionName"`
+			MongodbBanCollectionName         string `yaml:"mongodbBanCollectionName"`
+			MongodbReWhitelistCollectionName string `yaml:"mongodbReWhitelistCollectionName"`
 		}
 
 		Roles struct {
@@ -42,6 +44,7 @@ type Format struct {
 			WhoisRoleID        string `yaml:"whoisRoleID"`
 			RemoveAllRoleID    string `yaml:"removeAllRoleID"`
 			RemoveUserWithout  bool   `yaml:"removeUserWithout"`
+			ReWhitelistWith    bool   `yaml:"reWhitelistWith"`
 		}
 		Luckperms struct {
 			Enabled      bool   `yaml:"enabled"`

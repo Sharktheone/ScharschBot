@@ -54,24 +54,30 @@ var (
 			Options: []*discordgo.ApplicationCommandOption{
 
 				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "userid",
-					Description: "ID of the account to lookup",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User to lookup accounts (You can list left users with <@USERID>)",
 					Required:    true,
 				},
 			},
 		},
 		{
-			Name:              "whitelistbanuserid",
-			Description:       "Ban a user from the whitelist by userID",
+			Name:              "whitelistbanuser",
+			Description:       "Ban a user from the whitelist",
 			DefaultPermission: &DefaultPermission,
 			Options: []*discordgo.ApplicationCommandOption{
 
 				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "userid",
-					Description: "ID of the account to ban",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User to ban from the whitelist (You can ban left users with <@USERID>)",
 					Required:    true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionBoolean,
+					Name:        "removeaccounts",
+					Description: "Remove the accounts of the banned person (default: true)",
+					Required:    false,
 				},
 			},
 		},
@@ -90,16 +96,22 @@ var (
 			},
 		},
 		{
-			Name:              "whitelistunbanuserid",
-			Description:       "Unban a user from the whitelist by userID",
+			Name:              "whitelistunbanuser",
+			Description:       "Unban a user from the whitelist",
 			DefaultPermission: &DefaultPermission,
 			Options: []*discordgo.ApplicationCommandOption{
 
 				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "userid",
-					Description: "ID of the account to unban",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User to unban from the whitelist (You can unban left users with <@USERID>)",
 					Required:    true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionBoolean,
+					Name:        "unbanaccounts",
+					Description: "Unban the accounts of the unbanned person (default: false)",
+					Required:    false,
 				},
 			},
 		},
@@ -120,6 +132,11 @@ var (
 		{
 			Name:              "whitelistmyaccounts",
 			Description:       "Look which accounts you have whitelisted",
+			DefaultPermission: &DefaultPermission,
+		},
+		{
+			Name:              "whitelistremovemyaccounts",
+			Description:       "Remove all accounts you have whitelisted",
 			DefaultPermission: &DefaultPermission,
 		},
 		{

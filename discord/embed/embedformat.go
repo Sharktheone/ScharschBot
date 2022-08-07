@@ -328,7 +328,6 @@ func WhitelistHasListed(PlayerNames []string, userID string, avatarURL string, n
 func WhitelistNoAccounts(userID string, avatarURL string, name string) discordgo.MessageEmbed {
 	Title := "The following user has no whitelisted accounts:"
 	Description := fmt.Sprintf("<@%v>", userID)
-
 	Embed := discordgo.MessageEmbed{
 		Title:       Title,
 		Description: Description,
@@ -442,11 +441,16 @@ func WhitelistRemoveAll(avatar string, name string) discordgo.MessageEmbed {
 	return Embed
 }
 
-func WhitelistBanUserID(PlayerNames []string, userID string, avatarURL string, name string) discordgo.MessageEmbed {
+func WhitelistBanUserID(PlayerNames []string, userID string, avatarURL string, name string, bannedAccounts []string) discordgo.MessageEmbed {
 	Title := "Banning following user that has following whitelisted accounts"
 	Description := fmt.Sprintf("<@%v>", userID)
 	var embedAccounts []*discordgo.MessageEmbedField
-	Footer := fmt.Sprintf("He had whitelisted %v accounts (max %v)", len(PlayerNames), maxAccounts)
+	var Footer string
+	if !bansToMax {
+		Footer = fmt.Sprintf("He had whitelisted %v accounts (max %v)", len(PlayerNames), maxAccounts)
+	} else {
+		Footer = fmt.Sprintf("He had whitelisted %v accounts and %v banned (max %v)", len(PlayerNames), len(bannedAccounts), maxAccounts)
+	}
 
 	for _, PlayerName := range PlayerNames {
 		userURL := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
@@ -472,7 +476,7 @@ func WhitelistBanUserID(PlayerNames []string, userID string, avatarURL string, n
 	return Embed
 }
 
-func WhitelistBanAccount(PlayerName string, Players []string, userID string) discordgo.MessageEmbed {
+func WhitelistBanAccount(PlayerName string, Players []string, userID string, bannedAccounts []string) discordgo.MessageEmbed {
 	Title := fmt.Sprintf("%v is now banned from the whitelist", PlayerName)
 	AuthorIconUrl := fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 	AuthorUrl := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
@@ -485,38 +489,79 @@ func WhitelistBanAccount(PlayerName string, Players []string, userID string) dis
 			Name:  FieldName,
 			Value: FieldValue,
 		}
-		Footer = fmt.Sprintf("Account owner has whitelisted now %v accounts (max %v)", len(Players), maxAccounts)
+		if !bansToMax {
+			Footer = fmt.Sprintf("He had whitelisted %v accounts (max %v)", len(Players), maxAccounts)
+		} else {
+			Footer = fmt.Sprintf("He had whitelisted %v accounts and %v banned (max %v)", len(Players), len(bannedAccounts), maxAccounts)
+		}
 	} else {
-		FieldName := fmt.Sprintf("%v was not on the whitelist", PlayerName)
+		FieldName := fmt.Sprintf("%v is not whitelisted", PlayerName)
 		field = discordgo.MessageEmbedField{
 			Name:  FieldName,
 			Value: "The ban will be executed",
 		}
-		Footer = "5 accounts banned"
+	}
+	var Embed discordgo.MessageEmbed
+	if len(Footer) > 0 {
+		Embed = discordgo.MessageEmbed{
+			Title: Title,
+			Color: 0x00FF00,
+			Author: &discordgo.MessageEmbedAuthor{
+				Name:    PlayerName,
+				IconURL: AuthorIconUrl,
+				URL:     AuthorUrl,
+			},
+			Fields: []*discordgo.MessageEmbedField{
+				&field,
+			},
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: Footer,
+			},
+		}
+	} else {
+		Embed = discordgo.MessageEmbed{
+			Title: Title,
+			Color: 0x00FF00,
+			Author: &discordgo.MessageEmbedAuthor{
+				Name:    PlayerName,
+				IconURL: AuthorIconUrl,
+				URL:     AuthorUrl,
+			},
+			Fields: []*discordgo.MessageEmbedField{
+				&field,
+			},
+		}
 	}
 
-	Embed := discordgo.MessageEmbed{
-		Title: Title,
-		Color: 0x00FF00,
-		Author: &discordgo.MessageEmbedAuthor{
-			Name:    PlayerName,
-			IconURL: AuthorIconUrl,
-			URL:     AuthorUrl,
-		},
-		Fields: []*discordgo.MessageEmbedField{
-			&field,
-		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: Footer,
-		},
-	}
 	return Embed
 }
 
-func WhitelistUnBanUserID(userID string, avatarURL string, name string) discordgo.MessageEmbed {
+func WhitelistUnBanUserID(userID string, avatarURL string, name string, bannedAccounts []string, listedAccounts []string) discordgo.MessageEmbed {
 	Title := "Unbanning user"
 	Description := fmt.Sprintf("<@%v>", userID)
-
+	var Footer string
+	if !bansToMax {
+		Footer = fmt.Sprintf("Owner has whitelisted %v accounts (max %v)", len(listedAccounts), maxAccounts)
+	} else {
+		Footer = fmt.Sprintf("Owner has whitelisted %v accounts and %v banned (max %v)", len(listedAccounts), len(bannedAccounts), maxAccounts)
+	}
+	var embedAccounts []*discordgo.MessageEmbedField
+	for _, PlayerName := range listedAccounts {
+		userURL := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		embedAccounts = append(embedAccounts, &discordgo.MessageEmbedField{
+			Name:   PlayerName,
+			Value:  userURL,
+			Inline: false,
+		})
+	}
+	for _, PlayerName := range bannedAccounts {
+		userURL := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		embedAccounts = append(embedAccounts, &discordgo.MessageEmbedField{
+			Name:   fmt.Sprintf("%v (banned)", PlayerName),
+			Value:  userURL,
+			Inline: false,
+		})
+	}
 	Embed := discordgo.MessageEmbed{
 		Title:       Title,
 		Description: Description,
@@ -525,6 +570,10 @@ func WhitelistUnBanUserID(userID string, avatarURL string, name string) discordg
 			Name:    name,
 			IconURL: avatarURL,
 		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: Footer,
+		},
+		Fields: embedAccounts,
 	}
 	return Embed
 }
@@ -635,4 +684,52 @@ func WhitelistBanned(avatar string, name string, mcName string, IDBan bool) disc
 	}
 	return Embed
 
+}
+func WhitelistRemoveMyAccounts(PlayerNames []string, userID string, avatarURL string, name string, bannedPlayers []string) discordgo.MessageEmbed {
+	Title := "Removing whitelisted accounts of"
+	Description := fmt.Sprintf("<@%v>", userID)
+	var embedAccounts []*discordgo.MessageEmbedField
+
+	for _, PlayerName := range PlayerNames {
+		userURL := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		embedAccounts = append(embedAccounts, &discordgo.MessageEmbedField{
+			Name:   PlayerName,
+			Value:  userURL,
+			Inline: false,
+		})
+	}
+	var Footer string
+	if len(bannedPlayers) > 0 {
+		Footer = fmt.Sprintf("You have %v banned accounts (max %v)", len(bannedPlayers), maxAccounts)
+	}
+	var Embed discordgo.MessageEmbed
+	if len(Footer) > 0 {
+
+		Embed = discordgo.MessageEmbed{
+			Title:       Title,
+			Description: Description,
+			Color:       0x00FF00,
+			Author: &discordgo.MessageEmbedAuthor{
+				Name:    name,
+				IconURL: avatarURL,
+			},
+			Fields: embedAccounts,
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: Footer,
+			},
+		}
+	} else {
+		Embed = discordgo.MessageEmbed{
+			Title:       Title,
+			Description: Description,
+			Color:       0x00FF00,
+			Author: &discordgo.MessageEmbedAuthor{
+				Name:    name,
+				IconURL: avatarURL,
+			},
+			Fields: embedAccounts,
+		}
+	}
+
+	return Embed
 }

@@ -7,13 +7,15 @@ discord:
   adminWhitelistWhoisRoleID: <Role ID>
   adminWhitelistBanID: <Role ID>
   whitelistServerRoleID: <Role ID>
-  discordEmbedErrorIcon: https://cdn.discordapp.com/emojis/841343837054173191.gif
+  embedErrorIcon: https://cdn.discordapp.com/emojis/841343837054173191.gif
   embedErrorAuthorURL: https://youtu.be/dQw4w9WgXcQ
 pterodactyl:
   enabled: true
   APIKey: <API KEY>
-  PanelURL: <Panel URL>
+  panelURL: <Panel URL>
   serverID: <server ID>
+  whitelistAddCommand: whitelist add %v
+  whitelistRemoveCommand: whitelist remove &v
 whitelist:
   enabled: true
   maxAccounts: 5
@@ -24,7 +26,9 @@ whitelist:
     mongodbUser: <Database User>
     mongodbPass: <Database Pass>
     mongodbDatabaseName: scharschbot
-    mongodbCollectionName: whitelist
+    mongodbWhitelistCollectionName: whitelist
+    mongodbBanCollectionName: whitelistBans
+    mongodbReWhitelistCollectionName: reWhitelist
   roles:
     enabled: true
     serverRoleID: <role ID>
@@ -33,6 +37,7 @@ whitelist:
     whoisRoleID: <role ID>
     removeAllRoleID: <role ID>
     removeUserWithout: true
+    reWhitelistWith: true
   luckperms:
     enabled: false
     setRole: <Whitelisted Role>

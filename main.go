@@ -23,6 +23,7 @@ func main() {
 	}(dcBot)
 	embed.BotAvatarURL = dcBot.State.User.AvatarURL("40")
 	mongodb.Connect()
+
 	defer mongodb.Disconnect()
 	defer mongodb.Cancel()
 
