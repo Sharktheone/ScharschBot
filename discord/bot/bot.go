@@ -9,10 +9,11 @@ import (
 )
 
 var (
-	config  = conf.GetConf()
-	bot     *discordgo.Session
-	GuildID = flag.String("guild", config.Discord.ServerID, "Guild ID")
-	Session *discordgo.Session
+	config              = conf.GetConf()
+	bot                 *discordgo.Session
+	GuildID             = flag.String("guild", config.Discord.ServerID, "Guild ID")
+	Session             *discordgo.Session
+	commandRegistration = make([]*discordgo.ApplicationCommand, len(commands.Commands))
 )
 
 func init() {
@@ -48,7 +49,7 @@ func Registration() *discordgo.Session {
 	})
 
 	log.Println("Adding Commands")
-	commandRegistration := make([]*discordgo.ApplicationCommand, len(commands.Commands))
+
 	for i, rawCommand := range commands.Commands {
 		command, err := bot.ApplicationCommandCreate(bot.State.User.ID, *GuildID, rawCommand)
 		if err != nil {
@@ -59,4 +60,14 @@ func Registration() *discordgo.Session {
 	Session = bot
 	return bot
 
+}
+func RemoveCommands() {
+	log.Println("Removing Commands")
+
+	for _, command := range commandRegistration {
+		err := bot.ApplicationCommandDelete(bot.State.User.ID, *GuildID, command.ID)
+		if err != nil {
+			log.Printf("Failed to delete %v: %v", command.Name, err)
+		}
+	}
 }

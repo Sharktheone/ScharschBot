@@ -39,4 +39,6 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	log.Println("Press Ctrl+C to exit")
 	<-stop
+	defer bot.RemoveCommands()
+
 }
