@@ -36,6 +36,10 @@ func Connect() *mongo.Database {
 			connected = true
 		}
 	}
+	err := Client.Ping(context.Background(), nil)
+	if err != nil {
+		log.Fatalf("Failed to ping MongoDB: %v", err)
+	}
 	log.Println("Connected to MongoDB")
 	db = Client.Database(config.Whitelist.Mongodb.MongodbDatabaseName)
 	Ready = true

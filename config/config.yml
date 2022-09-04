@@ -5,21 +5,116 @@ discord:
   token: <Bot Token>
   adminWhitelistRemoveRoleID: <Role ID>
   adminWhitelistWhoisRoleID: <Role ID>
-  adminWhitelistBanID: <Role ID>
+  adminWhitelistBanRoleID: <Role ID>
   whitelistServerRoleID: <Role ID>
   embedErrorIcon: https://cdn.discordapp.com/emojis/841343837054173191.gif
   embedErrorAuthorURL: https://youtu.be/dQw4w9WgXcQ
+  footerIcon: true
 pterodactyl:
   enabled: true
-  APIKey: <API KEY>
+  # regexRemoveAnsi: "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
+  APIKey: <Admin API KEY>
   panelURL: <Panel URL>
-  serverID: <server ID>
   whitelistAddCommand: whitelist add %v
   whitelistRemoveCommand: whitelist remove &v
+  servers:
+    - serverID: <Server ID>
+      serverName: Main
+      startMessage: ⚠️ Server is starting...
+      stopMessage: ⚠ Server is stopping...
+      offlineMessage: ❌ Server is offline...
+      onlineMessage: ✅ Server is online!
+      stateMessages: true
+      console:
+        enabled: true
+        messageLines: 10
+        maxTimeInSeconds: 120
+        channelID: <Channel ID>
+        reverse: true
+        reverseRoleID: <Role ID>
+      chat:
+        Enabled: true
+        Embed: false
+        Prefix: »(Server 1)
+        ChannelID: <Channel ID>
+        embedFooter: false
+        embedOneLine: true
+        FooterIcon: true
+      srv:
+        Enabled: true
+        OneLine: true
+        Footer: false
+        ChannelID: <Channel ID>
+        FooterIcon: true
+    - serverID: <Server ID>
+      serverName: Farming
+      startMessage: ⚠️ Server is starting...
+      stopMessage: ⚠ Server is stopping...
+      offlineMessage: ❌ Server is offline...
+      onlineMessage: ✅ Server is online!
+      stateMessages: true
+      console:
+        enabled: true
+        messageLines: 10
+        maxTimeInSeconds: 120
+        channelID: <Channel ID>
+        reverse: true
+        reverseRoleID: <Role ID>
+      chat:
+        Enabled: true
+        Embed: false
+        Prefix: »(Server 1)
+        ChannelID: <Channel ID>
+        embedFooter: false
+        embedOneLine: true
+        FooterIcon: true
+      srv:
+        Enabled: true
+        OneLine: true
+        Footer: false
+        ChannelID: <Channel ID>
+    - serverID: <Server ID>
+      serverName: Lobby
+      startMessage: ⚠️ Server is starting...
+      stopMessage: ⚠ Server is stopping...
+      offlineMessage: ❌ Server is offline...
+      onlineMessage: ✅ Server is online!
+      stateMessages: true
+      console:
+        enabled: true
+        messageLines: 10
+        maxTimeInSeconds: 120
+        channelID: <Channel ID>
+        reverse: true
+        reverseRoleID: <Role ID>
+      chat:
+        Enabled: true
+        Embed: false
+        Prefix: »(Server 1)
+        ChannelID: <Channel ID>
+        embedFooter: false
+        embedOneLine: true
+        FooterIcon: true
+      srv:
+        Enabled: true
+        OneLine: true
+        Footer: false
+        ChannelID: <Channel ID>
+        FooterIcon: true
+srvAPI:
+  port: 8080
+  user: admin_changeMe
+  password: a$€cureP@55w0rd_4_Th3_API_ch@ngeM€
 whitelist:
   enabled: true
   maxAccounts: 5
   bannedUsersToMaxAccounts: true
+  kickUnWhitelisted: true
+  kickCommand: kick %v Sorry, you are not whitelisted (anymore) on this server
+  serverNames:
+    - Farming
+    - Main
+    - Lobby
   mongodb:
     mongodbHost: <Database Host>
     mongodbPort: 1234
@@ -30,12 +125,7 @@ whitelist:
     mongodbBanCollectionName: whitelistBans
     mongodbReWhitelistCollectionName: reWhitelist
   roles:
-    enabled: true
     serverRoleID: <role ID>
-    removeRoleOthersID: <role ID>
-    listUserRoleID: <role ID>
-    whoisRoleID: <role ID>
-    removeAllRoleID: <role ID>
     removeUserWithout: true
     reWhitelistWith: true
   luckperms:

@@ -1,20 +1,34 @@
 package pterodactyl
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
+	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
+	"regexp"
 	"strings"
+	"time"
 )
 
 var (
-	config   = conf.GetConf()
-	serverID = config.Pterodactyl.ServerID
-	panelUrl = config.Pterodactyl.PanelURL
-	apiKey   = fmt.Sprintf("Bearer %s", config.Pterodactyl.APIKey)
+	config        = conf.GetConf()
+	panelUrl      = config.Pterodactyl.PanelURL
+	apiKey        = fmt.Sprintf("Bearer %s", config.Pterodactyl.APIKey)
+	websocketAuth = false
 )
 
-func SendCommand(command string) (successful bool) {
+const (
+	AuthSuccess   = "auth success"
+	Status        = "status"
+	ConsoleOutput = "console output"
+	Stats         = "stats"
+	TokenExpiring = "token expiring"
+	TokenExpired  = "token expired"
+)
+
+func SendCommand(command string, serverID string) (successful bool) {
 	var (
 		url = fmt.Sprintf("%s/api/client/servers/%s/command", panelUrl, serverID)
 
@@ -31,7 +45,7 @@ func SendCommand(command string) (successful bool) {
 	return resSuccessful
 }
 
-func Start() (successful bool) {
+func Start(serverID string) (successful bool) {
 	var (
 		url     = fmt.Sprintf("%s/api/client/servers/%s/power", panelUrl, serverID)
 		payload = strings.NewReader("{\n\t\"signal\": \"start\"\n}")
@@ -41,13 +55,12 @@ func Start() (successful bool) {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", apiKey)
 	res, _ := http.DefaultClient.Do(req)
-	fmt.Println(res.StatusCode)
 	resSuccessful := res.StatusCode == 204
 
 	return resSuccessful
 }
 
-func Stop() (successful bool) {
+func Stop(serverID string) (successful bool) {
 	var (
 		url     = fmt.Sprintf("%s/api/client/servers/%s/power", panelUrl, serverID)
 		payload = strings.NewReader("{\n\t\"signal\": \"stop\"\n}")
@@ -57,12 +70,11 @@ func Stop() (successful bool) {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", apiKey)
 	res, _ := http.DefaultClient.Do(req)
-	fmt.Println(res.StatusCode)
 	resSuccessful := res.StatusCode == 204
 
 	return resSuccessful
 }
-func Kill() (successful bool) {
+func Kill(serverID string) (successful bool) {
 	var (
 		url     = fmt.Sprintf("%s/api/client/servers/%s/power", panelUrl, serverID)
 		payload = strings.NewReader("{\n\t\"signal\": \"kill\"\n}")
@@ -72,12 +84,11 @@ func Kill() (successful bool) {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", apiKey)
 	res, _ := http.DefaultClient.Do(req)
-	fmt.Println(res.StatusCode)
 	resSuccessful := res.StatusCode == 204
 
 	return resSuccessful
 }
-func Restart() (successful bool) {
+func Restart(serverID string) (successful bool) {
 	var (
 		url     = fmt.Sprintf("%s/api/client/servers/%s/power", panelUrl, serverID)
 		payload = strings.NewReader("{\n\t\"signal\": \"restart\"\n}")
@@ -87,8 +98,143 @@ func Restart() (successful bool) {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", apiKey)
 	res, _ := http.DefaultClient.Do(req)
-	fmt.Println(res.StatusCode)
 	resSuccessful := res.StatusCode == 204
 
 	return resSuccessful
+}
+
+func getWebsocket(serverID string) (socket *websocket.Conn, successful bool) {
+	var (
+		url = fmt.Sprintf("%s/api/client/servers/%s/websocket", panelUrl, serverID)
+	)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", apiKey)
+	res, _ := http.DefaultClient.Do(req)
+	resSuccessful := false
+	if res != nil {
+		resSuccessful = res.StatusCode == 200
+	} else {
+		log.Println("res is empty, maybe wrong url, or server is offline or invalid certificate")
+		return nil, false
+	}
+	var response struct {
+		Data struct {
+			Token  string `json:"token"`
+			Socket string `json:"socket"`
+		} `json:"data"`
+	}
+	if resSuccessful {
+		decoder := json.NewDecoder(res.Body)
+		err := decoder.Decode(&response)
+		if err != nil {
+			log.Printf("Failed to decode response: %v", err)
+		}
+	}
+	if !resSuccessful {
+		log.Printf("Failed to get websocket info: %v", res.Status)
+		return nil, false
+	}
+	conn, resp, err := websocket.DefaultDialer.Dial(response.Data.Socket, nil)
+	if err != nil {
+		if resp != nil {
+			log.Printf("Failed to connect to websocket: %v status: %v", err, resp.Status)
+		} else {
+			log.Printf("Failed to connect to websocket: %v", err)
+		}
+		return nil, false
+	}
+	auth := fmt.Sprintf(`{"event":"auth","args":["%v"]}`, response.Data.Token)
+	err = conn.WriteMessage(websocket.TextMessage, []byte(auth))
+	if err != nil {
+		log.Printf("Failed to send auth: %v", err)
+		return
+	}
+	websocketAuth = true
+	return conn, true
+}
+
+func Websocket(serverID string, event string, callback func([]string, string), callbackLines int, callbackTime time.Duration) {
+	if callback == nil {
+		return
+	}
+	var websocketConn *websocket.Conn
+	if !websocketAuth {
+		var successful bool
+		websocketConn, successful = getWebsocket(serverID)
+		if !successful {
+			return
+		}
+		err := websocketConn.WriteMessage(websocket.TextMessage, []byte(`{"event":"send logs","args":[null]}`))
+		if err != nil {
+			log.Printf("Failed to send log request: %v", err)
+			return
+		}
+	}
+	var result struct {
+		Event string   `json:"event"`
+		Args  []string `json:"args"`
+	}
+	go func() {
+		var (
+			lines        = 0
+			timer        *time.Timer
+			doneCallback = true
+			output       []string
+		)
+		for {
+			err := websocketConn.ReadJSON(&result)
+			if err != nil {
+				log.Printf("Failed to read message: %v", err)
+				return
+			}
+			if result.Event == "token expiring" || result.Event == "token expired" || result.Event == "jwt error" {
+				newConn, successful := getWebsocket(serverID)
+				if !successful {
+					var failed = 0
+					for successful == false && failed <= 5 {
+						newConn, successful = getWebsocket(serverID)
+						failed++
+					}
+				} else {
+					websocketConn = newConn
+				}
+			}
+			if result.Event == event {
+				if result.Event == "status" {
+					log.Println(result.Args)
+				}
+				if doneCallback && callbackTime != 0 {
+					timer = time.NewTimer(callbackTime)
+					doneCallback = false
+					go func() {
+						<-timer.C
+						callback(output, serverID)
+						doneCallback = true
+					}()
+				}
+				if callbackLines == 0 && callbackTime == 0 {
+					go callback(result.Args, serverID)
+				} else {
+					if lines == callbackLines {
+						callback(output, serverID)
+						timer.Stop()
+						doneCallback = true
+						lines = 0
+						output = nil
+					} else {
+						if len(result.Args) > 0 {
+							regex := regexp.MustCompile(config.Pterodactyl.RegexRemoveAnsi)
+							output = append(output, regex.ReplaceAllString(result.Args[0], ""))
+							lines++
+						}
+					}
+				}
+
+			}
+			result.Args = nil
+			result.Event = ""
+		}
+	}()
 }

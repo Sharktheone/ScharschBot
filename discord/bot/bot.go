@@ -10,7 +10,6 @@ import (
 
 var (
 	config              = conf.GetConf()
-	bot                 *discordgo.Session
 	GuildID             = flag.String("guild", config.Discord.ServerID, "Guild ID")
 	Session             *discordgo.Session
 	commandRegistration = make([]*discordgo.ApplicationCommand, len(commands.Commands))
@@ -21,20 +20,19 @@ func init() {
 	flag.StringVar(&BotToken, "token", config.Discord.Token, "Bot Token")
 	flag.Parse()
 	var err error
-	bot, err = discordgo.New("Bot " + BotToken)
+	Session, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
 		log.Fatal("Invalid Bot Configuration:", err)
 	}
 
-	err = bot.Open()
+	err = Session.Open()
 	if err != nil {
 		log.Fatal("Cannot open connection:", err)
 	}
-
 }
 
-func Registration() *discordgo.Session {
-	bot.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Registration() {
+	Session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
 			if h, ok := commands.Handlers[i.ApplicationCommandData().Name]; ok {
@@ -51,23 +49,28 @@ func Registration() *discordgo.Session {
 	log.Println("Adding Commands")
 
 	for i, rawCommand := range commands.Commands {
-		command, err := bot.ApplicationCommandCreate(bot.State.User.ID, *GuildID, rawCommand)
+		command, err := Session.ApplicationCommandCreate(Session.State.User.ID, *GuildID, rawCommand)
 		if err != nil {
 			log.Fatalf("Failed to create %v: %v", rawCommand.Name, err)
 		}
 		commandRegistration[i] = command
 	}
-	Session = bot
-	return bot
 
 }
 func RemoveCommands() {
-	log.Println("Removing Commands")
-
 	for _, command := range commandRegistration {
-		err := bot.ApplicationCommandDelete(bot.State.User.ID, *GuildID, command.ID)
+		err := Session.ApplicationCommandDelete(Session.State.User.ID, *GuildID, command.ID)
 		if err != nil {
 			log.Printf("Failed to delete %v: %v", command.Name, err)
 		}
 	}
+}
+
+func GetUserProfile(userID string) (User *discordgo.Member, success bool) {
+	user, err := Session.GuildMember(config.Discord.ServerID, userID)
+	if err != nil {
+		log.Printf("Failed to get user profile: %v", err)
+		return nil, false
+	}
+	return user, true
 }

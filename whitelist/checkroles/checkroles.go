@@ -5,6 +5,8 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
+	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
+	"github.com/Sharktheone/Scharsch-bot-discord/srv"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
 )
@@ -15,9 +17,28 @@ var (
 	reWhitelistCollection = config.Whitelist.Mongodb.MongodbReWhitelistCollectionName
 	reWhitelist           = config.Whitelist.Roles.ReWhitelistWith
 	removeWithout         = config.Whitelist.Roles.RemoveUserWithout
+	kickUnWhitelisted     = config.Whitelist.KickUnWhitelisted
 )
 
 func CheckRoles() {
+	if kickUnWhitelisted {
+		for _, player := range srv.OnlinePlayers {
+			_, found := mongodb.Read(whitelistCollection, bson.M{
+				"dcUserID":  bson.M{"$exists": true},
+				"mcAccount": player,
+			})
+			if !found {
+				command := fmt.Sprintf(config.Whitelist.KickCommand, player)
+				for _, listedServer := range config.Whitelist.Servers {
+					for _, server := range config.Pterodactyl.Servers {
+						if server.ServerName == listedServer {
+							pterodactyl.SendCommand(command, server.ServerID)
+						}
+					}
+				}
+			}
+		}
+	}
 	if removeWithout {
 		entries, found := mongodb.Read(whitelistCollection, bson.M{
 			"dcUserID":  bson.M{"$exists": true},

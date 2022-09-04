@@ -12,19 +12,61 @@ type Format struct {
 		WhitelistServerRoleID string `yaml:"whitelistServerRoleID"`
 		EmbedErrorIcon        string `yaml:"embedErrorIcon"`
 		EmbedErrorAuthorURL   string `yaml:"embedErrorAuthorURL"`
-	}
+		FooterIcon            bool   `yaml:"footerIcon"`
+	} `yaml:"discord"`
 	Pterodactyl struct {
 		Enabled                bool   `yaml:"enabled"`
+		RegexRemoveAnsi        string `yaml:"regexRemoveAnsi"`
 		APIKey                 string `yaml:"APIKey"`
 		PanelURL               string `yaml:"panelURL"`
-		ServerID               string `yaml:"serverID"`
 		WhitelistAddCommand    string `yaml:"whitelistAddCommand"`
 		WhitelistRemoveCommand string `yaml:"whitelistRemoveCommand"`
-	}
+		Servers                []struct {
+			ServerID       string `yaml:"serverID"`
+			ServerName     string `yaml:"serverName"`
+			StartMessage   string `yaml:"startMessage"`
+			StopMessage    string `yaml:"stopMessage"`
+			OnlineMessage  string `yaml:"onlineMessage"`
+			OfflineMessage string `yaml:"offlineMessage"`
+			StateMessages  bool   `yaml:"stateMessages"`
+			Console        struct {
+				Enabled          bool   `yaml:"enabled"`
+				MessageLines     int    `yaml:"messageLines"`
+				MaxTimeInSeconds int    `yaml:"maxTimeInSeconds"`
+				ChannelID        string `yaml:"channelID"`
+				Reverse          bool   `yaml:"reverse"`
+				ReverseRoleID    string `yaml:"reverseRoleID"`
+			} `yaml:"console"`
+			Chat struct {
+				Enabled      bool   `yaml:"enabled"`
+				Embed        bool   `yaml:"embed"`
+				Prefix       string `yaml:"prefix"`
+				ChannelID    string `yaml:"channelID"`
+				EmbedFooter  bool   `yaml:"embedFooter"`
+				EmbedOneLine bool   `yaml:"oneLine"`
+				FooterIcon   bool   `yaml:"footerIcon"`
+			} `yaml:"chat"`
+			SRV struct {
+				Enabled    bool   `yaml:"enabled"`
+				OneLine    bool   `yaml:"oneLine"`
+				Footer     bool   `yaml:"footer"`
+				ChannelID  string `yaml:"channelID"`
+				FooterIcon bool   `yaml:"footerIcon"`
+			} `yaml:"srv"`
+		} `yaml:"servers"`
+	} `yaml:"pterodactyl"`
+	SRVAPI struct {
+		Port     int    `yaml:"port"`
+		User     string `yaml:"user"`
+		Password string `yaml:"password"`
+	} `yaml:"srvAPI"`
 	Whitelist struct {
-		Enabled                  bool `yaml:"enabled"`
-		MaxAccounts              int  `yaml:"maxAccounts"`
-		BannedUsersToMaxAccounts bool `yaml:"bannedUsersToMaxAccounts"`
+		Enabled                  bool     `yaml:"enabled"`
+		MaxAccounts              int      `yaml:"maxAccounts"`
+		BannedUsersToMaxAccounts bool     `yaml:"bannedUsersToMaxAccounts"`
+		KickUnWhitelisted        bool     `yaml:"kickUnWhitelisted"`
+		KickCommand              string   `yaml:"kickCommand"`
+		Servers                  []string `yaml:"serverNames"`
 		Mongodb                  struct {
 			MongodbHost                      string `yaml:"mongodbHost"`
 			MongodbPort                      uint16 `yaml:"mongodbPort"`
@@ -34,18 +76,13 @@ type Format struct {
 			MongodbWhitelistCollectionName   string `yaml:"mongodbWhitelistCollectionName"`
 			MongodbBanCollectionName         string `yaml:"mongodbBanCollectionName"`
 			MongodbReWhitelistCollectionName string `yaml:"mongodbReWhitelistCollectionName"`
-		}
+		} `yaml:"mongodb"`
 
 		Roles struct {
-			Enabled            bool   `yaml:"enabled"`
-			ServerRoleID       string `yaml:"serverRoleID"`
-			RemoveRoleOthersID string `yaml:"removeRoleOthersID"`
-			ListUserRoleID     string `yaml:"listUserRoleID"`
-			WhoisRoleID        string `yaml:"whoisRoleID"`
-			RemoveAllRoleID    string `yaml:"removeAllRoleID"`
-			RemoveUserWithout  bool   `yaml:"removeUserWithout"`
-			ReWhitelistWith    bool   `yaml:"reWhitelistWith"`
-		}
+			ServerRoleID      string `yaml:"serverRoleID"`
+			RemoveUserWithout bool   `yaml:"removeUserWithout"`
+			ReWhitelistWith   bool   `yaml:"reWhitelistWith"`
+		} `yaml:"roles"`
 		Luckperms struct {
 			Enabled      bool   `yaml:"enabled"`
 			SetRole      string `yaml:"setRole"`
@@ -53,6 +90,40 @@ type Format struct {
 			DatabasePort uint16 `yaml:"databasePort"`
 			DatabaseUser string `yaml:"databaseUser"`
 			DatabasePass string `yaml:"databasePass"`
-		}
+		} `yaml:"luckperms"`
+	} `yaml:"whitelist"`
+}
+
+type Server struct {
+	ServerID       string
+	ServerName     string
+	StartMessage   string
+	StopMessage    string
+	OnlineMessage  string
+	OfflineMessage string
+	StateMessages  bool
+	Console        struct {
+		Enabled          bool
+		MessageLines     int
+		MaxTimeInSeconds int
+		ChannelID        string
+		Reverse          bool
+		ReverseRoleID    string
+	}
+	Chat struct {
+		Enabled      bool
+		Embed        bool
+		Prefix       string
+		ChannelID    string
+		EmbedFooter  bool
+		EmbedOneLine bool
+		FooterIcon   bool
+	}
+	SRV struct {
+		Enabled    bool
+		OneLine    bool
+		Footer     bool
+		ChannelID  string
+		FooterIcon bool
 	}
 }
