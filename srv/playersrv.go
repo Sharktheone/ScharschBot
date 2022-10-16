@@ -8,6 +8,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
+	"github.com/robfig/cron"
 	"log"
 	"net/http"
 	"strings"
@@ -24,9 +25,9 @@ var (
 	}
 	Session       = bot.Session
 	OnlinePlayers []string
-	port          = config.SRVAPI.Port
-	APIUser       = config.SRVAPI.User
-	APIPassword   = config.SRVAPI.Password
+	port          = config.SRV.API.Port
+	APIUser       = config.SRV.API.User
+	APIPassword   = config.SRV.API.Password
 )
 
 func Start() {
@@ -43,15 +44,26 @@ func Start() {
 	for _, server := range config.Pterodactyl.Servers {
 		if server.Console.Enabled {
 			maxTime := server.Console.MaxTimeInSeconds * int(time.Second)
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime))
+			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false)
 		}
 	}
 
 	for _, server := range config.Pterodactyl.Servers {
 		if server.StateMessages {
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0)
+			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0, true)
 		}
 	}
+	for _, server := range config.Pterodactyl.Servers {
+		if server.ChannelInfo.Enabled {
+			go pterodactyl.Websocket(server.ServerID, pterodactyl.Stats, nil, 0, 0, true)
+		}
+	}
+	channelCron := cron.New()
+	err = channelCron.AddFunc("0 * * * * *", channelStats)
+	if err != nil {
+		log.Fatalf("Error adding ChannelCron job: %v", err)
+	}
+	channelCron.Start()
 
 }
 

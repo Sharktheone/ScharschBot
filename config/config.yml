@@ -12,7 +12,7 @@ discord:
   footerIcon: true
 pterodactyl:
   enabled: true
-  # regexRemoveAnsi: "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
+  regexRemoveAnsi: "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
   APIKey: <Admin API KEY>
   panelURL: <Panel URL>
   whitelistAddCommand: whitelist add %v
@@ -25,6 +25,14 @@ pterodactyl:
       offlineMessage: ❌ Server is offline...
       onlineMessage: ✅ Server is online!
       stateMessages: true
+      channelInfo:
+        enabled: true
+        channelID: <Channel ID>
+        format: "{{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}"
+      powerActionsRoleIDs:
+        start: <Role ID>
+        stop: <Role ID>
+        restart: <Role ID>
       console:
         enabled: true
         messageLines: 10
@@ -32,6 +40,7 @@ pterodactyl:
         channelID: <Channel ID>
         reverse: true
         reverseRoleID: <Role ID>
+        reversePrefix: !
       chat:
         Enabled: true
         Embed: false
@@ -40,6 +49,8 @@ pterodactyl:
         embedFooter: false
         embedOneLine: true
         FooterIcon: true
+        reverse: true
+        roleID: <Role ID>
       srv:
         Enabled: true
         OneLine: true
@@ -53,6 +64,14 @@ pterodactyl:
       offlineMessage: ❌ Server is offline...
       onlineMessage: ✅ Server is online!
       stateMessages: true
+      channelInfo:
+        enabled: true
+        channelID: <Channel ID>
+        format: "{{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}"
+      powerActionsRoleIDs:
+        start: <Role ID>
+        stop: <Role ID>
+        restart: <Role ID>
       console:
         enabled: true
         messageLines: 10
@@ -60,6 +79,7 @@ pterodactyl:
         channelID: <Channel ID>
         reverse: true
         reverseRoleID: <Role ID>
+        reversePrefix: !
       chat:
         Enabled: true
         Embed: false
@@ -68,6 +88,8 @@ pterodactyl:
         embedFooter: false
         embedOneLine: true
         FooterIcon: true
+        reverse: true
+        roleID: <Role ID>
       srv:
         Enabled: true
         OneLine: true
@@ -75,11 +97,19 @@ pterodactyl:
         ChannelID: <Channel ID>
     - serverID: <Server ID>
       serverName: Lobby
+      channelInfo:
+        enabled: true
+        channelID: <Channel ID>
+        format: "{{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}"
       startMessage: ⚠️ Server is starting...
       stopMessage: ⚠ Server is stopping...
       offlineMessage: ❌ Server is offline...
       onlineMessage: ✅ Server is online!
       stateMessages: true
+      powerActionsRoleIDs:
+        start: <Role ID>
+        stop: <Role ID>
+        restart: <Role ID>
       console:
         enabled: true
         messageLines: 10
@@ -87,6 +117,7 @@ pterodactyl:
         channelID: <Channel ID>
         reverse: true
         reverseRoleID: <Role ID>
+        reversePrefix: !
       chat:
         Enabled: true
         Embed: false
@@ -95,16 +126,24 @@ pterodactyl:
         embedFooter: false
         embedOneLine: true
         FooterIcon: true
+        reverse: true
+        roleID: <Role ID>
       srv:
         Enabled: true
         OneLine: true
         Footer: false
         ChannelID: <Channel ID>
         FooterIcon: true
-srvAPI:
-  port: 8080
-  user: admin_changeMe
-  password: a$€cureP@55w0rd_4_Th3_API_ch@ngeM€
+srv:
+  api:
+    port: 8080
+    user: admin_changeMe
+    password: a$€cureP@55w0rd_4_Th3_API_ch@ngeM€
+  states:
+    online: 🟢 Online
+    offline: 🔴 Offline
+    starting: 🟡 Starting
+    stopping: 🟠 Stopping
 whitelist:
   enabled: true
   maxAccounts: 5

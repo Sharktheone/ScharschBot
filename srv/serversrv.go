@@ -3,30 +3,42 @@ package srv
 import (
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
+	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
+	"github.com/bwmarrin/discordgo"
 	"log"
+	"math"
+	"strings"
+	"time"
 )
 
-func startSrv() {
-	// TODO
-}
-
-func ConsoleSrv(console []string, serverID string) {
-	if console == nil {
-		return
-	}
-	serverConf := conf.GetServerConf(serverID, "")
-	var message string
-	for _, line := range console {
-		message += fmt.Sprintf("\n%v", line)
-	}
-
-	_, err := Session.ChannelMessageSend(serverConf.Console.ChannelID, fmt.Sprintf("```%v```", string(message)))
-	if err != nil {
-		log.Printf("Failed to send console to discord: %v", err)
-	}
-}
 func channelStats() {
-	// TODO
+	for _, server := range config.Pterodactyl.Servers {
+		var stat pterodactyl.ServerStat
+		for _, serverStat := range pterodactyl.ServerStats {
+			if serverStat.Name == server.ServerName {
+				stat = *serverStat
+			}
+		}
+		if server.ChannelInfo.Enabled {
+			info := server.ChannelInfo.Format
+			// {{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}
+			info = strings.ReplaceAll(info, "{{onlineNumber}}", fmt.Sprintf("%v", len(OnlinePlayers)))
+			//strings.ReplaceAll(info, "{{uptime}}", stats.Uptime)
+			info = strings.ReplaceAll(info, "{{ram}}", convertSize(stat.Ram))
+			info = strings.ReplaceAll(info, "{{cpu}}", fmt.Sprintf("%.2f", stat.Cpu))
+			info = strings.ReplaceAll(info, "{{state}}", stat.Status)
+			info = strings.ReplaceAll(info, "{{networkIn}}", convertSize(stat.Network.Rx))
+			info = strings.ReplaceAll(info, "{{networkOut}}", convertSize(stat.Network.Tx))
+			info = strings.ReplaceAll(info, "{{disk}}", convertSize(stat.Disk))
+			info = strings.ReplaceAll(info, "{{uptime}}", convertTime(stat.Uptime))
+			_, err := Session.ChannelEditComplex(server.ChannelInfo.ChannelID, &discordgo.ChannelEdit{
+				Topic: info,
+			})
+			if err != nil {
+				log.Printf("Failed to edit channel topic: %v", err)
+			}
+		}
+	}
 }
 func serverStarting(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
@@ -73,4 +85,28 @@ func handlePower(power []string, serverID string) {
 		return
 	}
 
+}
+func convertSize(bytes int) string {
+	floatBytes := float64(bytes)
+	if bytes < 1024 {
+		return fmt.Sprintf("%.2f B", floatBytes)
+	} else if bytes < 1024*1024 {
+		return fmt.Sprintf("%.2f KB", floatBytes/1024)
+	} else if bytes < 1024*1024*1024 {
+		return fmt.Sprintf("%.2f MB", floatBytes/(1024*1024))
+	} else if bytes < 1024*1024*1024*1024 {
+		return fmt.Sprintf("%.2f GB", floatBytes/(1024*1024*1024))
+	} else {
+		return fmt.Sprintf("%.2f TB", floatBytes/(1024*1024*1024*1024))
+	}
+}
+
+func convertTime(milliseconds int) string {
+	duration := time.Duration(milliseconds * int(time.Millisecond))
+	if duration.Hours() >= 24 {
+		days := math.Floor(duration.Hours() / 24)
+		return fmt.Sprintf("%vd %vh %vm", days, math.Floor(duration.Hours()-(days*24)), math.Floor(duration.Minutes()-(math.Floor(duration.Hours())*60)))
+	} else {
+		return fmt.Sprintf("%v", duration)
+	}
 }

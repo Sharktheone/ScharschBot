@@ -20,22 +20,15 @@ func main() {
 	mongodb.Connect()
 
 	dcBot := bot.Session
+	bot.Registration()
 	if config.Whitelist.Enabled {
-		bot.Registration()
 		checkroles.CheckRoles()
 		rolesCron := cron.New()
 		err := rolesCron.AddFunc("0 */10 * * * *", checkroles.CheckRoles)
 		if err != nil {
-			log.Fatalf("Error adding cron job: %v", err)
+			log.Fatalf("Error adding RolesCron job: %v", err)
 		}
 		rolesCron.Start()
-
-		consoleCron := cron.New()
-		err = consoleCron.AddFunc("0 * * * * *", checkroles.CheckRoles)
-		if err != nil {
-			log.Fatalf("Error adding cron job: %v", err)
-		}
-		consoleCron.Start()
 	}
 	embed.BotAvatarURL = dcBot.State.User.AvatarURL("40")
 	srv.Start()

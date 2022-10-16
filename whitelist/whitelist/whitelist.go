@@ -6,7 +6,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
 	"go.mongodb.org/mongo-driver/bson"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -21,9 +21,9 @@ var (
 	pterodactylEnabled  = config.Pterodactyl.Enabled
 )
 
-func Add(username string, userID string, roles []string) (alreadyListed bool, existing bool, accountFree bool, allowed bool, mcBanned bool, dcBanned bool) {
+func Add(username string, userID string, roles []string) (alreadyListed bool, existing bool, accountFree bool, allowed bool, mcBanned bool, dcBanned bool, banReason string) {
 	var addAllowed = false
-	mcBan, dcBan := checkBanned(username, userID)
+	mcBan, dcBan, reason := checkBanned(username, userID)
 	if !mcBan && !dcBan {
 		for _, role := range roles {
 			if role == config.Discord.WhitelistServerRoleID {
@@ -64,7 +64,7 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 		}
 
 	}
-	return found, existingAcc, hasFreeAccount, addAllowed, mcBan, dcBan
+	return found, existingAcc, hasFreeAccount, addAllowed, mcBan, dcBan, reason
 }
 
 func Remove(username string, userID string, roles []string) (allowed bool, onWhitelist bool) {
@@ -204,7 +204,7 @@ func existingAccount(username string) (existing bool) {
 	if err != nil {
 		log.Printf("Failed to make check account existebility: %v\n", err)
 	}
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 
 	if err != nil {
 		log.Printf("Failed reading Body white account check: %v\n", err)
@@ -226,7 +226,7 @@ func ListedAccountsOf(userID string) (Accounts []string) {
 	return listedAccounts
 }
 
-func BanUserID(userID string, roles []string, banID string, banAccounts bool) (allowed bool, accountsListed []string) {
+func BanUserID(userID string, roles []string, banID string, banAccounts bool, reason string) (allowed bool, accountsListed []string) {
 	banAllowed := false
 	listedAccounts := ListedAccountsOf(banID)
 	for _, role := range roles {
@@ -238,6 +238,7 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool) (a
 		log.Printf("%v is banning %v", userID, banID)
 		mongodb.Write(banCollection, bson.D{
 			{"dcUserID", banID},
+			{"reason", reason},
 		})
 		if banAccounts {
 			for _, account := range listedAccounts {
@@ -265,7 +266,7 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool) (a
 	return banAllowed, listedAccounts
 }
 
-func BanAccount(userID string, roles []string, account string) (allowed bool, accountsListed []string, ownerID string) {
+func BanAccount(userID string, roles []string, account string, reason string) (allowed bool, accountsListed []string, ownerID string) {
 	var (
 		banAllowed     = false
 		listedAccounts []string
@@ -289,6 +290,7 @@ func BanAccount(userID string, roles []string, account string) (allowed bool, ac
 		mongodb.Write(banCollection, bson.D{
 			{"mcAccount", account},
 			{"dcUserID", dcUser},
+			{"reason", reason},
 		})
 		mongodb.Remove(whitelistCollection, bson.M{
 			"mcAccount": account,
@@ -365,27 +367,37 @@ func UnBanAccount(userID string, roles []string, account string) (allowed bool, 
 	return unBanAllowed, listedAccounts
 }
 
-func checkBanned(mcName string, userID string) (mcBanned bool, dcBanned bool) {
+func checkBanned(mcName string, userID string) (mcBanned bool, dcBanned bool, banReason string) {
 	var (
 		dataFound bool
+		mcData    []bson.M
+		dcData    []bson.M
 		mc        = false
 		dc        = false
+		reason    string
 	)
-	_, dataFound = mongodb.Read(banCollection, bson.M{
+	mcData, dataFound = mongodb.Read(banCollection, bson.M{
 		"mcAccount": mcName,
 	})
 	if dataFound {
 		mc = true
 	}
 
-	_, dataFound = mongodb.Read(banCollection, bson.M{
+	dcData, dataFound = mongodb.Read(banCollection, bson.M{
 		"dcUserID":  userID,
 		"mcAccount": bson.M{"$exists": false},
 	})
 	if dataFound {
 		dc = true
 	}
-	return mc, dc
+	if mc {
+		reason = fmt.Sprintf("%v", mcData[0]["reason"])
+	}
+	if dc {
+		reason += fmt.Sprintf("%v", dcData[0]["reason"])
+	}
+
+	return mc, dc, reason
 }
 
 func CheckBans(userID string) (bannedPlayers []string) {
@@ -402,6 +414,7 @@ func CheckBans(userID string) (bannedPlayers []string) {
 	if dataFound {
 		for i, result := range results {
 			bannedAccounts[i] = fmt.Sprintf("%v", result["mcAccount"])
+
 		}
 	}
 	return bannedAccounts

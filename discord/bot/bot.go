@@ -3,6 +3,7 @@ package bot
 import (
 	"flag"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
+	"github.com/Sharktheone/Scharsch-bot-discord/console"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/commands"
 	"github.com/bwmarrin/discordgo"
 	"log"
@@ -46,8 +47,6 @@ func Registration() {
 		}
 	})
 
-	log.Println("Adding Commands")
-
 	for i, rawCommand := range commands.Commands {
 		command, err := Session.ApplicationCommandCreate(Session.State.User.ID, *GuildID, rawCommand)
 		if err != nil {
@@ -55,6 +54,9 @@ func Registration() {
 		}
 		commandRegistration[i] = command
 	}
+	Session.AddHandler(console.Handler)
+	Session.AddHandler(console.ChatHandler)
+	log.Println("Adding Commands")
 
 }
 func RemoveCommands() {

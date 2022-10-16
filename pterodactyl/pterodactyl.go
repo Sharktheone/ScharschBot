@@ -12,11 +12,32 @@ import (
 	"time"
 )
 
+type ServerState struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	ID     string `json:"id"`
+}
+type ServerStat struct {
+	Name    string  `json:"name"`
+	Ram     int     `json:"memory_bytes"`
+	RamMax  int     `json:"memory_limit_bytes"`
+	Cpu     float64 `json:"cpu_absolute"`
+	Network struct {
+		Rx int `json:"rx_bytes"`
+		Tx int `json:"tx_bytes"`
+	}
+	Status string `json:"status"`
+	Disk   int    `json:"disk_bytes"`
+	Uptime int    `json:"uptime"`
+}
+
 var (
 	config        = conf.GetConf()
 	panelUrl      = config.Pterodactyl.PanelURL
 	apiKey        = fmt.Sprintf("Bearer %s", config.Pterodactyl.APIKey)
 	websocketAuth = false
+	ServerStates  []*ServerState
+	ServerStats   []*ServerStat
 )
 
 const (
@@ -29,10 +50,10 @@ const (
 )
 
 func SendCommand(command string, serverID string) (successful bool) {
-	var (
-		url = fmt.Sprintf("%s/api/client/servers/%s/command", panelUrl, serverID)
 
-		payloadJson = fmt.Sprintf("{\n\t\"command\": \"%v\"\n}", command)
+	var (
+		url         = fmt.Sprintf("%s/api/client/servers/%s/command", panelUrl, serverID)
+		payloadJson = fmt.Sprintf("{\"command\": \"%v\"}", strings.ReplaceAll(command, `"`, `\"`))
 		payload     = strings.NewReader(payloadJson)
 	)
 	req, _ := http.NewRequest("POST", url, payload)
@@ -139,9 +160,9 @@ func getWebsocket(serverID string) (socket *websocket.Conn, successful bool) {
 	conn, resp, err := websocket.DefaultDialer.Dial(response.Data.Socket, nil)
 	if err != nil {
 		if resp != nil {
-			log.Printf("Failed to connect to websocket: %v status: %v", err, resp.Status)
+			log.Printf("Pterodactyl: Failed to connect to websocket: %v status: %v", err, resp.Status)
 		} else {
-			log.Printf("Failed to connect to websocket: %v", err)
+			log.Printf("Pterodactyl: Failed to connect to websocket: %v", err)
 		}
 		return nil, false
 	}
@@ -155,11 +176,11 @@ func getWebsocket(serverID string) (socket *websocket.Conn, successful bool) {
 	return conn, true
 }
 
-func Websocket(serverID string, event string, callback func([]string, string), callbackLines int, callbackTime time.Duration) {
-	if callback == nil {
-		return
-	}
-	var websocketConn *websocket.Conn
+func Websocket(serverID string, event string, callback func([]string, string), callbackLines int, callbackTime time.Duration, sendOnlyNew bool) {
+	var (
+		websocketConn *websocket.Conn
+		serverConf    = conf.GetServerConf(serverID, "")
+	)
 	if !websocketAuth {
 		var successful bool
 		websocketConn, successful = getWebsocket(serverID)
@@ -201,10 +222,41 @@ func Websocket(serverID string, event string, callback func([]string, string), c
 					websocketConn = newConn
 				}
 			}
-			if result.Event == event {
-				if result.Event == "status" {
-					log.Println(result.Args)
+			var prevState = ""
+			if result.Event == "status" {
+				for _, Server := range ServerStates {
+					if Server.Name == serverConf.ServerName {
+						prevState = Server.Status
+					}
 				}
+				for i, Server := range ServerStates {
+					if Server.Name == serverConf.ServerName {
+						ServerStates = append(ServerStates[:i], ServerStates[i+1:]...)
+					}
+				}
+				ServerStates = append(ServerStates, &ServerState{
+					Name:   serverConf.ServerName,
+					Status: result.Args[0],
+					ID:     serverConf.ServerID,
+				})
+			}
+			if result.Event == "stats" {
+				for i, Server := range ServerStats {
+					if Server.Name == serverConf.ServerName {
+						ServerStats = append(ServerStats[:i], ServerStats[i+1:]...)
+
+					}
+				}
+				decoder := json.NewDecoder(strings.NewReader(result.Args[0]))
+				var newStats ServerStat
+				err = decoder.Decode(&newStats)
+				if err != nil {
+					log.Printf("Failed to decode stats: %v", err)
+				}
+				newStats.Name = serverConf.ServerName
+				ServerStats = append(ServerStats, &newStats)
+			}
+			if result.Event == event {
 				if doneCallback && callbackTime != 0 {
 					timer = time.NewTimer(callbackTime)
 					doneCallback = false
@@ -215,7 +267,17 @@ func Websocket(serverID string, event string, callback func([]string, string), c
 					}()
 				}
 				if callbackLines == 0 && callbackTime == 0 {
-					go callback(result.Args, serverID)
+					if sendOnlyNew && result.Event == "status" {
+						if prevState != result.Args[0] || prevState == "" {
+							if callback != nil {
+								go callback(result.Args, serverID)
+							}
+						}
+					} else {
+						if callback != nil {
+							go callback(result.Args, serverID)
+						}
+					}
 				} else {
 					if lines == callbackLines {
 						callback(output, serverID)

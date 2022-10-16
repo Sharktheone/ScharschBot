@@ -21,6 +21,7 @@ type Format struct {
 		PanelURL               string `yaml:"panelURL"`
 		WhitelistAddCommand    string `yaml:"whitelistAddCommand"`
 		WhitelistRemoveCommand string `yaml:"whitelistRemoveCommand"`
+		ChatCommand            string `yaml:"chatCommand"`
 		Servers                []struct {
 			ServerID       string `yaml:"serverID"`
 			ServerName     string `yaml:"serverName"`
@@ -29,13 +30,24 @@ type Format struct {
 			OnlineMessage  string `yaml:"onlineMessage"`
 			OfflineMessage string `yaml:"offlineMessage"`
 			StateMessages  bool   `yaml:"stateMessages"`
-			Console        struct {
+			ChannelInfo    struct {
+				Enabled   bool   `yaml:"enabled"`
+				ChannelID string `yaml:"channelID"`
+				Format    string `yaml:"format"`
+			} `yaml:"channelInfo"`
+			PowerActionsRoleIDs struct {
+				Start   string `yaml:"start"`
+				Stop    string `yaml:"stop"`
+				Restart string `yaml:"restart"`
+			} `yaml:"powerActionsRoleIDs"`
+			Console struct {
 				Enabled          bool   `yaml:"enabled"`
 				MessageLines     int    `yaml:"messageLines"`
 				MaxTimeInSeconds int    `yaml:"maxTimeInSeconds"`
 				ChannelID        string `yaml:"channelID"`
 				Reverse          bool   `yaml:"reverse"`
 				ReverseRoleID    string `yaml:"reverseRoleID"`
+				ReversePrefix    string `yaml:"reversePrefix"`
 			} `yaml:"console"`
 			Chat struct {
 				Enabled      bool   `yaml:"enabled"`
@@ -45,6 +57,8 @@ type Format struct {
 				EmbedFooter  bool   `yaml:"embedFooter"`
 				EmbedOneLine bool   `yaml:"oneLine"`
 				FooterIcon   bool   `yaml:"footerIcon"`
+				Reverse      bool   `yaml:"reverse"`
+				RoleID       string `yaml:"roleID"`
 			} `yaml:"chat"`
 			SRV struct {
 				Enabled    bool   `yaml:"enabled"`
@@ -55,11 +69,19 @@ type Format struct {
 			} `yaml:"srv"`
 		} `yaml:"servers"`
 	} `yaml:"pterodactyl"`
-	SRVAPI struct {
-		Port     int    `yaml:"port"`
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-	} `yaml:"srvAPI"`
+	SRV struct {
+		API struct {
+			Port     int    `yaml:"port"`
+			User     string `yaml:"user"`
+			Password string `yaml:"password"`
+		} `yaml:"api"`
+		States struct {
+			Online   string `yaml:"online"`
+			Offline  string `yaml:"offline"`
+			Starting string `yaml:"starting"`
+			Stopping string `yaml:"stopping"`
+		}
+	} `yaml:"srv"`
 	Whitelist struct {
 		Enabled                  bool     `yaml:"enabled"`
 		MaxAccounts              int      `yaml:"maxAccounts"`
@@ -102,13 +124,24 @@ type Server struct {
 	OnlineMessage  string
 	OfflineMessage string
 	StateMessages  bool
-	Console        struct {
+	ChannelInfo    struct {
+		Enabled   bool
+		ChannelID string
+		Format    string
+	}
+	PowerActionsRoleIDs struct {
+		Start   string
+		Stop    string
+		Restart string
+	}
+	Console struct {
 		Enabled          bool
 		MessageLines     int
 		MaxTimeInSeconds int
 		ChannelID        string
 		Reverse          bool
 		ReverseRoleID    string
+		ReversePrefix    string
 	}
 	Chat struct {
 		Enabled      bool
@@ -118,6 +151,8 @@ type Server struct {
 		EmbedFooter  bool
 		EmbedOneLine bool
 		FooterIcon   bool
+		Reverse      bool
+		RoleID       string
 	}
 	SRV struct {
 		Enabled    bool
