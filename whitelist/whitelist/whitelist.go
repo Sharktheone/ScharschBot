@@ -448,10 +448,8 @@ func RemoveMyAccounts(userID string) (hadListedAccounts bool, listedAccounts []s
 						}
 					}
 				}
-
 			}
 		}
-
 	}
 
 	return hasListedAccounts, accounts
