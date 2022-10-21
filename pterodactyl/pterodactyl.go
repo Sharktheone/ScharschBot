@@ -176,7 +176,7 @@ func getWebsocket(serverID string) (socket *websocket.Conn, successful bool) {
 	return conn, true
 }
 
-func Websocket(serverID string, event string, callback func([]string, string), callbackLines int, callbackTime time.Duration, sendOnlyNew bool) {
+func Websocket(serverID string, event string, callback func([]string, string), callbackLines int, callbackTime time.Duration, sendOnlyNew bool, doStats bool) {
 	var (
 		websocketConn *websocket.Conn
 		serverConf    = conf.GetServerConf(serverID, "")
@@ -240,7 +240,7 @@ func Websocket(serverID string, event string, callback func([]string, string), c
 					ID:     serverConf.ServerID,
 				})
 			}
-			if result.Event == "stats" {
+			if result.Event == "stats" && doStats {
 				for i, Server := range ServerStats {
 					if Server.Name == serverConf.ServerName {
 						ServerStats = append(ServerStats[:i], ServerStats[i+1:]...)

@@ -42,21 +42,22 @@ func Start() {
 	log.Println("Started http server")
 
 	for _, server := range config.Pterodactyl.Servers {
+		var doStats = true
 		if server.Console.Enabled {
 			maxTime := server.Console.MaxTimeInSeconds * int(time.Second)
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false)
+			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false, doStats)
+			doStats = false
 		}
-	}
-
-	for _, server := range config.Pterodactyl.Servers {
 		if server.StateMessages {
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0, true)
+			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0, true, doStats)
+			doStats = false
 		}
-	}
-	for _, server := range config.Pterodactyl.Servers {
 		if server.ChannelInfo.Enabled {
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.Stats, nil, 0, 0, true)
+			go pterodactyl.Websocket(server.ServerID, pterodactyl.Stats, nil, 0, 0, true, doStats)
+			doStats = false
+
 		}
+
 	}
 	channelCron := cron.New()
 	err = channelCron.AddFunc("0 * * * * *", channelStats)
