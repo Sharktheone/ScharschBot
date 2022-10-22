@@ -72,7 +72,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	user, pass, _ := r.BasicAuth()
 	if user == "" || pass == "" {
 		w.WriteHeader(http.StatusUnauthorized)
-	} else if user != APIUser && pass != APIPassword {
+	} else if user != APIUser || pass != APIPassword {
 		w.WriteHeader(http.StatusForbidden)
 	} else if user == APIUser && pass == APIPassword {
 		var (
@@ -103,10 +103,11 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		member, successful := bot.GetUserProfile(userID)
 
 		if successful {
-
+			w.WriteHeader(http.StatusNoContent)
 			FooterIcon = member.User.AvatarURL("40")
 			username = member.User.String()
 		} else {
+			w.WriteHeader(http.StatusNotFound)
 			FooterIcon = config.Discord.EmbedErrorIcon
 		}
 		switch eventJson.Type {
@@ -120,7 +121,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if err != nil {
-				log.Printf("Failed to send Chat embed: %v", err)
+				log.Printf("Failed to send Chat (embed): %v", err)
 			}
 		case "death":
 			accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))

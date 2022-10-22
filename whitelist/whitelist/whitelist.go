@@ -26,7 +26,7 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 	mcBan, dcBan, reason := checkBanned(username, userID)
 	if !mcBan && !dcBan {
 		for _, role := range roles {
-			if role == config.Discord.WhitelistServerRoleID {
+			if role == config.Whitelist.Roles.ServerRoleID {
 				addAllowed = true
 			}
 		}
