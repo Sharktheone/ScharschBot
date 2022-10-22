@@ -230,8 +230,10 @@ func Websocket(serverID string, event string, callback func([]string, string), c
 					}
 				}
 				for i, Server := range ServerStates {
-					if Server.Name == serverConf.ServerName {
-						ServerStates = append(ServerStates[:i], ServerStates[i+1:]...)
+					if Server.Name == serverConf.ServerName && doStats {
+						if len(ServerStates) > i+1 {
+							ServerStates = append(ServerStates[:i], ServerStates[i+1:]...)
+						}
 					}
 				}
 				ServerStates = append(ServerStates, &ServerState{

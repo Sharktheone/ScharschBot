@@ -15,7 +15,6 @@ func ConsoleSrv(console []string, serverID string) {
 	for _, line := range console {
 		message += fmt.Sprintf("\n%v", line)
 	}
-
 	_, err := Session.ChannelMessageSend(serverConf.Console.ChannelID, fmt.Sprintf("```%v```", message))
 	if err != nil {
 		log.Printf("Failed to send console to discord: %v", err)

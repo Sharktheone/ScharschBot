@@ -21,8 +21,8 @@ func Handler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					for _, role := range m.Member.Roles {
 						if role == server.Console.ReverseRoleID {
 							allowed = true
+							break
 						}
-						break
 					}
 					if allowed {
 						var commandString string
@@ -44,12 +44,12 @@ func ChatHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	allowed := false
 	for _, server := range config.Pterodactyl.Servers {
 		if server.Chat.Reverse {
-			if server.Console.ChannelID == m.ChannelID && !m.Author.Bot {
+			if server.Chat.ChannelID == m.ChannelID && m.Author.ID != s.State.User.ID {
 				for _, role := range m.Member.Roles {
-					if role == server.Console.ReverseRoleID {
+					if role == server.Chat.RoleID {
 						allowed = true
+						break
 					}
-					break
 				}
 				if allowed {
 					message := fmt.Sprintf(" %v: %v", m.Author.Username, m.Message.Content)
