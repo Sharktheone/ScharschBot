@@ -23,14 +23,21 @@ type Format struct {
 		WhitelistRemoveCommand string `yaml:"whitelistRemoveCommand"`
 		ChatCommand            string `yaml:"chatCommand"`
 		Servers                []struct {
-			ServerID       string `yaml:"serverID"`
-			ServerName     string `yaml:"serverName"`
-			StartMessage   string `yaml:"startMessage"`
-			StopMessage    string `yaml:"stopMessage"`
-			OnlineMessage  string `yaml:"onlineMessage"`
-			OfflineMessage string `yaml:"offlineMessage"`
-			StateMessages  bool   `yaml:"stateMessages"`
-			ChannelInfo    struct {
+			ServerID      string `yaml:"serverID"`
+			ServerName    string `yaml:"serverName"`
+			StateMessages struct {
+				Enabled        bool   `yaml:"enabled"`
+				Start          string `yaml:"start"`
+				Stop           string `yaml:"stop"`
+				Online         string `yaml:"online"`
+				Offline        string `yaml:"offline"`
+				StartEnabled   bool   `yaml:"startEnabled"`
+				StopEnabled    bool   `yaml:"stopEnabled"`
+				OfflineEnabled bool   `yaml:"offlineEnabled"`
+				OnlineEnabled  bool   `yaml:"onlineEnabled"`
+				ChannelID      string `yaml:"channelID"`
+			} `yaml:"stateMessages"`
+			ChannelInfo struct {
 				Enabled   bool   `yaml:"enabled"`
 				ChannelID string `yaml:"channelID"`
 				Format    string `yaml:"format"`
@@ -117,14 +124,21 @@ type Format struct {
 }
 
 type Server struct {
-	ServerID       string
-	ServerName     string
-	StartMessage   string
-	StopMessage    string
-	OnlineMessage  string
-	OfflineMessage string
-	StateMessages  bool
-	ChannelInfo    struct {
+	ServerID      string
+	ServerName    string
+	StateMessages struct {
+		Enabled        bool
+		Start          string
+		Stop           string
+		Online         string
+		Offline        string
+		StartEnabled   bool
+		StopEnabled    bool
+		OfflineEnabled bool
+		OnlineEnabled  bool
+		ChannelID      string
+	}
+	ChannelInfo struct {
 		Enabled   bool
 		ChannelID string
 		Format    string

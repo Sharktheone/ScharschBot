@@ -48,7 +48,7 @@ func Start() {
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false, doStats)
 			doStats = false
 		}
-		if server.StateMessages {
+		if server.StateMessages.Enabled {
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0, true, doStats)
 			doStats = false
 		}

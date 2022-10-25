@@ -20,11 +20,17 @@ pterodactyl:
   servers:
     - serverID: <Server ID>
       serverName: Main
-      startMessage: ⚠️ Server is starting...
-      stopMessage: ⚠ Server is stopping...
-      offlineMessage: ❌ Server is offline...
-      onlineMessage: ✅ Server is online!
-      stateMessages: true
+      stateMessages:
+        enabled: true
+        start: ⚠️ Server is starting...
+        stop: ⚠ Server is stopping...
+        offline: ❌ Server is offline...
+        online: ✅ Server is online!
+        startEnabled: true
+        stopEnabled: true
+        offlineEnabled: true
+        onlineEnabled: true
+        channelID: <Channel ID>
       channelInfo:
         enabled: true
         channelID: <Channel ID>
@@ -59,11 +65,17 @@ pterodactyl:
         FooterIcon: true
     - serverID: <Server ID>
       serverName: Farming
-      startMessage: ⚠️ Server is starting...
-      stopMessage: ⚠ Server is stopping...
-      offlineMessage: ❌ Server is offline...
-      onlineMessage: ✅ Server is online!
-      stateMessages: true
+      stateMessages:
+        enabled: true
+        start: ⚠️ Server is starting...
+        stop: ⚠ Server is stopping...
+        offline: ❌ Server is offline...
+        online: ✅ Server is online!
+        startEnabled: true
+        stopEnabled: true
+        offlineEnabled: true
+        onlineEnabled: true
+        channelID: <Channel ID>
       channelInfo:
         enabled: true
         channelID: <Channel ID>
@@ -101,11 +113,17 @@ pterodactyl:
         enabled: true
         channelID: <Channel ID>
         format: "{{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}"
-      startMessage: ⚠️ Server is starting...
-      stopMessage: ⚠ Server is stopping...
-      offlineMessage: ❌ Server is offline...
-      onlineMessage: ✅ Server is online!
-      stateMessages: true
+      stateMessages:
+        enabled: true
+        start: ⚠️ Server is starting...
+        stop: ⚠ Server is stopping...
+        offline: ❌ Server is offline...
+        online: ✅ Server is online!
+        startEnabled: true
+        stopEnabled: true
+        offlineEnabled: true
+        onlineEnabled: true
+        channelID: <Channel ID>
       powerActionsRoleIDs:
         start: <Role ID>
         stop: <Role ID>

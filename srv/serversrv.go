@@ -42,30 +42,38 @@ func channelStats() {
 }
 func serverStarting(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
-	_, err := Session.ChannelMessageSend(serverConf.Console.ChannelID, serverConf.StartMessage)
-	if err != nil {
-		log.Printf("Failed to send server start message to discord: %v", err)
+	if serverConf.StateMessages.StartEnabled {
+		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Start)
+		if err != nil {
+			log.Printf("Failed to send server start message to discord: %v", err)
+		}
 	}
 }
 func serverStopping(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
-	_, err := Session.ChannelMessageSend(serverConf.Console.ChannelID, serverConf.StopMessage)
-	if err != nil {
-		log.Printf("Failed to send server stop message to discord: %v", err)
+	if serverConf.StateMessages.StopEnabled {
+		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Stop)
+		if err != nil {
+			log.Printf("Failed to send server stop message to discord: %v", err)
+		}
 	}
 }
 func serverOnline(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
-	_, err := Session.ChannelMessageSend(serverConf.Console.ChannelID, serverConf.OnlineMessage)
-	if err != nil {
-		log.Printf("Failed to send server online message to discord: %v", err)
+	if serverConf.StateMessages.OnlineEnabled {
+		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Online)
+		if err != nil {
+			log.Printf("Failed to send server online message to discord: %v", err)
+		}
 	}
 }
 func serverOffline(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
-	_, err := Session.ChannelMessageSend(serverConf.Console.ChannelID, serverConf.OfflineMessage)
-	if err != nil {
-		log.Printf("Failed to send server offline message to discord: %v", err)
+	if serverConf.StateMessages.OfflineEnabled {
+		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Offline)
+		if err != nil {
+			log.Printf("Failed to send server offline message to discord: %v", err)
+		}
 	}
 }
 
