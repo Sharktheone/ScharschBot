@@ -159,8 +159,8 @@ func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, foot
 	return Embed
 }
 
-func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []string, AdvancementTag string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string) discordgo.MessageEmbed {
-	Title := fmt.Sprintf("%v made the Advancement %v", PlayerName, AdvancementTag)
+func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []string, Advancement string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string) discordgo.MessageEmbed {
+	Title := fmt.Sprintf("%v made the Advancement %v", PlayerName, Advancement)
 	AuthorIconUrl := fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 	AuthorUrl := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 	var FooterText string

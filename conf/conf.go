@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const confPath = "config/config.yml"
+const confPath = "config/config2.yml"
 
 func GetConf() Format {
 	var config Format

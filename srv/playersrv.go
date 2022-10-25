@@ -6,6 +6,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
+	"github.com/Sharktheone/Scharsch-bot-discord/minecraft/advancements"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/robfig/cron"
@@ -132,7 +133,8 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		case "advancement":
 			accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-			messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, eventJson.Value, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+			advancement := advancements.Decode(eventJson.Value)
+			messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, advancement, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
 			_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
 			if err != nil {
 				log.Printf("Failed to send Advancement embed: %v", err)
