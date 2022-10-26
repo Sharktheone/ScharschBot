@@ -125,42 +125,51 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Failed to send Chat (embed): %v", err)
 			}
 		case "death":
-			accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-			messageEmbed := embed.PlayerDeath(eventJson.Name, accounts, bannedAccounts, eventJson.Value, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-			_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-			if err != nil {
-				log.Printf("Failed to send Death embed: %v", err)
-			}
-		case "advancement":
-			accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-			advancement := advancements.Decode(eventJson.Value)
-			messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, advancement, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-			_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-			if err != nil {
-				log.Printf("Failed to send Advancement embed: %v", err)
-			}
-		case "join":
-			OnlinePlayers = append(OnlinePlayers, strings.ToLower(eventJson.Name))
-			accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-			messageEmbed := embed.PlayerJoin(strings.ToLower(eventJson.Name), accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-			_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-			if err != nil {
-				log.Printf("Failed to send Join embed: %v", err)
-			}
-		case "quit":
-			for i, player := range OnlinePlayers {
-				if player == strings.ToLower(eventJson.Name) {
-					OnlinePlayers = append(OnlinePlayers[:i], OnlinePlayers[i+1:]...)
-					break
+			if serverConf.SRV.Events.Death {
+				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
+				messageEmbed := embed.PlayerDeath(eventJson.Name, accounts, bannedAccounts, eventJson.Value, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
+				if err != nil {
+					log.Printf("Failed to send Death embed: %v", err)
 				}
 			}
-			accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-			messageEmbed := embed.PlayerQuit(eventJson.Name, accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-			_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-			if err != nil {
-				log.Printf("Failed to send Quit embed: %v", err)
+		case "advancement":
+			if serverConf.SRV.Events.Advancement {
+				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
+				advancement := advancements.Decode(eventJson.Value)
+				messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, advancement, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
+				if err != nil {
+					log.Printf("Failed to send Advancement embed: %v", err)
+				}
+			}
+		case "join":
+			if serverConf.SRV.Events.Join {
+				OnlinePlayers = append(OnlinePlayers, strings.ToLower(eventJson.Name))
+				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
+				messageEmbed := embed.PlayerJoin(strings.ToLower(eventJson.Name), accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
+				if err != nil {
+					log.Printf("Failed to send Join embed: %v", err)
+				}
+			}
+		case "quit":
+			if serverConf.SRV.Events.Quit {
+				for i, player := range OnlinePlayers {
+					if player == strings.ToLower(eventJson.Name) {
+						OnlinePlayers = append(OnlinePlayers[:i], OnlinePlayers[i+1:]...)
+						break
+					}
+				}
+				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
+				messageEmbed := embed.PlayerQuit(eventJson.Name, accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
+				if err != nil {
+					log.Printf("Failed to send Quit embed: %v", err)
+				}
 			}
 		}
+
 		eventJson.Type = ""
 	}
 }

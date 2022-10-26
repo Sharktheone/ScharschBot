@@ -63,6 +63,11 @@ pterodactyl:
         Footer: false
         ChannelID: <Channel ID>
         FooterIcon: true
+        events:
+          join: false
+          quit: false
+          advancement: true
+          death: true
     - serverID: <Server ID>
       serverName: Farming
       stateMessages:
@@ -106,7 +111,12 @@ pterodactyl:
         Enabled: true
         OneLine: true
         Footer: false
-        ChannelID: <Channel ID>
+        ChannelID:
+        events:
+          join: false
+          quit: false
+          advancement: true
+          death: true
     - serverID: <Server ID>
       serverName: Lobby
       channelInfo:
@@ -146,6 +156,11 @@ pterodactyl:
         FooterIcon: true
         reverse: true
         roleID: <Role ID>
+        events:
+          join: false
+          quit: false
+          advancement: true
+          death: true
       srv:
         Enabled: true
         OneLine: true

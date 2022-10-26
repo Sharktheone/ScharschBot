@@ -73,6 +73,12 @@ type Format struct {
 				Footer     bool   `yaml:"footer"`
 				ChannelID  string `yaml:"channelID"`
 				FooterIcon bool   `yaml:"footerIcon"`
+				Events     struct {
+					Join        bool `yaml:"join"`
+					Quit        bool `yaml:"quit"`
+					Advancement bool `yaml:"advancement"`
+					Death       bool `yaml:"death"`
+				} `yaml:"events"`
 			} `yaml:"srv"`
 		} `yaml:"servers"`
 	} `yaml:"pterodactyl"`
@@ -174,5 +180,11 @@ type Server struct {
 		Footer     bool
 		ChannelID  string
 		FooterIcon bool
+		Events     struct {
+			Join        bool
+			Quit        bool
+			Advancement bool
+			Death       bool
+		}
 	}
 }
