@@ -650,7 +650,7 @@ func powerSelect(s *discordgo.Session, i *discordgo.InteractionCreate, action st
 	var (
 		allowed      = false
 		options      = i.MessageComponentData()
-		requiredRole string
+		requiredRole []string
 		serverConf   = conf.GetServerConf(options.Values[0], "")
 	)
 	switch action {
@@ -663,9 +663,11 @@ func powerSelect(s *discordgo.Session, i *discordgo.InteractionCreate, action st
 
 	}
 	for _, role := range i.Member.Roles {
-		if requiredRole == role {
-			allowed = true
-			break
+		for _, required := range requiredRole {
+			if required == role {
+				allowed = true
+				break
+			}
 		}
 	}
 	var messageEmbed discordgo.MessageEmbed

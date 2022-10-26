@@ -3,10 +3,14 @@ enabled: true
 discord:
   serverID: <Server GuildID>
   token: <Bot Token>
-  adminWhitelistRemoveRoleID: <Role ID>
-  adminWhitelistWhoisRoleID: <Role ID>
-  adminWhitelistBanRoleID: <Role ID>
-  whitelistServerRoleID: <Role ID>
+  adminWhitelistRemoveRoleID: 
+    - <Role ID>
+  adminWhitelistWhoisRoleID: 
+    - <Role ID>
+  adminWhitelistBanRoleID: 
+    - <Role ID>
+  whitelistServerRoleID: 
+    - <Role ID>
   embedErrorIcon: https://cdn.discordapp.com/emojis/841343837054173191.gif
   embedErrorAuthorURL: https://youtu.be/dQw4w9WgXcQ
   footerIcon: true
@@ -30,38 +34,48 @@ pterodactyl:
         stopEnabled: true
         offlineEnabled: true
         onlineEnabled: true
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
       channelInfo:
         enabled: true
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
         format: "{{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}"
       powerActionsRoleIDs:
-        start: <Role ID>
-        stop: <Role ID>
-        restart: <Role ID>
+        start: 
+          - <Role ID>
+        stop: 
+          - <Role ID>
+        restart: 
+          - <Role ID>
       console:
         enabled: true
         messageLines: 10
         maxTimeInSeconds: 120
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
         reverse: true
-        reverseRoleID: <Role ID>
+        reverseRoleID: 
+          - <Role ID>
         reversePrefix: !
       chat:
         Enabled: true
         Embed: false
         Prefix: »(Server 1)
-        ChannelID: <Channel ID>
+        ChannelID: 
+          - <Channel ID>
         embedFooter: false
         embedOneLine: true
         FooterIcon: true
         reverse: true
-        roleID: <Role ID>
+        roleID: 
+          - <Role ID>
       srv:
         Enabled: true
         OneLine: true
         Footer: false
-        ChannelID: <Channel ID>
+        ChannelID: 
+          - <Channel ID>
         FooterIcon: true
         events:
           join: false
@@ -80,33 +94,42 @@ pterodactyl:
         stopEnabled: true
         offlineEnabled: true
         onlineEnabled: true
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
       channelInfo:
         enabled: true
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
         format: "{{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}"
       powerActionsRoleIDs:
-        start: <Role ID>
-        stop: <Role ID>
-        restart: <Role ID>
+        start: 
+          - <Role ID>
+        stop: 
+          - <Role ID>
+        restart: 
+          - <Role ID>
       console:
         enabled: true
         messageLines: 10
         maxTimeInSeconds: 120
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
         reverse: true
-        reverseRoleID: <Role ID>
+        reverseRoleID: 
+          - <Role ID>
         reversePrefix: !
       chat:
         Enabled: true
         Embed: false
         Prefix: »(Server 1)
-        ChannelID: <Channel ID>
+        ChannelID: 
+          - <Channel ID>
         embedFooter: false
         embedOneLine: true
         FooterIcon: true
         reverse: true
-        roleID: <Role ID>
+        roleID: 
+          - <Role ID>
       srv:
         Enabled: true
         OneLine: true
@@ -121,7 +144,8 @@ pterodactyl:
       serverName: Lobby
       channelInfo:
         enabled: true
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
         format: "{{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}"
       stateMessages:
         enabled: true
@@ -133,29 +157,37 @@ pterodactyl:
         stopEnabled: true
         offlineEnabled: true
         onlineEnabled: true
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
       powerActionsRoleIDs:
-        start: <Role ID>
-        stop: <Role ID>
-        restart: <Role ID>
+        start: 
+          - <Role ID>
+        stop: 
+          - <Role ID>
+        restart: 
+          - <Role ID>
       console:
         enabled: true
         messageLines: 10
         maxTimeInSeconds: 120
-        channelID: <Channel ID>
+        channelID: 
+          - <Channel ID>
         reverse: true
-        reverseRoleID: <Role ID>
+        reverseRoleID: 
+          - <Role ID>
         reversePrefix: !
       chat:
         Enabled: true
         Embed: false
         Prefix: »(Server 1)
-        ChannelID: <Channel ID>
+        ChannelID: 
+          - <Channel ID>
         embedFooter: false
         embedOneLine: true
         FooterIcon: true
         reverse: true
-        roleID: <Role ID>
+        roleID: 
+          - <Role ID>
         events:
           join: false
           quit: false
@@ -165,7 +197,8 @@ pterodactyl:
         Enabled: true
         OneLine: true
         Footer: false
-        ChannelID: <Channel ID>
+        ChannelID: 
+          - <Channel ID>
         FooterIcon: true
 srv:
   api:
@@ -197,7 +230,8 @@ whitelist:
     mongodbBanCollectionName: whitelistBans
     mongodbReWhitelistCollectionName: reWhitelist
   roles:
-    serverRoleID: <role ID>
+    serverRoleID: 
+    - <Role ID>
     removeUserWithout: true
     reWhitelistWith: true
   luckperms:

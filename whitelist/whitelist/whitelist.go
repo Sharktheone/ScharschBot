@@ -26,8 +26,11 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 	mcBan, dcBan, reason := checkBanned(username, userID)
 	if !mcBan && !dcBan {
 		for _, role := range roles {
-			if role == config.Whitelist.Roles.ServerRoleID {
-				addAllowed = true
+			for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
+				if role == neededRole {
+					addAllowed = true
+					break
+				}
 			}
 		}
 	}
@@ -70,8 +73,11 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 func Remove(username string, userID string, roles []string) (allowed bool, onWhitelist bool) {
 	var removeAllowed = false
 	for _, role := range roles {
-		if role == config.Discord.WhitelistRemoveRoleID {
-			removeAllowed = true
+		for _, neededRole := range config.Discord.WhitelistRemoveRoleID {
+			if role == neededRole {
+				removeAllowed = true
+				break
+			}
 		}
 	}
 	entry, found := mongodb.Read(whitelistCollection, bson.M{
@@ -105,8 +111,11 @@ func Remove(username string, userID string, roles []string) (allowed bool, onWhi
 func RemoveAll(userID string, roles []string) (allowed bool, onWhitelist bool) {
 	var removeAllowed = false
 	for _, role := range roles {
-		if role == config.Discord.WhitelistRemoveRoleID {
-			removeAllowed = true
+		for _, neededRole := range config.Discord.WhitelistRemoveRoleID {
+			if role == neededRole {
+				removeAllowed = true
+				break
+			}
 		}
 	}
 	entries, found := mongodb.Read(whitelistCollection, bson.M{
@@ -140,8 +149,11 @@ func RemoveAll(userID string, roles []string) (allowed bool, onWhitelist bool) {
 func RemoveAllAllowed(roles []string) (allowed bool) {
 	var removeAllowed = false
 	for _, role := range roles {
-		if role == config.Discord.WhitelistRemoveRoleID {
-			removeAllowed = true
+		for _, neededRole := range config.Discord.WhitelistRemoveRoleID {
+			if role == neededRole {
+				removeAllowed = true
+				break
+			}
 		}
 	}
 	return removeAllowed
@@ -150,8 +162,11 @@ func RemoveAllAllowed(roles []string) (allowed bool) {
 func Whois(username string, userID string, roles []string) (dcUserID string, allowed bool, found bool) {
 	var whoisAllowed = false
 	for _, role := range roles {
-		if role == config.Discord.WhitelistRemoveRoleID {
-			whoisAllowed = true
+		for _, neededRole := range config.Discord.WhitelistWhoisRoleID {
+			if role == neededRole {
+				whoisAllowed = true
+				break
+			}
 		}
 	}
 	var (
@@ -173,8 +188,12 @@ func Whois(username string, userID string, roles []string) (dcUserID string, all
 func HasListed(lookupID string, userID string, roles []string) (accounts []string, allowed bool, found bool, bannedPlayers []string) {
 	var listedAllowed = false
 	for _, role := range roles {
-		if role == config.Discord.WhitelistRemoveRoleID {
-			listedAllowed = true
+		// TODO Add new Role
+		for _, neededRole := range config.Discord.WhitelistRemoveRoleID {
+			if role == neededRole {
+				listedAllowed = true
+				break
+			}
 		}
 	}
 	var (
@@ -230,8 +249,11 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 	banAllowed := false
 	listedAccounts := ListedAccountsOf(banID)
 	for _, role := range roles {
-		if role == config.Discord.WhitelistBanRoleID {
-			banAllowed = true
+		for _, neededRole := range config.Discord.WhitelistBanRoleID {
+			if role == neededRole {
+				banAllowed = true
+				break
+			}
 		}
 	}
 	if banAllowed {
@@ -272,8 +294,11 @@ func BanAccount(userID string, roles []string, account string, reason string) (a
 		listedAccounts []string
 	)
 	for _, role := range roles {
-		if role == config.Discord.WhitelistBanRoleID {
-			banAllowed = true
+		for _, neededRole := range config.Discord.WhitelistBanRoleID {
+			if role == neededRole {
+				banAllowed = true
+				break
+			}
 		}
 	}
 
@@ -312,8 +337,11 @@ func BanAccount(userID string, roles []string, account string, reason string) (a
 func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool) (allowed bool) {
 	unBanAllowed := false
 	for _, role := range roles {
-		if role == config.Discord.WhitelistBanRoleID {
-			unBanAllowed = true
+		for _, neededRole := range config.Discord.WhitelistBanRoleID {
+			if role == neededRole {
+				unBanAllowed = true
+				break
+			}
 		}
 	}
 	if unBanAllowed {
@@ -352,8 +380,11 @@ func UnBanAccount(userID string, roles []string, account string) (allowed bool, 
 	}
 
 	for _, role := range roles {
-		if role == config.Discord.WhitelistBanRoleID {
-			unBanAllowed = true
+		for _, neededRole := range config.Discord.WhitelistBanRoleID {
+			if role == neededRole {
+				unBanAllowed = true
+				break
+			}
 		}
 	}
 	if unBanAllowed {

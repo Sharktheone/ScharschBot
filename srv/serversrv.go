@@ -31,11 +31,13 @@ func channelStats() {
 			info = strings.ReplaceAll(info, "{{networkOut}}", convertSize(stat.Network.Tx))
 			info = strings.ReplaceAll(info, "{{disk}}", convertSize(stat.Disk))
 			info = strings.ReplaceAll(info, "{{uptime}}", convertTime(stat.Uptime))
-			_, err := Session.ChannelEditComplex(server.ChannelInfo.ChannelID, &discordgo.ChannelEdit{
-				Topic: info,
-			})
-			if err != nil {
-				log.Printf("Failed to edit channel topic: %v", err)
+			for _, channelID := range server.ChannelInfo.ChannelID {
+				_, err := Session.ChannelEditComplex(channelID, &discordgo.ChannelEdit{
+					Topic: info,
+				})
+				if err != nil {
+					log.Printf("Failed to edit channel topic: %v (channelID %v)", err, channelID)
+				}
 			}
 		}
 	}
@@ -43,36 +45,44 @@ func channelStats() {
 func serverStarting(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
 	if serverConf.StateMessages.StartEnabled {
-		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Start)
-		if err != nil {
-			log.Printf("Failed to send server start message to discord: %v", err)
+		for _, channelID := range serverConf.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Start)
+			if err != nil {
+				log.Printf("Failed to send server start message to discord: %v, (channelID %v)", err, channelID)
+			}
 		}
 	}
 }
 func serverStopping(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
 	if serverConf.StateMessages.StopEnabled {
-		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Stop)
-		if err != nil {
-			log.Printf("Failed to send server stop message to discord: %v", err)
+		for _, channelID := range serverConf.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Stop)
+			if err != nil {
+				log.Printf("Failed to send server stop message to discord: %v (channelID: %v)", err, channelID)
+			}
 		}
 	}
 }
 func serverOnline(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
 	if serverConf.StateMessages.OnlineEnabled {
-		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Online)
-		if err != nil {
-			log.Printf("Failed to send server online message to discord: %v", err)
+		for _, channelID := range serverConf.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Online)
+			if err != nil {
+				log.Printf("Failed to send server online message to discord: %v (channelID: %v)", err, channelID)
+			}
 		}
 	}
 }
 func serverOffline(serverID string) {
 	serverConf := conf.GetServerConf(serverID, "")
 	if serverConf.StateMessages.OfflineEnabled {
-		_, err := Session.ChannelMessageSend(serverConf.StateMessages.ChannelID, serverConf.StateMessages.Offline)
-		if err != nil {
-			log.Printf("Failed to send server offline message to discord: %v", err)
+		for _, channelID := range serverConf.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Offline)
+			if err != nil {
+				log.Printf("Failed to send server offline message to discord: %v (channelID: %v)", err, channelID)
+			}
 		}
 	}
 }

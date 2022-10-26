@@ -46,6 +46,7 @@ func Start() {
 		var doStats = true
 		if server.Console.Enabled {
 			maxTime := server.Console.MaxTimeInSeconds * int(time.Second)
+			//goland:noinspection GoBoolExpressions
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false, doStats)
 			doStats = false
 		}
@@ -116,21 +117,30 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			if serverConf.Chat.Embed {
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
 				messageEmbed := embed.Chat(eventJson.Name, accounts, bannedAccounts, fmt.Sprintf("%v %v", serverConf.Chat.Prefix, eventJson.Value), serverConf.Chat.EmbedFooter, serverConf.Chat.EmbedOneLine, serverConf.Chat.FooterIcon, FooterIcon, username)
-				_, err = Session.ChannelMessageSendEmbed(serverConf.Chat.ChannelID, &messageEmbed)
+				for _, channelID := range serverConf.Chat.ChannelID {
+					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
+					if err != nil {
+						log.Printf("Failed to send Chat (embed): %v (channelID: %v)", err, channelID)
+					}
+				}
 			} else {
-				_, err = Session.ChannelMessageSend(serverConf.Chat.ChannelID, fmt.Sprintf("%v%v %v", eventJson.Name, serverConf.Chat.Prefix, eventJson.Value))
+				for _, channelID := range serverConf.Chat.ChannelID {
+					_, err = Session.ChannelMessageSend(channelID, fmt.Sprintf("%v%v %v", eventJson.Name, serverConf.Chat.Prefix, eventJson.Value))
+					if err != nil {
+						log.Printf("Failed to send Chat (embed): %v (channelID: %v)", err, channelID)
+					}
+				}
 			}
 
-			if err != nil {
-				log.Printf("Failed to send Chat (embed): %v", err)
-			}
 		case "death":
 			if serverConf.SRV.Events.Death {
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
 				messageEmbed := embed.PlayerDeath(eventJson.Name, accounts, bannedAccounts, eventJson.Value, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-				if err != nil {
-					log.Printf("Failed to send Death embed: %v", err)
+				for _, channelID := range serverConf.SRV.ChannelID {
+					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
+					if err != nil {
+						log.Printf("Failed to send Death embed: %v (channelID: %v)", err, channelID)
+					}
 				}
 			}
 		case "advancement":
@@ -138,9 +148,11 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
 				advancement := advancements.Decode(eventJson.Value)
 				messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, advancement, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-				if err != nil {
-					log.Printf("Failed to send Advancement embed: %v", err)
+				for _, channelID := range serverConf.SRV.ChannelID {
+					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
+					if err != nil {
+						log.Printf("Failed to send Advancement embed: %v (channelID: %v)", err, channelID)
+					}
 				}
 			}
 		case "join":
@@ -148,9 +160,11 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				OnlinePlayers = append(OnlinePlayers, strings.ToLower(eventJson.Name))
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
 				messageEmbed := embed.PlayerJoin(strings.ToLower(eventJson.Name), accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-				if err != nil {
-					log.Printf("Failed to send Join embed: %v", err)
+				for _, channelID := range serverConf.SRV.ChannelID {
+					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
+					if err != nil {
+						log.Printf("Failed to send Join embed: %v (channelID: %v)", err, channelID)
+					}
 				}
 			}
 		case "quit":
@@ -163,9 +177,11 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
 				messageEmbed := embed.PlayerQuit(eventJson.Name, accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
-				_, err = Session.ChannelMessageSendEmbed(serverConf.SRV.ChannelID, &messageEmbed)
-				if err != nil {
-					log.Printf("Failed to send Quit embed: %v", err)
+				for _, channelID := range serverConf.SRV.ChannelID {
+					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
+					if err != nil {
+						log.Printf("Failed to send Quit embed: %v (channelID: %v)", err, channelID)
+					}
 				}
 			}
 		}

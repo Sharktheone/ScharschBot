@@ -40,6 +40,7 @@ var (
 	ServerStats   []*ServerStat
 )
 
+//goland:noinspection GoUnusedConst
 const (
 	AuthSuccess   = "auth success"
 	Status        = "status"
@@ -95,6 +96,8 @@ func Stop(serverID string) (successful bool) {
 
 	return resSuccessful
 }
+
+//goland:noinspection GoUnusedExportedFunction
 func Kill(serverID string) (successful bool) {
 	var (
 		url     = fmt.Sprintf("%s/api/client/servers/%s/power", panelUrl, serverID)
@@ -109,6 +112,7 @@ func Kill(serverID string) (successful bool) {
 
 	return resSuccessful
 }
+
 func Restart(serverID string) (successful bool) {
 	var (
 		url     = fmt.Sprintf("%s/api/client/servers/%s/power", panelUrl, serverID)
@@ -123,7 +127,6 @@ func Restart(serverID string) (successful bool) {
 
 	return resSuccessful
 }
-
 func getWebsocket(serverID string) (socket *websocket.Conn, successful bool) {
 	var (
 		url = fmt.Sprintf("%s/api/client/servers/%s/websocket", panelUrl, serverID)
