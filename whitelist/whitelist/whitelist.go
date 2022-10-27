@@ -36,7 +36,7 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 	}
 	var hasFreeAccount = false
 	result, _ := mongodb.Read(whitelistCollection, bson.M{"dcUserID": userID})
-	if config.Whitelist.MaxAccounts <= (len(result) + len(CheckBans(userID))) {
+	if GetMaxAccounts(roles) <= (len(result) + len(CheckBans(userID))) {
 		hasFreeAccount = false
 	} else {
 		hasFreeAccount = true
@@ -245,7 +245,7 @@ func ListedAccountsOf(userID string) (Accounts []string) {
 	return listedAccounts
 }
 
-func BanUserID(userID string, roles []string, banID string, banAccounts bool, reason string) (allowed bool, accountsListed []string) {
+func BanUserID(userID string, roles []string, banID string, banAccounts bool, reason string) (allowed bool) {
 	banAllowed := false
 	listedAccounts := ListedAccountsOf(banID)
 	for _, role := range roles {
@@ -285,13 +285,12 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 			}
 		}
 	}
-	return banAllowed, listedAccounts
+	return banAllowed
 }
 
-func BanAccount(userID string, roles []string, account string, reason string) (allowed bool, accountsListed []string, ownerID string) {
+func BanAccount(userID string, roles []string, account string, reason string) (allowed bool, ownerID string) {
 	var (
-		banAllowed     = false
-		listedAccounts []string
+		banAllowed = false
 	)
 	for _, role := range roles {
 		for _, neededRole := range config.Discord.WhitelistBanRoleID {
@@ -302,13 +301,10 @@ func BanAccount(userID string, roles []string, account string, reason string) (a
 		}
 	}
 
-	dcUser, dataFound := GetOwner(account)
+	dcUser, _ := GetOwner(account)
 	_, alreadyBanned := mongodb.Read(banCollection, bson.M{
 		"mcAccount": account,
 	})
-	if dataFound {
-		listedAccounts = ListedAccountsOf(dcUser)
-	}
 
 	if banAllowed && !alreadyBanned {
 		log.Printf("%v is banning %v", userID, account)
@@ -332,7 +328,7 @@ func BanAccount(userID string, roles []string, account string, reason string) (a
 		}
 	}
 
-	return banAllowed, listedAccounts, dcUser
+	return banAllowed, dcUser
 }
 func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool) (allowed bool) {
 	unBanAllowed := false
@@ -368,17 +364,8 @@ func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool
 	return unBanAllowed
 }
 
-func UnBanAccount(userID string, roles []string, account string) (allowed bool, accountsListed []string) {
+func UnBanAccount(userID string, roles []string, account string) (allowed bool) {
 	unBanAllowed := false
-	var (
-		dcUser         string
-		listedAccounts []string
-	)
-	dcUser, dataFound := GetOwner(account)
-	if dataFound {
-		listedAccounts = ListedAccountsOf(dcUser)
-	}
-
 	for _, role := range roles {
 		for _, neededRole := range config.Discord.WhitelistBanRoleID {
 			if role == neededRole {
@@ -395,7 +382,7 @@ func UnBanAccount(userID string, roles []string, account string) (allowed bool, 
 
 	}
 
-	return unBanAllowed, listedAccounts
+	return unBanAllowed
 }
 
 func checkBanned(mcName string, userID string) (mcBanned bool, dcBanned bool, banReason string) {
@@ -499,4 +486,16 @@ func GetOwner(Account string) (ownerID string, onWhitelist bool) {
 		dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
 	}
 	return dcUser, dataFound
+}
+
+func GetMaxAccounts(roleIDs []string) (maxAccounts int) {
+	var max = 0
+	for _, entry := range config.Whitelist.MaxAccounts {
+		for _, role := range roleIDs {
+			if entry.RoleID == role && entry.Max > max {
+				max = entry.Max
+			}
+		}
+	}
+	return max
 }

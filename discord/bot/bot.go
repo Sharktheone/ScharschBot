@@ -59,6 +59,7 @@ func Registration() {
 	log.Println("Adding Commands")
 
 }
+
 func RemoveCommands() {
 	for _, command := range commandRegistration {
 		err := Session.ApplicationCommandDelete(Session.State.User.ID, *GuildID, command.ID)
@@ -66,13 +67,4 @@ func RemoveCommands() {
 			log.Printf("Failed to delete %v: %v", command.Name, err)
 		}
 	}
-}
-
-func GetUserProfile(userID string) (User *discordgo.Member, success bool) {
-	user, err := Session.GuildMember(config.Discord.ServerID, userID)
-	if err != nil {
-		log.Printf("Failed to get user profile: %v", err)
-		return nil, false
-	}
-	return user, true
 }

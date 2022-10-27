@@ -212,7 +212,11 @@ srv:
     stopping: 🟠 Stopping
 whitelist:
   enabled: true
-  maxAccounts: 5
+  maxAccounts:
+    - roleID: <RoleID>
+      max: 6
+    - roleID: <RoleID 2>
+      max: 2
   bannedUsersToMaxAccounts: true
   kickUnWhitelisted: true
   kickCommand: kick %v Sorry, you are not whitelisted (anymore) on this server

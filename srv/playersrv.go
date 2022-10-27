@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
 	"github.com/Sharktheone/Scharsch-bot-discord/minecraft/advancements"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
@@ -102,7 +103,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			FooterIcon string
 			username   string
 		)
-		member, successful := bot.GetUserProfile(userID)
+		member, successful := discordMember.GetUserProfile(userID, Session)
 
 		if successful {
 			w.WriteHeader(http.StatusNoContent)
@@ -116,7 +117,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		case "chat":
 			if serverConf.Chat.Embed {
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.Chat(eventJson.Name, accounts, bannedAccounts, fmt.Sprintf("%v %v", serverConf.Chat.Prefix, eventJson.Value), serverConf.Chat.EmbedFooter, serverConf.Chat.EmbedOneLine, serverConf.Chat.FooterIcon, FooterIcon, username)
+				messageEmbed := embed.Chat(eventJson.Name, accounts, bannedAccounts, fmt.Sprintf("%v %v", serverConf.Chat.Prefix, eventJson.Value), serverConf.Chat.EmbedFooter, serverConf.Chat.EmbedOneLine, serverConf.Chat.FooterIcon, FooterIcon, username, Session)
 				for _, channelID := range serverConf.Chat.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -135,7 +136,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		case "death":
 			if serverConf.SRV.Events.Death {
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.PlayerDeath(eventJson.Name, accounts, bannedAccounts, eventJson.Value, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				messageEmbed := embed.PlayerDeath(eventJson.Name, accounts, bannedAccounts, eventJson.Value, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -147,7 +148,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			if serverConf.SRV.Events.Advancement {
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
 				advancement := advancements.Decode(eventJson.Value)
-				messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, advancement, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, advancement, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -159,7 +160,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			if serverConf.SRV.Events.Join {
 				OnlinePlayers = append(OnlinePlayers, strings.ToLower(eventJson.Name))
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.PlayerJoin(strings.ToLower(eventJson.Name), accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				messageEmbed := embed.PlayerJoin(strings.ToLower(eventJson.Name), accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -176,7 +177,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.PlayerQuit(eventJson.Name, accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username)
+				messageEmbed := embed.PlayerQuit(eventJson.Name, accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {

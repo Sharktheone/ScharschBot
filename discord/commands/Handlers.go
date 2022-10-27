@@ -14,10 +14,6 @@ import (
 	"strings"
 )
 
-var (
-	config     = conf.GetConf()
-	footerIcon = config.Discord.FooterIcon
-)
 var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 	"whitelist": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		options := i.ApplicationCommandData().Options
@@ -25,7 +21,6 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		for _, opt := range options[0].Options {
 			optionMap[opt.Name] = opt
 		}
-		var username = i.Member.User.String()
 		switch options[0].Name {
 		case "add":
 			name := strings.ToLower(optionMap["name"].StringValue())
@@ -38,7 +33,6 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			if mongodb.Ready {
 				alreadyListed, existingAcc, freeAccount, allowed, mcBan, dcBan, banReason := whitelist.Add(name, i.Member.User.ID, i.Member.Roles)
 				listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
-				mcBans := whitelist.CheckBans(i.Member.User.ID)
 				var (
 					removeOptions []discordgo.SelectMenuOption
 				)
@@ -59,23 +53,23 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 						if freeAccount {
 							if existingAcc {
 								if alreadyListed {
-									messageEmbed = embed.WhitelistAlreadyListed(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+									messageEmbed = embed.WhitelistAlreadyListed(name, i)
 								} else {
-									messageEmbed = embed.WhitelistAdding(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+									messageEmbed = embed.WhitelistAdding(name, i)
 								}
 							} else {
-								messageEmbed = embed.WhitelistNotExisting(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+								messageEmbed = embed.WhitelistNotExisting(name, i)
 							}
 						} else {
-							messageEmbed = embed.WhitelistNoFreeAccounts(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+							messageEmbed = embed.WhitelistNoFreeAccounts(name, i)
 							noFree = true
 						}
 					} else {
-						messageEmbed = embed.WhitelistAddNotAllowed(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+						messageEmbed = embed.WhitelistAddNotAllowed(name, i)
 
 					}
 				} else {
-					messageEmbed = embed.WhitelistBanned(i.Member.User.AvatarURL("40"), i.Member.User.Username, name, dcBan, banReason)
+					messageEmbed = embed.WhitelistBanned(name, dcBan, banReason, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -115,17 +109,15 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
 				allowed, onWhitelist := whitelist.Remove(name, i.Member.User.ID, i.Member.Roles)
-				listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
-				mcBans := whitelist.CheckBans(i.Member.User.ID)
 
 				if allowed {
 					if onWhitelist {
-						messageEmbed = embed.WhitelistRemoving(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+						messageEmbed = embed.WhitelistRemoving(name, i)
 					} else {
-						messageEmbed = embed.WhitelistNotListed(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+						messageEmbed = embed.WhitelistNotListed(name, i)
 					}
 				} else {
-					messageEmbed = embed.WhitelistRemoveNotAllowed(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+					messageEmbed = embed.WhitelistRemoveNotAllowed(name, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -148,12 +140,12 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 				accounts, allowed, found, bannedPlayers := whitelist.HasListed(i.Member.User.ID, i.Member.User.ID, i.Member.Roles)
 				if allowed {
 					if found || len(bannedPlayers) > 0 {
-						messageEmbed = embed.WhitelistHasListed(accounts, i.Member.User.ID, i.Member.User.AvatarURL("40"), i.Member.User.Username, bannedPlayers, footerIcon, username)
+						messageEmbed = embed.WhitelistHasListed(accounts, i.Member.User.ID, bannedPlayers, i, s)
 					} else {
-						messageEmbed = embed.WhitelistNoAccounts(i.Member.User.ID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+						messageEmbed = embed.WhitelistNoAccounts(i, i.Member.User.ID)
 					}
 				} else {
-					messageEmbed = embed.WhitelistUserNotAllowed(i.Member.User.ID, i.Member.User.AvatarURL("40"), i.Member.User.Username, accounts, bannedPlayers, footerIcon, username)
+					messageEmbed = embed.WhitelistUserNotAllowed(accounts, i.Member.User.ID, bannedPlayers, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -176,9 +168,9 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 				mcBans := whitelist.CheckBans(i.Member.User.ID)
 
 				if hasListedAccounts {
-					messageEmbed = embed.WhitelistRemoveMyAccounts(listedAccounts, i.Member.User.ID, i.Member.AvatarURL("40"), i.Member.User.Username, mcBans)
+					messageEmbed = embed.WhitelistRemoveMyAccounts(listedAccounts, mcBans, i)
 				} else {
-					messageEmbed = embed.WhitelistNoAccounts(i.Member.User.ID, i.Member.AvatarURL("40"), i.Member.User.Username)
+					messageEmbed = embed.WhitelistNoAccounts(i, i.Member.User.ID)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -204,24 +196,21 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		for _, opt := range options[0].Options {
 			optionMap[opt.Name] = opt
 		}
-		var username = i.Member.User.String()
 		switch options[0].Name {
 		case "whois":
 			name := strings.ToLower(optionMap["name"].StringValue())
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
 
-				userID, allowed, found := whitelist.Whois(name, i.Member.User.ID, i.Member.Roles)
-				listedAccounts := whitelist.ListedAccountsOf(userID)
-				mcBans := whitelist.CheckBans(userID)
+				playerID, allowed, found := whitelist.Whois(name, i.Member.User.ID, i.Member.Roles)
 				if allowed {
 					if found {
-						messageEmbed = embed.WhitelistIsListedBy(name, userID, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+						messageEmbed = embed.WhitelistIsListedBy(name, playerID, i, s)
 					} else {
-						messageEmbed = embed.WhitelistNotListed(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+						messageEmbed = embed.WhitelistNotListed(name, i)
 					}
 				} else {
-					messageEmbed = embed.WhitelistWhoisNotAllowed(name, whitelist.ListedAccountsOf(i.Member.User.ID), whitelist.CheckBans(i.Member.User.ID), footerIcon, i.Member.User.AvatarURL("40"), username)
+					messageEmbed = embed.WhitelistWhoisNotAllowed(name, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -239,18 +228,18 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			}
 		case "user":
 			user := optionMap["user"].UserValue(s)
-			userID := user.ID
+			playerID := user.ID
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
-				accounts, allowed, found, bannedPlayers := whitelist.HasListed(userID, i.Member.User.ID, i.Member.Roles)
+				accounts, allowed, found, bannedPlayers := whitelist.HasListed(playerID, i.Member.User.ID, i.Member.Roles)
 				if allowed {
 					if found || len(bannedPlayers) > 0 {
-						messageEmbed = embed.WhitelistHasListed(accounts, userID, i.Member.User.AvatarURL("40"), i.Member.User.Username, bannedPlayers, footerIcon, username)
+						messageEmbed = embed.WhitelistHasListed(accounts, playerID, bannedPlayers, i, s)
 					} else {
-						messageEmbed = embed.WhitelistNoAccounts(userID, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+						messageEmbed = embed.WhitelistNoAccounts(i, playerID)
 					}
 				} else {
-					messageEmbed = embed.WhitelistUserNotAllowed(userID, i.Member.User.AvatarURL("40"), i.Member.User.Username, accounts, bannedPlayers, footerIcon, username)
+					messageEmbed = embed.WhitelistUserNotAllowed(accounts, playerID, bannedPlayers, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -272,20 +261,19 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			if optionMap["reason"] != nil {
 				reason = optionMap["reason"].StringValue()
 			}
-			userID := user.ID
+			playerID := user.ID
 			banAccounts := true
 			if optionMap["removeaccounts"] != nil {
 				banAccounts = optionMap["removeaccounts"].BoolValue()
 			}
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
-				listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
-				mcBans := whitelist.CheckBans(i.Member.User.ID)
-				allowed, listedAccounts := whitelist.BanUserID(i.Member.User.ID, i.Member.Roles, userID, banAccounts, reason)
+
+				allowed := whitelist.BanUserID(i.Member.User.ID, i.Member.Roles, playerID, banAccounts, reason)
 				if allowed {
-					messageEmbed = embed.WhitelistBanUserID(listedAccounts, userID, i.Member.User.AvatarURL("40"), i.Member.User.Username, mcBans, footerIcon, username, reason)
+					messageEmbed = embed.WhitelistBanUserID(playerID, reason, i, s)
 				} else {
-					messageEmbed = embed.WhitelistBanUserIDNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, userID, listedAccounts, mcBans, footerIcon, username)
+					messageEmbed = embed.WhitelistBanUserIDNotAllowed(playerID, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -310,12 +298,11 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
 
-				allowed, listedAccounts, userID := whitelist.BanAccount(i.Member.User.ID, i.Member.Roles, name, reason)
-				mcBans := whitelist.CheckBans(userID)
+				allowed, playerID := whitelist.BanAccount(i.Member.User.ID, i.Member.Roles, name, reason)
 				if allowed {
-					messageEmbed = embed.WhitelistBanAccount(name, listedAccounts, userID, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username, reason)
+					messageEmbed = embed.WhitelistBanAccount(name, playerID, reason, i, s)
 				} else {
-					messageEmbed = embed.WhitelistBanAccountNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, name, whitelist.ListedAccountsOf(i.Member.User.ID), whitelist.CheckBans(i.Member.User.ID), footerIcon, username)
+					messageEmbed = embed.WhitelistBanAccountNotAllowed(name, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -333,20 +320,18 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			}
 		case "unbanuser":
 			user := optionMap["user"].UserValue(s)
-			userID := user.ID
+			playerID := user.ID
 			unbanAccounts := false
 			if optionMap["unbanaccounts"] != nil {
 				unbanAccounts = optionMap["unbanaccounts"].BoolValue()
 			}
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
-				listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
-				mcBans := whitelist.CheckBans(userID)
-				allowed := whitelist.UnBanUserID(i.Member.User.ID, i.Member.Roles, userID, unbanAccounts)
+				allowed := whitelist.UnBanUserID(i.Member.User.ID, i.Member.Roles, playerID, unbanAccounts)
 				if allowed {
-					messageEmbed = embed.WhitelistUnBanUserID(userID, i.Member.User.AvatarURL("40"), i.Member.User.Username, mcBans, listedAccounts, footerIcon, username)
+					messageEmbed = embed.WhitelistUnBanUserID(playerID, i, s)
 				} else {
-					messageEmbed = embed.WhitelistBanUserIDNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, userID, listedAccounts, mcBans, footerIcon, username)
+					messageEmbed = embed.WhitelistBanUserIDNotAllowed(playerID, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -366,11 +351,11 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			name := strings.ToLower(optionMap["name"].StringValue())
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
-				allowed, listedAccounts := whitelist.UnBanAccount(i.Member.User.ID, i.Member.Roles, name)
+				allowed := whitelist.UnBanAccount(i.Member.User.ID, i.Member.Roles, name)
 				if allowed {
-					messageEmbed = embed.WhitelistUnBanAccount(name, listedAccounts, footerIcon, i.Member.User.AvatarURL("40"), username)
+					messageEmbed = embed.WhitelistUnBanAccount(name, i, s)
 				} else {
-					messageEmbed = embed.WhitelistBanAccountNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, name, whitelist.ListedAccountsOf(i.Member.User.ID), whitelist.CheckBans(i.Member.User.ID), footerIcon, username)
+					messageEmbed = embed.WhitelistBanAccountNotAllowed(name, i)
 				}
 			} else {
 				messageEmbed = embed.DatabaseNotReady
@@ -392,12 +377,10 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 				err          error
 			)
 			if mongodb.Ready {
-				listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
-				mcBans := whitelist.CheckBans(i.Member.User.ID)
 				allowed := whitelist.RemoveAllAllowed(i.Member.Roles)
 				if allowed {
 					var button discordgo.Button
-					messageEmbed, button = embed.WhitelistRemoveAllSure(i.Member.User.AvatarURL("40"), i.Member.User.Username)
+					messageEmbed, button = embed.WhitelistRemoveAllSure(i)
 					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
@@ -415,7 +398,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 					})
 
 				} else {
-					messageEmbed = embed.WhitelistRemoveAllNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, listedAccounts, mcBans, footerIcon, username)
+					messageEmbed = embed.WhitelistRemoveAllNotAllowed(i)
 					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
@@ -444,20 +427,17 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		}
 	},
 	"remove_yes": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		var username = i.Member.User.String()
 		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
-			listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
-			mcBans := whitelist.CheckBans(i.Member.User.ID)
 			allowed, onWhitelist := whitelist.RemoveAll(i.Member.User.ID, i.Member.Roles)
 			if allowed {
 				if onWhitelist {
-					messageEmbed = embed.WhitelistRemoveAll(i.Member.User.AvatarURL("40"), i.Member.User.Username)
+					messageEmbed = embed.WhitelistRemoveAll(i)
 				} else {
-					messageEmbed = embed.WhitelistRemoveAllNoWhitelistEntries(i.Member.User.AvatarURL("40"), i.Member.User.Username)
+					messageEmbed = embed.WhitelistRemoveAllNoWhitelistEntries(i)
 				}
 			} else {
-				messageEmbed = embed.WhitelistRemoveAllNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.Username, listedAccounts, mcBans, footerIcon, username)
+				messageEmbed = embed.WhitelistRemoveAllNotAllowed(i)
 			}
 		} else {
 			messageEmbed = embed.DatabaseNotReady
@@ -476,23 +456,20 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 
 	},
 	"remove_select": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		var username = i.Member.User.String()
 		data := i.MessageComponentData()
 		name := data.Values[0]
 		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
 			allowed, onWhitelist := whitelist.Remove(name, i.Member.User.ID, i.Member.Roles)
-			listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
-			mcBans := whitelist.CheckBans(i.Member.User.ID)
 
 			if allowed {
 				if onWhitelist {
-					messageEmbed = embed.WhitelistRemoving(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+					messageEmbed = embed.WhitelistRemoving(name, i)
 				} else {
-					messageEmbed = embed.WhitelistNotListed(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+					messageEmbed = embed.WhitelistNotListed(name, i)
 				}
 			} else {
-				messageEmbed = embed.WhitelistRemoveNotAllowed(name, listedAccounts, mcBans, footerIcon, i.Member.User.AvatarURL("40"), username)
+				messageEmbed = embed.WhitelistRemoveNotAllowed(name, i)
 			}
 		} else {
 			messageEmbed = embed.DatabaseNotReady

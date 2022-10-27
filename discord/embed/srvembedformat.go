@@ -2,18 +2,24 @@ package embed
 
 import (
 	"fmt"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
+	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-func PlayerJoin(PlayerName string, Players []string, banedPlayers []string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string) discordgo.MessageEmbed {
-	Title := fmt.Sprintf("%v joined the game", PlayerName)
-	AuthorIconUrl := fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-	AuthorUrl := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-	var FooterText string
-	var Footer *discordgo.MessageEmbedFooter
+func PlayerJoin(PlayerName string, Players []string, banedPlayers []string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+	var (
+		playerID, _   = whitelist.GetOwner(PlayerName)
+		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title         = fmt.Sprintf("%v joined the game", PlayerName)
+		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText    string
+		Footer        *discordgo.MessageEmbedFooter
+	)
 	if footer {
 		if !bansToMax {
 			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
@@ -83,12 +89,16 @@ func PlayerJoin(PlayerName string, Players []string, banedPlayers []string, foot
 	}
 	return Embed
 }
-func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string) discordgo.MessageEmbed {
-	Title := fmt.Sprintf("%v left the game", PlayerName)
-	AuthorIconUrl := fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-	AuthorUrl := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-	var FooterText string
-	var Footer *discordgo.MessageEmbedFooter
+func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+	var (
+		playerID, _   = whitelist.GetOwner(PlayerName)
+		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title         = fmt.Sprintf("%v left the game", PlayerName)
+		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText    string
+		Footer        *discordgo.MessageEmbedFooter
+	)
 	if footer {
 		if !bansToMax {
 			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
@@ -159,12 +169,16 @@ func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, foot
 	return Embed
 }
 
-func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []string, Advancement string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string) discordgo.MessageEmbed {
-	Title := fmt.Sprintf("%v made the Advancement %v", PlayerName, Advancement)
-	AuthorIconUrl := fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-	AuthorUrl := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-	var FooterText string
-	var Footer *discordgo.MessageEmbedFooter
+func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []string, Advancement string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+	var (
+		playerID, _   = whitelist.GetOwner(PlayerName)
+		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title         = fmt.Sprintf("%v made the Advancement %v", PlayerName, Advancement)
+		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText    string
+		Footer        *discordgo.MessageEmbedFooter
+	)
 	if footer {
 		if !bansToMax {
 			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
@@ -234,12 +248,16 @@ func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []strin
 	return Embed
 }
 
-func PlayerDeath(PlayerName string, Players []string, banedPlayers []string, DeathMessage string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string) discordgo.MessageEmbed {
-	Title := fmt.Sprintf("%v %v", PlayerName, DeathMessage)
-	AuthorIconUrl := fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-	AuthorUrl := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-	var FooterText string
-	var Footer *discordgo.MessageEmbedFooter
+func PlayerDeath(PlayerName string, Players []string, banedPlayers []string, DeathMessage string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+	var (
+		playerID, _   = whitelist.GetOwner(PlayerName)
+		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title         = fmt.Sprintf("%v %v", PlayerName, DeathMessage)
+		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText    string
+		Footer        *discordgo.MessageEmbedFooter
+	)
 	if footer {
 		if !bansToMax {
 			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
@@ -308,11 +326,15 @@ func PlayerDeath(PlayerName string, Players []string, banedPlayers []string, Dea
 	}
 	return Embed
 }
-func Chat(PlayerName string, Players []string, banedPlayers []string, Message string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string) discordgo.MessageEmbed {
-	AuthorIconUrl := fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-	AuthorUrl := fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-	var FooterText string
-	var Footer *discordgo.MessageEmbedFooter
+func Chat(PlayerName string, Players []string, banedPlayers []string, Message string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+	var (
+		playerID, _   = whitelist.GetOwner(PlayerName)
+		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText    string
+		Footer        *discordgo.MessageEmbedFooter
+	)
 	if footer {
 		if !bansToMax {
 			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)

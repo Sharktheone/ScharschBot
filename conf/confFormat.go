@@ -96,8 +96,11 @@ type Format struct {
 		}
 	} `yaml:"srv"`
 	Whitelist struct {
-		Enabled                  bool     `yaml:"enabled"`
-		MaxAccounts              int      `yaml:"maxAccounts"`
+		Enabled     bool `yaml:"enabled"`
+		MaxAccounts []struct {
+			RoleID string `yaml:"roleID"`
+			Max    int    `yaml:"max"`
+		} `yaml:"maxAccounts"`
 		BannedUsersToMaxAccounts bool     `yaml:"bannedUsersToMaxAccounts"`
 		KickUnWhitelisted        bool     `yaml:"kickUnWhitelisted"`
 		KickCommand              string   `yaml:"kickCommand"`
