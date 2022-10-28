@@ -1093,3 +1093,122 @@ func WhitelistRemoveMyAccounts(PlayerNames []string, bannedPlayers []string, i *
 
 	return Embed
 }
+
+func ReportPlayer(PlayerName string, reason string, i *discordgo.InteractionCreate) discordgo.MessageEmbed {
+	var (
+		username    = i.Member.User.String()
+		avatarURL   = i.Member.User.AvatarURL("40")
+		Title       = fmt.Sprintf("Reported player %v for reason %v", PlayerName, reason)
+		Description = "Thanks for reporting a player, we will check it as soon as possible!"
+		AuthorName  = PlayerName
+		FooterText  = fmt.Sprintf("%v • Reason: %v", username, reason)
+		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		AuthorIcon  = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+	)
+
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0x00FF00,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    AuthorName,
+			IconURL: AuthorIcon,
+			URL:     AuthorURL,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text:    FooterText,
+			IconURL: avatarURL,
+		},
+	}
+	return Embed
+}
+
+func ReportNotALlowed(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
+	var (
+		username    = i.Member.User.String()
+		avatarURL   = i.Member.User.AvatarURL("40")
+		Title       = "You have no permission to report players"
+		Description = "You have to be a member of the server to report players"
+	)
+
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0xFF0000,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    username,
+			IconURL: avatarURL,
+		},
+	}
+	return Embed
+}
+
+func AlreadyReported(PlayerName string) discordgo.MessageEmbed {
+	var (
+		Title       = "The player is already reported"
+		Description = "A staff member is checking the player as soon as possible"
+		AuthorName  = PlayerName
+		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		AuthorIcon  = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+	)
+
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0xFF0000,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    AuthorName,
+			IconURL: AuthorIcon,
+			URL:     AuthorURL,
+		},
+	}
+	return Embed
+}
+
+func newReport(PlayerName string, reason string, i *discordgo.InteractionCreate) discordgo.MessageEmbed {
+	var (
+		username    = i.Member.User.String()
+		Title       = "New report"
+		Description = "A new player has been reported"
+		AuthorName  = PlayerName
+		FooterText  = fmt.Sprintf("%v • Reason: %v", username, reason)
+		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		AuthorIcon  = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		PlayerID, _ = whitelist.GetOwner(PlayerName)
+		Fields      []*discordgo.MessageEmbedField
+	)
+
+	for _, Account := range whitelist.ListedAccountsOf(PlayerID) {
+		var (
+			FieldName string
+		)
+		mcBanned, _, banReason := whitelist.CheckBanned(Account, "")
+		if mcBanned {
+			FieldName = fmt.Sprintf("%v (banned, reason: %v)", Account, banReason)
+		} else {
+			FieldName = Account
+		}
+
+		Fields = append(Fields, &discordgo.MessageEmbedField{
+			Name:  FieldName,
+			Value: AuthorURL,
+		})
+
+	}
+
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0xFF6F00,
+		Fields:      Fields,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    AuthorName,
+			IconURL: AuthorIcon,
+			URL:     AuthorURL,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: FooterText,
+		},
+	}
+	return Embed
+}

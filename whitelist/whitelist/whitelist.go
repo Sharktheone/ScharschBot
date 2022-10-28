@@ -23,7 +23,7 @@ var (
 
 func Add(username string, userID string, roles []string) (alreadyListed bool, existing bool, accountFree bool, allowed bool, mcBanned bool, dcBanned bool, banReason string) {
 	var addAllowed = false
-	mcBan, dcBan, reason := checkBanned(username, userID)
+	mcBan, dcBan, reason := CheckBanned(username, userID)
 	if !mcBan && !dcBan {
 		for _, role := range roles {
 			for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
@@ -385,7 +385,7 @@ func UnBanAccount(userID string, roles []string, account string) (allowed bool) 
 	return unBanAllowed
 }
 
-func checkBanned(mcName string, userID string) (mcBanned bool, dcBanned bool, banReason string) {
+func CheckBanned(mcName string, userID string) (mcBanned bool, dcBanned bool, banReason string) {
 	var (
 		dataFound bool
 		mcData    []bson.M
