@@ -222,5 +222,56 @@ var (
 				},
 			},
 		},
+		{
+			Name:              "report",
+			Description:       "Report a Player or Discord User",
+			DefaultPermission: &DefaultPermission,
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "Discord User to report",
+					Required:    false,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "name",
+					Description: "Player to report",
+				},
+			},
+		},
+		{
+			Name:              "reportadmin",
+			Description:       "Report Admin Commands",
+			DefaultPermission: &DefaultPermission,
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "list",
+					Description: "List all reports",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "reject",
+					Description: "Reject a report",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Type:         discordgo.ApplicationCommandOptionString,
+							Autocomplete: true,
+						},
+					},
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "accept",
+					Description: "Accept a report",
+				},
+			},
+		},
+		{
+			Name:              "help",
+			Description:       "Get help",
+			DefaultPermission: &DefaultPermission,
+		},
 	}
 )
