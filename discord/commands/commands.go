@@ -48,10 +48,35 @@ var (
 					Name:        "removemyaccounts",
 					Description: "Remove all accounts you have whitelisted",
 				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "report",
+					Description: "Report a Player or Discord User",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "name",
+							Description: "Player to report",
+							Required:    true,
+						},
+						{
+							Type:        discordgo.ApplicationCommandOptionUser,
+							Name:        "user",
+							Description: "Discord User to report",
+							Required:    false,
+						},
+						{
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "reason",
+							Description: "Reason for the report",
+							Required:    false,
+						},
+					},
+				},
 			},
 		},
 		{
-			Name:              "whitelistadmin",
+			Name:              "admin",
 			Description:       "Admin commands of the Scharsch-Bot",
 			DefaultPermission: &DefaultPermission,
 			Options: []*discordgo.ApplicationCommandOption{
@@ -169,6 +194,35 @@ var (
 					Name:        "removeall",
 					Description: "Remove all accounts from whitelist",
 				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "listreports",
+					Description: "List all reports",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "rejectreport",
+					Description: "Reject a report",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "name",
+							Description: "Name of the reported Player",
+						},
+					},
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "acceptreport",
+					Description: "Accept a report",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "name",
+							Description: "Name of the reported Player",
+						},
+					},
+				},
 			},
 		},
 		{
@@ -219,60 +273,6 @@ var (
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "status",
 					Description: "Get the status of all servers",
-				},
-			},
-		},
-		{
-			Name:              "report",
-			Description:       "Report a Player or Discord User",
-			DefaultPermission: &DefaultPermission,
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Type:        discordgo.ApplicationCommandOptionUser,
-					Name:        "user",
-					Description: "Discord User to report",
-					Required:    false,
-				},
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "name",
-					Description: "Player to report",
-				},
-			},
-		},
-		{
-			Name:              "reportadmin",
-			Description:       "Report Admin Commands",
-			DefaultPermission: &DefaultPermission,
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Type:        discordgo.ApplicationCommandOptionSubCommand,
-					Name:        "list",
-					Description: "List all reports",
-				},
-				{
-					Type:        discordgo.ApplicationCommandOptionSubCommand,
-					Name:        "reject",
-					Description: "Reject a report",
-					Options: []*discordgo.ApplicationCommandOption{
-						{
-							Type:        discordgo.ApplicationCommandOptionString,
-							Name:        "name",
-							Description: "Name of the reported Player",
-						},
-					},
-				},
-				{
-					Type:        discordgo.ApplicationCommandOptionSubCommand,
-					Name:        "accept",
-					Description: "Accept a report",
-					Options: []*discordgo.ApplicationCommandOption{
-						{
-							Type:        discordgo.ApplicationCommandOptionString,
-							Name:        "name",
-							Description: "Name of the reported Player",
-						},
-					},
 				},
 			},
 		},

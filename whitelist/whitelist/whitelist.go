@@ -232,16 +232,28 @@ func existingAccount(username string) (existing bool) {
 
 }
 func ListedAccountsOf(userID string) (Accounts []string) {
+	var lastIndex int
 	results, dataFound := mongodb.Read(whitelistCollection, bson.M{
 		"dcUserID": userID,
 	})
-	listedAccounts := make([]string, len(results), 10)
+	resultsban, dataFoundban := mongodb.Read(banCollection, bson.M{
+		"dcUserID":  userID,
+		"mcAccount": bson.M{"$exists": true},
+	})
+	listedAccounts := make([]string, len(results)+len(resultsban), 10)
 	if dataFound {
-
 		for i, result := range results {
 			listedAccounts[i] = fmt.Sprintf("%v", result["mcAccount"])
+			lastIndex = i
+		}
+		log.Println(listedAccounts, lastIndex)
+	}
+	if dataFoundban {
+		for i, result := range resultsban {
+			listedAccounts[lastIndex+i+1] = fmt.Sprintf("%v", result["mcAccount"])
 		}
 	}
+	log.Println(listedAccounts)
 	return listedAccounts
 }
 
@@ -483,6 +495,12 @@ func GetOwner(Account string) (ownerID string, onWhitelist bool) {
 		"mcAccount": strings.ToLower(Account),
 	})
 	if dataFound {
+		dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
+	} else {
+		result, dataFound = mongodb.Read(banCollection, bson.M{
+			"dcUserID":  bson.M{"$exists": true},
+			"mcAccount": Account,
+		})
 		dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
 	}
 	return dcUser, dataFound

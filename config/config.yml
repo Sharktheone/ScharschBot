@@ -233,11 +233,21 @@ whitelist:
     mongodbWhitelistCollectionName: whitelist
     mongodbBanCollectionName: whitelistBans
     mongodbReWhitelistCollectionName: reWhitelist
+    mongodbReportCollectionName: reports
   roles:
     serverRoleID: 
     - <Role ID>
     removeUserWithout: true
     reWhitelistWith: true
+    report:
+      enabled: true
+      channelID:
+        - <Role ID>
+      ping: true
+      pingRoleID:
+        - <Role ID>
+      roles:
+        - <Role ID>
   luckperms:
     enabled: false
     setRole: <Whitelisted Role>

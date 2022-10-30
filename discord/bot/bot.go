@@ -33,6 +33,7 @@ func init() {
 }
 
 func Registration() {
+	log.Println("Registering commands...")
 	Session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
@@ -56,7 +57,7 @@ func Registration() {
 	}
 	Session.AddHandler(console.Handler)
 	Session.AddHandler(console.ChatHandler)
-	log.Println("Adding Commands")
+	log.Println("Commands registered")
 
 }
 

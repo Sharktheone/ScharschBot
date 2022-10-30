@@ -114,6 +114,7 @@ type Format struct {
 			MongodbWhitelistCollectionName   string `yaml:"mongodbWhitelistCollectionName"`
 			MongodbBanCollectionName         string `yaml:"mongodbBanCollectionName"`
 			MongodbReWhitelistCollectionName string `yaml:"mongodbReWhitelistCollectionName"`
+			MongodbReportCollectionName      string `yaml:"mongodbReportCollectionName"`
 		} `yaml:"mongodb"`
 
 		Roles struct {
@@ -121,6 +122,13 @@ type Format struct {
 			RemoveUserWithout bool     `yaml:"removeUserWithout"`
 			ReWhitelistWith   bool     `yaml:"reWhitelistWith"`
 		} `yaml:"roles"`
+		Report struct {
+			Enabled    bool     `yaml:"enabled"`
+			ChannelID  []string `yaml:"channelID"`
+			Ping       bool     `yaml:"ping"`
+			PingRoleID []string `yaml:"pingRoleID"`
+			Roles      []string `yaml:"roles"`
+		} `yaml:"report"`
 		Luckperms struct {
 			Enabled      bool   `yaml:"enabled"`
 			SetRole      string `yaml:"setRole"`

@@ -6,6 +6,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
+	"github.com/Sharktheone/Scharsch-bot-discord/report"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
@@ -187,10 +188,54 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			if err != nil {
 				log.Printf("Failed execute command whitelistremove: %v", err)
 			}
+		case "report":
+			var (
+				messageEmbed discordgo.MessageEmbed
+				name         string
+				reason       = "No reason provided"
+			)
+			if optionMap["name"] != nil {
+				name = strings.ToLower(optionMap["name"].StringValue())
+			}
+			if optionMap["reason"] != nil {
+				reason = optionMap["reason"].StringValue()
+			}
+
+			if mongodb.Ready {
+				reportEmbed := embed.NewReport(name, reason, i)
+				allowed, alreadyReportet, enabled := report.Report(name, reason, i, s, reportEmbed)
+				log.Println(allowed, alreadyReportet, enabled)
+				if allowed {
+					if enabled {
+						if alreadyReportet {
+							messageEmbed = embed.AlreadyReported(name)
+						} else {
+							messageEmbed = embed.ReportPlayer(name, reason, i)
+						}
+					} else {
+						messageEmbed = embed.ReportDisabled(i)
+					}
+				} else {
+					messageEmbed = embed.ReportNotALlowed(i)
+				}
+				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{
+							&messageEmbed,
+						},
+					},
+				})
+				if err != nil {
+					log.Printf("Failed execute command report %v", err)
+				}
+				log.Printf("%v reported %v for %v", i.Member.User.Username, name, reason)
+
+			}
 		}
 
 	},
-	"whitelistadmin": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	"admin": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		options := i.ApplicationCommandData().Options
 		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
 		for _, opt := range options[0].Options {
@@ -423,7 +468,6 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			if err != nil {
 				log.Printf("Failed execute command whitelistremoveall: %v", err)
 			}
-
 		}
 	},
 	"remove_yes": func(s *discordgo.Session, i *discordgo.InteractionCreate) {

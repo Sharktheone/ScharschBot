@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
+	"github.com/Sharktheone/Scharsch-bot-discord/report"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
+	"log"
 )
 
 var (
@@ -1142,7 +1144,25 @@ func ReportNotALlowed(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
 	}
 	return Embed
 }
+func ReportDisabled(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
+	var (
+		username    = i.Member.User.String()
+		avatarURL   = i.Member.User.AvatarURL("40")
+		Title       = "Reports are disabled"
+		Description = "You can't report players because the reports are disabled"
+	)
 
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0xFF4653,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    username,
+			IconURL: avatarURL,
+		},
+	}
+	return Embed
+}
 func AlreadyReported(PlayerName string) discordgo.MessageEmbed {
 	var (
 		Title       = "The player is already reported"
@@ -1165,20 +1185,23 @@ func AlreadyReported(PlayerName string) discordgo.MessageEmbed {
 	return Embed
 }
 
-func newReport(PlayerName string, reason string, i *discordgo.InteractionCreate) discordgo.MessageEmbed {
+func NewReport(PlayerName string, reason string, i *discordgo.InteractionCreate) discordgo.MessageEmbed {
 	var (
 		username    = i.Member.User.String()
-		Title       = "New report"
-		Description = "A new player has been reported"
+		Title       = fmt.Sprintf("New report: %v (report from %v)", PlayerName, username)
+		Description = "A new player has been reported, owner has listed accounts:"
 		AuthorName  = PlayerName
 		FooterText  = fmt.Sprintf("%v • Reason: %v", username, reason)
 		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		AuthorIcon  = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		PlayerID, _ = whitelist.GetOwner(PlayerName)
 		Fields      []*discordgo.MessageEmbedField
+		FooterIcon  = i.Member.User.AvatarURL("40")
 	)
 
+	log.Printf("Owner of %v is %v", PlayerName, PlayerID)
 	for _, Account := range whitelist.ListedAccountsOf(PlayerID) {
+		log.Printf("Account: %v", Account)
 		var (
 			FieldName string
 		)
@@ -1207,7 +1230,42 @@ func newReport(PlayerName string, reason string, i *discordgo.InteractionCreate)
 			URL:     AuthorURL,
 		},
 		Footer: &discordgo.MessageEmbedFooter{
-			Text: FooterText,
+			Text:    FooterText,
+			IconURL: FooterIcon,
+		},
+	}
+	return Embed
+}
+
+func ListReports(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
+	var (
+		username            = i.Member.User.String()
+		avatarURL           = i.Member.User.AvatarURL("40")
+		Title               = "List of reported players"
+		Description         = "Here is a list of all reported players"
+		Fields              []*discordgo.MessageEmbedField
+		reports, anyReports = report.GetReports()
+	)
+
+	if anyReports {
+
+		for _, Report := range reports {
+			Fields = append(Fields, &discordgo.MessageEmbedField{
+				Name:  Report["reportedPlayer"].(string),
+				Value: Report["reason"].(string),
+			})
+		}
+	} else {
+		Description = "There are no reported players"
+	}
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0x6C50FF,
+		Fields:      Fields,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    username,
+			IconURL: avatarURL,
 		},
 	}
 	return Embed
