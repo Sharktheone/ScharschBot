@@ -256,8 +256,9 @@ var (
 					Description: "Reject a report",
 					Options: []*discordgo.ApplicationCommandOption{
 						{
-							Type:         discordgo.ApplicationCommandOptionString,
-							Autocomplete: true,
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "name",
+							Description: "Name of the reported Player",
 						},
 					},
 				},
@@ -265,6 +266,13 @@ var (
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "accept",
 					Description: "Accept a report",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "name",
+							Description: "Name of the reported Player",
+						},
+					},
 				},
 			},
 		},
