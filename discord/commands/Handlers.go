@@ -530,7 +530,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 				allowed, enabled := reports.Reject(name, i, s, notifyreporter, &reportMessageEmbed, &reportMessageEmbedDMFailed)
 				if allowed {
 					if enabled {
-						messageEmbed = embed.ReportAction(name, i, "rejected", notifyreporter)
+						messageEmbed = embed.ReportAction(name, "rejected", notifyreporter)
 					} else {
 						messageEmbed = embed.ReportDisabled(i)
 					}
@@ -570,7 +570,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 				allowed, enabled := reports.Accept(name, i, s, notifyreporter, &reportMessageEmbed, &reportMessageEmbedDMFailed)
 				if allowed {
 					if enabled {
-						messageEmbed = embed.ReportAction(name, i, "accepted", notifyreporter)
+						messageEmbed = embed.ReportAction(name, "accepted", notifyreporter)
 					} else {
 						messageEmbed = embed.ReportDisabled(i)
 					}

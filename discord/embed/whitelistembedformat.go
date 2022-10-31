@@ -1239,17 +1239,17 @@ func NewReport(PlayerName string, reason string, i *discordgo.InteractionCreate)
 
 func ListReports(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
 	var (
-		username            = i.Member.User.String()
-		avatarURL           = i.Member.User.AvatarURL("40")
-		Title               = "List of reported players"
-		Description         = "Here is a list of all reported players"
-		Fields              []*discordgo.MessageEmbedField
-		reports, anyReports = reports.GetReports()
+		username           = i.Member.User.String()
+		avatarURL          = i.Member.User.AvatarURL("40")
+		Title              = "List of reported players"
+		Description        = "Here is a list of all reported players"
+		Fields             []*discordgo.MessageEmbedField
+		report, anyReports = reports.GetReports()
 	)
 
 	if anyReports {
 
-		for _, Report := range reports {
+		for _, Report := range report {
 			banned, _, reason := whitelist.CheckBanned(Report["reportedPlayer"].(string), "")
 			if banned {
 				value := fmt.Sprintf("%v (banned, reason: %v)", Report["reason"].(string), reason)
@@ -1281,7 +1281,7 @@ func ListReports(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
 	return Embed
 }
 
-func ReportAction(name string, i *discordgo.InteractionCreate, action string, notifyreporter bool) discordgo.MessageEmbed {
+func ReportAction(name string, action string, notifyreporter bool) discordgo.MessageEmbed {
 	var (
 		avatarURL   = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", name)
 		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", name)
