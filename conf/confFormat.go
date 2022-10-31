@@ -123,11 +123,13 @@ type Format struct {
 			ReWhitelistWith   bool     `yaml:"reWhitelistWith"`
 		} `yaml:"roles"`
 		Report struct {
-			Enabled    bool     `yaml:"enabled"`
-			ChannelID  []string `yaml:"channelID"`
-			Ping       bool     `yaml:"ping"`
-			PingRoleID []string `yaml:"pingRoleID"`
-			Roles      []string `yaml:"roles"`
+			Enabled               bool     `yaml:"enabled"`
+			ChannelID             []string `yaml:"channelID"`
+			Ping                  bool     `yaml:"ping"`
+			PingRoleID            []string `yaml:"pingRoleID"`
+			Roles                 []string `yaml:"roles"`
+			PlayerNotifyDM        bool     `yaml:"playerNotifyDM"`
+			PlayerNotifyChannelID []string `yaml:"playerNotifyChannelID"`
 		} `yaml:"report"`
 		Luckperms struct {
 			Enabled      bool   `yaml:"enabled"`

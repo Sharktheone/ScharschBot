@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
-	"github.com/Sharktheone/Scharsch-bot-discord/report"
+	"github.com/Sharktheone/Scharsch-bot-discord/reports"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"log"
@@ -1188,7 +1188,7 @@ func AlreadyReported(PlayerName string) discordgo.MessageEmbed {
 func NewReport(PlayerName string, reason string, i *discordgo.InteractionCreate) discordgo.MessageEmbed {
 	var (
 		username    = i.Member.User.String()
-		Title       = fmt.Sprintf("New report: %v (report from %v)", PlayerName, username)
+		Title       = fmt.Sprintf("New report: %v (report from %v) ", PlayerName, username)
 		Description = "A new player has been reported, owner has listed accounts:"
 		AuthorName  = PlayerName
 		FooterText  = fmt.Sprintf("%v • Reason: %v", username, reason)
@@ -1244,16 +1244,26 @@ func ListReports(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
 		Title               = "List of reported players"
 		Description         = "Here is a list of all reported players"
 		Fields              []*discordgo.MessageEmbedField
-		reports, anyReports = report.GetReports()
+		reports, anyReports = reports.GetReports()
 	)
 
 	if anyReports {
 
 		for _, Report := range reports {
-			Fields = append(Fields, &discordgo.MessageEmbedField{
-				Name:  Report["reportedPlayer"].(string),
-				Value: Report["reason"].(string),
-			})
+			banned, _, reason := whitelist.CheckBanned(Report["reportedPlayer"].(string), "")
+			if banned {
+				value := fmt.Sprintf("%v (banned, reason: %v)", Report["reason"].(string), reason)
+				Fields = append(Fields, &discordgo.MessageEmbedField{
+					Name:  Report["reportedPlayer"].(string),
+					Value: value,
+				})
+			} else {
+				Fields = append(Fields, &discordgo.MessageEmbedField{
+					Name:  Report["reportedPlayer"].(string),
+					Value: Report["reason"].(string),
+				})
+			}
+
 		}
 	} else {
 		Description = "There are no reported players"
@@ -1266,6 +1276,66 @@ func ListReports(i *discordgo.InteractionCreate) discordgo.MessageEmbed {
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    username,
 			IconURL: avatarURL,
+		},
+	}
+	return Embed
+}
+
+func ReportAction(name string, i *discordgo.InteractionCreate, action string, notifyreporter bool) discordgo.MessageEmbed {
+	var (
+		avatarURL   = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", name)
+		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", name)
+		Title       = fmt.Sprintf("Report %v", action)
+		Description = fmt.Sprintf("The report has been %v, notifing reporter: %v", action, notifyreporter)
+	)
+
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0xFFCB00,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    name,
+			IconURL: avatarURL,
+			URL:     AuthorURL,
+		},
+	}
+	return Embed
+}
+
+func ReportUserAction(name string, dmFailed bool, userID string, s *discordgo.Session, action string) discordgo.MessageEmbed {
+	var (
+		avatarURL   = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", name)
+		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", name)
+		Title       = fmt.Sprintf("Your report against %v has been %v", name, action)
+		Description string
+		FooterText  string
+		user, _     = discordMember.GetUserProfile(userID, s)
+		FooterIcon  = user.AvatarURL("40")
+	)
+	if action == "accepted" {
+		Description = "Thank you for your report. The report has been accepted."
+	} else {
+		Description = "Thank you for your report, but it has been rejected. If you think this is a mistake, please contact a staff member directly."
+	}
+
+	if dmFailed {
+		FooterText = fmt.Sprintf("Failed to send DM to %v. Maybe you have DMs disabled? Sending to channel instead.", user.User.String())
+	} else {
+		FooterText = user.User.String()
+	}
+
+	Embed := discordgo.MessageEmbed{
+		Title:       Title,
+		Description: Description,
+		Color:       0x00FFC9,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    name,
+			IconURL: avatarURL,
+			URL:     AuthorURL,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text:    FooterText,
+			IconURL: FooterIcon,
 		},
 	}
 	return Embed

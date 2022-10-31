@@ -6,7 +6,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
-	"github.com/Sharktheone/Scharsch-bot-discord/report"
+	"github.com/Sharktheone/Scharsch-bot-discord/reports"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
@@ -15,6 +15,9 @@ import (
 	"strings"
 )
 
+var (
+	config = conf.GetConf()
+)
 var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 	"whitelist": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		options := i.ApplicationCommandData().Options
@@ -203,7 +206,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 
 			if mongodb.Ready {
 				reportEmbed := embed.NewReport(name, reason, i)
-				allowed, alreadyReportet, enabled := report.Report(name, reason, i, s, reportEmbed)
+				allowed, alreadyReportet, enabled := reports.Report(name, reason, i, s, reportEmbed)
 				log.Println(allowed, alreadyReportet, enabled)
 				if allowed {
 					if enabled {
@@ -468,6 +471,124 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			if err != nil {
 				log.Printf("Failed execute command whitelistremoveall: %v", err)
 			}
+		case "listreports":
+			var (
+				messageEmbed discordgo.MessageEmbed
+				allowed      bool
+				enabled      = config.Whitelist.Report.Enabled
+			)
+			if mongodb.Ready {
+				if config.Whitelist.Report.Enabled {
+					for _, role := range i.Member.Roles {
+						for _, requiredRole := range config.Discord.WhitelistBanRoleID { // TODO: Add Report Admin Role
+							if role == requiredRole {
+								allowed = true
+								break
+							}
+						}
+					}
+					if allowed {
+						if enabled {
+							messageEmbed = embed.ListReports(i)
+						} else {
+							messageEmbed = embed.ReportDisabled(i)
+						}
+					} else {
+						messageEmbed = embed.ReportNotALlowed(i)
+					}
+				}
+				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{
+							&messageEmbed,
+						},
+					},
+				})
+				if err != nil {
+					log.Printf("Failed execute command whitelistlistreports: %v", err)
+				}
+			}
+		case "rejectreport":
+			var (
+				messageEmbed   discordgo.MessageEmbed
+				name           string
+				notifyreporter = true
+			)
+			if optionMap["name"] != nil {
+				name = strings.ToLower(optionMap["name"].StringValue())
+			}
+			if optionMap["notifyreporter"] != nil {
+				notifyreporter = optionMap["notifyreporter"].BoolValue()
+			}
+
+			if mongodb.Ready {
+				report, _ := reports.GetReport(name)
+				reportMessageEmbed := embed.ReportUserAction(name, false, report.ReporterID, s, "rejected")
+				reportMessageEmbedDMFailed := embed.ReportUserAction(name, true, report.ReporterID, s, "rejected")
+
+				allowed, enabled := reports.Reject(name, i, s, notifyreporter, &reportMessageEmbed, &reportMessageEmbedDMFailed)
+				if allowed {
+					if enabled {
+						messageEmbed = embed.ReportAction(name, i, "rejected", notifyreporter)
+					} else {
+						messageEmbed = embed.ReportDisabled(i)
+					}
+				} else {
+					messageEmbed = embed.ReportNotALlowed(i)
+				}
+			}
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Embeds: []*discordgo.MessageEmbed{
+						&messageEmbed,
+					},
+				},
+			})
+			if err != nil {
+				log.Printf("Failed execute command whitelistrejectreport: %v", err)
+			}
+		case "acceptreport":
+			var (
+				messageEmbed   discordgo.MessageEmbed
+				name           string
+				notifyreporter = true
+			)
+			if optionMap["name"] != nil {
+				name = strings.ToLower(optionMap["name"].StringValue())
+			}
+			if optionMap["notifyreporter"] != nil {
+				notifyreporter = optionMap["notifyreporter"].BoolValue()
+			}
+
+			if mongodb.Ready {
+				report, _ := reports.GetReport(name)
+				reportMessageEmbed := embed.ReportUserAction(name, false, report.ReporterID, s, "accepted")
+				reportMessageEmbedDMFailed := embed.ReportUserAction(name, true, report.ReporterID, s, "accepted")
+
+				allowed, enabled := reports.Accept(name, i, s, notifyreporter, &reportMessageEmbed, &reportMessageEmbedDMFailed)
+				if allowed {
+					if enabled {
+						messageEmbed = embed.ReportAction(name, i, "accepted", notifyreporter)
+					} else {
+						messageEmbed = embed.ReportDisabled(i)
+					}
+				} else {
+					messageEmbed = embed.ReportNotALlowed(i)
+				}
+			}
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Embeds: []*discordgo.MessageEmbed{
+						&messageEmbed,
+					},
+				},
+			})
+			if err != nil {
+				log.Printf("Failed execute command whitelistrejectreport: %v", err)
+			}
 		}
 	},
 	"remove_yes": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -497,7 +618,6 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 		if err != nil {
 			log.Printf("Failed execute component remove_yes: %v", err)
 		}
-
 	},
 	"remove_select": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		data := i.MessageComponentData()

@@ -209,6 +209,11 @@ var (
 							Name:        "name",
 							Description: "Name of the reported Player",
 						},
+						{
+							Type:        discordgo.ApplicationCommandOptionBoolean,
+							Name:        "notifyreporter",
+							Description: "Notify the reporter about the rejection (default: true)",
+						},
 					},
 				},
 				{
@@ -220,6 +225,11 @@ var (
 							Type:        discordgo.ApplicationCommandOptionString,
 							Name:        "name",
 							Description: "Name of the reported Player",
+						},
+						{
+							Type:        discordgo.ApplicationCommandOptionBoolean,
+							Name:        "notifyreporter",
+							Description: "Notify the reporter about the acceptance (default: true)",
 						},
 					},
 				},

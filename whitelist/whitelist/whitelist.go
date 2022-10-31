@@ -501,7 +501,9 @@ func GetOwner(Account string) (ownerID string, onWhitelist bool) {
 			"dcUserID":  bson.M{"$exists": true},
 			"mcAccount": Account,
 		})
-		dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
+		if dataFound {
+			dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
+		}
 	}
 	return dcUser, dataFound
 }

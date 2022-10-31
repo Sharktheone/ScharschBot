@@ -248,6 +248,9 @@ whitelist:
         - <Role ID>
       roles:
         - <Role ID>
+      playerNotifyDM: true
+      playerNotifyChannelID:
+        - <Channel ID>
   luckperms:
     enabled: false
     setRole: <Whitelisted Role>
