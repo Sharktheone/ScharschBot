@@ -47,15 +47,18 @@ func Start() {
 		var doStats = true
 		if server.Console.Enabled {
 			maxTime := server.Console.MaxTimeInSeconds * int(time.Second)
+			// TODO remove go-routine - fixed maybe
 			//goland:noinspection GoBoolExpressions
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false, doStats)
 			doStats = false
 		}
 		if server.StateMessages.Enabled {
+			// TODO remove go-routine - fixed maybe
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0, true, doStats)
 			doStats = false
 		}
 		if server.ChannelInfo.Enabled {
+			// TODO remove go-routine - fixed maybe
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.Stats, nil, 0, 0, true, doStats)
 			doStats = false
 

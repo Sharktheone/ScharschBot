@@ -200,6 +200,7 @@ func Websocket(serverID string, event string, callback func([]string, string), c
 		Event string   `json:"event"`
 		Args  []string `json:"args"`
 	}
+	// TODO remove go-routine - fixed maybe
 	go func() {
 		var (
 			lines        = 0
@@ -211,7 +212,6 @@ func Websocket(serverID string, event string, callback func([]string, string), c
 			err := websocketConn.ReadJSON(&result)
 			if err != nil {
 				log.Printf("Failed to read message: %v", err)
-				return
 			}
 			if result.Event == "token expiring" || result.Event == "token expired" || result.Event == "jwt error" {
 				newConn, successful := getWebsocket(serverID)
@@ -265,22 +265,35 @@ func Websocket(serverID string, event string, callback func([]string, string), c
 				if doneCallback && callbackTime != 0 {
 					timer = time.NewTimer(callbackTime)
 					doneCallback = false
+					// TODO remove go-routine - fixed maybe
 					go func() {
 						<-timer.C
 						callback(output, serverID)
 						doneCallback = true
+
+						return
 					}()
 				}
 				if callbackLines == 0 && callbackTime == 0 {
 					if sendOnlyNew && result.Event == "status" {
 						if prevState != result.Args[0] || prevState == "" {
 							if callback != nil {
-								go callback(result.Args, serverID)
+								// TODO remove go-routine -fixed maybe
+								go func() {
+									callback(result.Args, serverID)
+
+									return
+								}()
 							}
 						}
 					} else {
 						if callback != nil {
-							go callback(result.Args, serverID)
+							// TODO remove go-routine - fixed maybe
+							go func() {
+								callback(result.Args, serverID)
+
+								return
+							}()
 						}
 					}
 				} else {

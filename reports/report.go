@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
@@ -146,21 +147,13 @@ func Accept(name string, i *discordgo.InteractionCreate, s *discordgo.Session, n
 		if reportFound {
 			if notifyDM {
 				if notifyreporter {
-					channel, err := s.UserChannelCreate(report.ReporterID)
-					if err != nil {
-						log.Printf("Failed to create DM with reporter: %v", err)
-
-					}
-					_, err = s.ChannelMessageSendEmbed(channel.ID, messageEmbed)
-					if err != nil {
-						log.Printf("Failed to send DM for reporter: %v, sending Message in normal Channels", err)
-						for _, channelID := range config.Whitelist.Report.ChannelID {
-							_, err = s.ChannelMessageSendEmbed(channelID, messageEmbedDMFailed)
-							if err != nil {
-								log.Printf("Failed to send Report message in normal Channel: %v", err)
-							}
-						}
-					}
+					discordMember.SendDM(report.ReporterID, s, &discordgo.MessageSend{
+						Embed: messageEmbed,
+					},
+						&discordgo.MessageSend{
+							Content: fmt.Sprintf("<@%v>", report.ReporterID),
+							Embed:   messageEmbedDMFailed,
+						})
 
 				}
 			} else {

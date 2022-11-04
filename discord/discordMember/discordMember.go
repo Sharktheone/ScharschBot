@@ -28,3 +28,28 @@ func GetRoles(userID string, s *discordgo.Session) []string {
 
 	return user.Roles
 }
+
+func SendDM(userID string, s *discordgo.Session, messageComplexDM *discordgo.MessageSend, messageComplexDMFailed *discordgo.MessageSend) (success bool) {
+	var (
+		successDM = false
+	)
+	channel, err := s.UserChannelCreate(userID)
+	if err != nil {
+		log.Printf("Failed to create DM with reporter: %v", err)
+
+	}
+	_, err = s.ChannelMessageSendComplex(channel.ID, messageComplexDM)
+	if err != nil {
+		log.Printf("Failed to send DM: %v, sending Message in normal Channels", err)
+		for _, channelID := range config.Whitelist.Report.ChannelID {
+			_, err = s.ChannelMessageSendComplex(channelID, messageComplexDMFailed)
+			if err != nil {
+				log.Printf("Failed to send message in dm alternative channel on server: %v", err)
+			}
+		}
+		successDM = false
+	} else {
+		successDM = true
+	}
+	return successDM
+}
