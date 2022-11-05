@@ -7,7 +7,6 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
-	"github.com/Sharktheone/Scharsch-bot-discord/minecraft/advancements"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/robfig/cron"
@@ -17,14 +16,16 @@ import (
 	"time"
 )
 
+type EventJson struct {
+	Name   string `json:"name"`
+	Value  string `json:"value"`
+	Type   string `json:"type"`
+	Server string `json:"server"`
+}
+
 var (
-	config    = conf.GetConf()
-	eventJson struct {
-		Name   string `json:"name"`
-		Value  string `json:"value"`
-		Type   string `json:"type"`
-		Server string `json:"server"`
-	}
+	config        = conf.GetConf()
+	eventJson     EventJson
 	Session       = bot.Session
 	OnlinePlayers []string
 	port          = config.SRV.API.Port
@@ -101,26 +102,31 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Server %v not found in Pterodactyl server config", eventJson.Server)
 			return
 		}
-		userID, _ := whitelist.GetOwner(eventJson.Name)
+		userID, onWhitelist := whitelist.GetOwner(eventJson.Name)
 		var (
 			FooterIcon string
 			username   string
 		)
-		member, successful := discordMember.GetUserProfile(userID, Session)
+		if onWhitelist {
+			member, successful := discordMember.GetUserProfile(userID, Session)
 
-		if successful {
-			w.WriteHeader(http.StatusNoContent)
-			FooterIcon = member.User.AvatarURL("40")
-			username = member.User.String()
+			if successful {
+				w.WriteHeader(http.StatusNoContent)
+				FooterIcon = member.User.AvatarURL("40")
+				username = member.User.String()
+			} else {
+				w.WriteHeader(http.StatusOK)
+				FooterIcon = config.Discord.EmbedErrorIcon
+			}
 		} else {
-			w.WriteHeader(http.StatusNotFound)
+			w.WriteHeader(http.StatusResetContent)
 			FooterIcon = config.Discord.EmbedErrorIcon
 		}
+		checkAccount(strings.ToLower(eventJson.Name))
 		switch eventJson.Type {
 		case "chat":
 			if serverConf.Chat.Embed {
-				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.Chat(eventJson.Name, accounts, bannedAccounts, fmt.Sprintf("%v %v", serverConf.Chat.Prefix, eventJson.Value), serverConf.Chat.EmbedFooter, serverConf.Chat.EmbedOneLine, serverConf.Chat.FooterIcon, FooterIcon, username, Session)
+				messageEmbed := embed.Chat(eventJson, serverConf, FooterIcon, username, Session)
 				for _, channelID := range serverConf.Chat.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -138,8 +144,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 
 		case "death":
 			if serverConf.SRV.Events.Death {
-				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.PlayerDeath(eventJson.Name, accounts, bannedAccounts, eventJson.Value, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
+				messageEmbed := embed.PlayerDeath(eventJson, serverConf, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -149,9 +154,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		case "advancement":
 			if serverConf.SRV.Events.Advancement {
-				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				advancement := advancements.Decode(eventJson.Value)
-				messageEmbed := embed.PlayerAdvancement(eventJson.Name, accounts, bannedAccounts, advancement, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
+				messageEmbed := embed.PlayerAdvancement(eventJson, serverConf, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -162,8 +165,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		case "join":
 			if serverConf.SRV.Events.Join {
 				OnlinePlayers = append(OnlinePlayers, strings.ToLower(eventJson.Name))
-				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.PlayerJoin(strings.ToLower(eventJson.Name), accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
+				messageEmbed := embed.PlayerJoin(serverConf, strings.ToLower(eventJson.Name), FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -179,8 +181,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 				}
-				accounts, bannedAccounts := checkAccount(strings.ToLower(eventJson.Name))
-				messageEmbed := embed.PlayerQuit(eventJson.Name, accounts, bannedAccounts, serverConf.SRV.Footer, serverConf.SRV.OneLine, serverConf.SRV.FooterIcon, FooterIcon, username, Session)
+				messageEmbed := embed.PlayerQuit(serverConf, strings.ToLower(eventJson.Name), FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {

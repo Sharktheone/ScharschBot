@@ -2,29 +2,38 @@ package embed
 
 import (
 	"fmt"
+	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
+	"github.com/Sharktheone/Scharsch-bot-discord/minecraft/advancements"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
+	"github.com/Sharktheone/Scharsch-bot-discord/srv"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-func PlayerJoin(PlayerName string, Players []string, banedPlayers []string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
-		playerID, _   = whitelist.GetOwner(PlayerName)
-		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
-		Title         = fmt.Sprintf("%v joined the game", PlayerName)
-		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-		FooterText    string
-		Footer        *discordgo.MessageEmbedFooter
+		playerID, whitelisted = whitelist.GetOwner(PlayerName)
+		Players               = whitelist.ListedAccountsOf(playerID)
+		bannedPlayers         = whitelist.CheckBans(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title                 = fmt.Sprintf("%v joined the game", PlayerName)
+		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText            string
+		Footer                *discordgo.MessageEmbedFooter
 	)
-	if footer {
-		if !bansToMax {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+	if serverConf.SRV.Footer {
+		if whitelisted {
+			if !bansToMax {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+			} else {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(bannedPlayers), maxAccounts)
+			}
 		} else {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(banedPlayers), maxAccounts)
+			FooterText = fmt.Sprintf("%v is not whitelisted", PlayerName)
 		}
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -42,8 +51,8 @@ func PlayerJoin(PlayerName string, Players []string, banedPlayers []string, foot
 		color = 0x00FF00
 		Embed discordgo.MessageEmbed
 	)
-	if footer {
-		if oneLine {
+	if serverConf.SRV.Footer {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -66,7 +75,7 @@ func PlayerJoin(PlayerName string, Players []string, banedPlayers []string, foot
 			}
 		}
 	} else {
-		if oneLine {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -89,21 +98,27 @@ func PlayerJoin(PlayerName string, Players []string, banedPlayers []string, foot
 	}
 	return Embed
 }
-func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
-		playerID, _   = whitelist.GetOwner(PlayerName)
-		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
-		Title         = fmt.Sprintf("%v left the game", PlayerName)
-		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-		FooterText    string
-		Footer        *discordgo.MessageEmbedFooter
+		playerID, whitelisted = whitelist.GetOwner(PlayerName)
+		Players               = whitelist.ListedAccountsOf(playerID)
+		bannedPlayers         = whitelist.CheckBans(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title                 = fmt.Sprintf("%v left the game", PlayerName)
+		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText            string
+		Footer                *discordgo.MessageEmbedFooter
 	)
-	if footer {
-		if !bansToMax {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+	if serverConf.SRV.Footer {
+		if whitelisted {
+			if !bansToMax {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+			} else {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(bannedPlayers), maxAccounts)
+			}
 		} else {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(banedPlayers), maxAccounts)
+			FooterText = fmt.Sprintf("%v is not whitelisted", PlayerName)
 		}
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -120,8 +135,8 @@ func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, foot
 		Embed discordgo.MessageEmbed
 		color = 0xFF0000
 	)
-	if footer {
-		if oneLine {
+	if serverConf.SRV.Footer {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -145,7 +160,7 @@ func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, foot
 			}
 		}
 	} else {
-		if oneLine {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -169,21 +184,29 @@ func PlayerQuit(PlayerName string, Players []string, banedPlayers []string, foot
 	return Embed
 }
 
-func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []string, Advancement string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerAdvancement(eventJson srv.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
-		playerID, _   = whitelist.GetOwner(PlayerName)
-		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
-		Title         = fmt.Sprintf("%v made the Advancement %v", PlayerName, Advancement)
-		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-		FooterText    string
-		Footer        *discordgo.MessageEmbedFooter
+		PlayerName            = eventJson.Name
+		advancement           = advancements.Decode(eventJson.Value)
+		playerID, whitelisted = whitelist.GetOwner(PlayerName)
+		Players               = whitelist.ListedAccountsOf(playerID)
+		bannedPlayers         = whitelist.CheckBans(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title                 = fmt.Sprintf("%v made the Advancement %v", PlayerName, advancement)
+		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText            string
+		Footer                *discordgo.MessageEmbedFooter
 	)
-	if footer {
-		if !bansToMax {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+	if serverConf.SRV.Footer {
+		if whitelisted {
+			if !bansToMax {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+			} else {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(bannedPlayers), maxAccounts)
+			}
 		} else {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(banedPlayers), maxAccounts)
+			FooterText = fmt.Sprintf("%v is not whitelisted", PlayerName)
 		}
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -200,8 +223,8 @@ func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []strin
 		Embed discordgo.MessageEmbed
 		color = 0xFFFF00
 	)
-	if footer {
-		if oneLine {
+	if serverConf.SRV.Footer {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -224,7 +247,7 @@ func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []strin
 			}
 		}
 	} else {
-		if oneLine {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -248,21 +271,28 @@ func PlayerAdvancement(PlayerName string, Players []string, banedPlayers []strin
 	return Embed
 }
 
-func PlayerDeath(PlayerName string, Players []string, banedPlayers []string, DeathMessage string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerDeath(eventJson srv.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
-		playerID, _   = whitelist.GetOwner(PlayerName)
-		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
-		Title         = fmt.Sprintf("%v %v", PlayerName, DeathMessage)
-		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-		FooterText    string
-		Footer        *discordgo.MessageEmbedFooter
+		PlayerName            = eventJson.Name
+		playerID, whitelisted = whitelist.GetOwner(PlayerName)
+		Players               = whitelist.ListedAccountsOf(playerID)
+		bannedPlayers         = whitelist.CheckBans(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		Title                 = fmt.Sprintf("%v %v", PlayerName, eventJson.Value)
+		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText            string
+		Footer                *discordgo.MessageEmbedFooter
 	)
-	if footer {
-		if !bansToMax {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+	if serverConf.SRV.Footer {
+		if whitelisted {
+			if !bansToMax {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+			} else {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(bannedPlayers), maxAccounts)
+			}
 		} else {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(banedPlayers), maxAccounts)
+			FooterText = fmt.Sprintf("%v is not whitelisted", PlayerName)
 		}
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -279,8 +309,8 @@ func PlayerDeath(PlayerName string, Players []string, banedPlayers []string, Dea
 		Embed discordgo.MessageEmbed
 		color = 0x000000
 	)
-	if footer {
-		if oneLine {
+	if serverConf.SRV.Footer {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -303,7 +333,7 @@ func PlayerDeath(PlayerName string, Players []string, banedPlayers []string, Dea
 			}
 		}
 	} else {
-		if oneLine {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -326,20 +356,29 @@ func PlayerDeath(PlayerName string, Players []string, banedPlayers []string, Dea
 	}
 	return Embed
 }
-func Chat(PlayerName string, Players []string, banedPlayers []string, Message string, footer bool, oneLine bool, footerIcon bool, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+
+func Chat(eventJson srv.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
-		playerID, _   = whitelist.GetOwner(PlayerName)
-		maxAccounts   = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
-		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
-		FooterText    string
-		Footer        *discordgo.MessageEmbedFooter
+		PlayerName            = eventJson.Name
+		Message               = eventJson.Value
+		playerID, whitelisted = whitelist.GetOwner(PlayerName)
+		Players               = whitelist.ListedAccountsOf(playerID)
+		bannedPlayers         = whitelist.CheckBans(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
+		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		FooterText            string
+		Footer                *discordgo.MessageEmbedFooter
 	)
-	if footer {
-		if !bansToMax {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+	if serverConf.SRV.Footer {
+		if whitelisted {
+			if !bansToMax {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts (max %v)", username, len(Players), maxAccounts)
+			} else {
+				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(bannedPlayers), maxAccounts)
+			}
 		} else {
-			FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(Players), len(banedPlayers), maxAccounts)
+			FooterText = fmt.Sprintf("%v is not whitelisted", PlayerName)
 		}
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -356,8 +395,8 @@ func Chat(PlayerName string, Players []string, banedPlayers []string, Message st
 		Embed discordgo.MessageEmbed
 		color = 0x00AAFF
 	)
-	if footer {
-		if oneLine {
+	if serverConf.SRV.Footer {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -380,7 +419,7 @@ func Chat(PlayerName string, Players []string, banedPlayers []string, Message st
 			}
 		}
 	} else {
-		if oneLine {
+		if serverConf.SRV.OneLine {
 			Embed = discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
