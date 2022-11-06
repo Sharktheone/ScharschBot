@@ -36,7 +36,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 
 			if mongodb.Ready {
 				alreadyListed, existingAcc, freeAccount, allowed, mcBan, dcBan, banReason := whitelist.Add(name, i.Member.User.ID, i.Member.Roles)
-				listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID)
+				listedAccounts := whitelist.ListedAccountsOf(i.Member.User.ID, false)
 				var (
 					removeOptions []discordgo.SelectMenuOption
 				)
@@ -207,7 +207,6 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			if mongodb.Ready {
 				reportEmbed := embed.NewReport(name, reason, i)
 				allowed, alreadyReportet, enabled := reports.Report(name, reason, i, s, reportEmbed)
-				log.Println(allowed, alreadyReportet, enabled)
 				if allowed {
 					if enabled {
 						if alreadyReportet {
@@ -316,10 +315,13 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			}
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
-
-				allowed := whitelist.BanUserID(i.Member.User.ID, i.Member.Roles, playerID, banAccounts, reason)
+				allowed, alreadyBanned := whitelist.BanUserID(i.Member.User.ID, i.Member.Roles, playerID, banAccounts, reason, s)
 				if allowed {
-					messageEmbed = embed.WhitelistBanUserID(playerID, reason, i, s)
+					if alreadyBanned {
+						messageEmbed = embed.AlreadyBanned(user.Username)
+					} else {
+						messageEmbed = embed.WhitelistBanUserID(playerID, reason, i, s)
+					}
 				} else {
 					messageEmbed = embed.WhitelistBanUserIDNotAllowed(playerID, i)
 				}
@@ -346,7 +348,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
 
-				allowed, playerID := whitelist.BanAccount(i.Member.User.ID, i.Member.Roles, name, reason)
+				allowed, playerID := whitelist.BanAccount(i.Member.User.ID, i.Member.Roles, name, reason, s)
 				if allowed {
 					messageEmbed = embed.WhitelistBanAccount(name, playerID, reason, i, s)
 				} else {
@@ -375,7 +377,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			}
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
-				allowed := whitelist.UnBanUserID(i.Member.User.ID, i.Member.Roles, playerID, unbanAccounts)
+				allowed := whitelist.UnBanUserID(i.Member.User.ID, i.Member.Roles, playerID, unbanAccounts, s)
 				if allowed {
 					messageEmbed = embed.WhitelistUnBanUserID(playerID, i, s)
 				} else {
@@ -399,7 +401,7 @@ var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCre
 			name := strings.ToLower(optionMap["name"].StringValue())
 			var messageEmbed discordgo.MessageEmbed
 			if mongodb.Ready {
-				allowed := whitelist.UnBanAccount(i.Member.User.ID, i.Member.Roles, name)
+				allowed := whitelist.UnBanAccount(i.Member.User.ID, i.Member.Roles, name, s)
 				if allowed {
 					messageEmbed = embed.WhitelistUnBanAccount(name, i, s)
 				} else {

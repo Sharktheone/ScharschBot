@@ -2,6 +2,7 @@ reconfigure: false
 enabled: true
 discord:
   serverID: <Server GuildID>
+  serverName: <Server Name>
   token: <Bot Token>
   adminWhitelistRemoveRoleID: 
     - <Role ID>

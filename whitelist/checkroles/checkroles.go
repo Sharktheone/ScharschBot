@@ -60,7 +60,7 @@ func CheckRoles() {
 				if checkID {
 					user, err := session.GuildMember(config.Discord.ServerID, userID)
 					if err != nil {
-						log.Println("Error getting user " + userID)
+						log.Printf("Error getting user %v: %v", userID, err)
 					}
 					serverPerms := false
 					for _, role := range user.Roles {
@@ -112,7 +112,7 @@ func CheckRoles() {
 				if checkID {
 					user, err := session.GuildMember(config.Discord.ServerID, userID)
 					if err != nil {
-						log.Println("Error getting user " + userID)
+						log.Printf("Error getting user %v: %v", userID, err)
 					}
 					serverPerms := false
 					for _, role := range user.Roles {

@@ -5,6 +5,7 @@ type Format struct {
 	Enabled     bool `yaml:"enabled"`
 	Discord     struct {
 		ServerID              string   `yaml:"serverID"`
+		ServerName            string   `yaml:"serverName"`
 		Token                 string   `yaml:"token"`
 		WhitelistRemoveRoleID []string `yaml:"adminWhitelistRemoveRoleID"`
 		WhitelistWhoisRoleID  []string `yaml:"adminWhitelistWhoisRoleID"`

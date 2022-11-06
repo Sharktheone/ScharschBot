@@ -18,7 +18,6 @@ var config = conf.GetConf()
 
 func main() {
 	mongodb.Connect()
-
 	dcBot := bot.Session
 	bot.Registration()
 	if config.Whitelist.Enabled {

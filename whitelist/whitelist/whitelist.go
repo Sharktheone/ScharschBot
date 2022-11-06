@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/banembed"
+	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
+	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"io"
 	"log"
@@ -63,7 +66,7 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 					}
 				}
 			}
-			log.Println(userID + " is adding " + username + " to whitelist")
+			log.Printf("%v is adding %v to whitelist", userID, username)
 		}
 
 	}
@@ -207,7 +210,7 @@ func HasListed(lookupID string, userID string, roles []string) (accounts []strin
 		results, dataFound = mongodb.Read(whitelistCollection, bson.M{
 			"dcUserID": lookupID,
 		})
-		listedAccounts := make([]string, len(results), 10)
+		listedAccounts := make([]string, len(results))
 		for i, result := range results {
 			listedAccounts[i] = fmt.Sprintf("%v", result["mcAccount"])
 
@@ -231,8 +234,11 @@ func existingAccount(username string) (existing bool) {
 	return len(string(body)) > 0
 
 }
-func ListedAccountsOf(userID string) (Accounts []string) {
-	var lastIndex int
+func ListedAccountsOf(userID string, banned bool) (Accounts []string) {
+	var (
+		lastIndex = -1
+		datalen   = 0
+	)
 	results, dataFound := mongodb.Read(whitelistCollection, bson.M{
 		"dcUserID": userID,
 	})
@@ -240,26 +246,34 @@ func ListedAccountsOf(userID string) (Accounts []string) {
 		"dcUserID":  userID,
 		"mcAccount": bson.M{"$exists": true},
 	})
-	listedAccounts := make([]string, len(results)+len(resultsban), 10)
 	if dataFound {
-		for i, result := range results {
-			listedAccounts[i] = fmt.Sprintf("%v", result["mcAccount"])
-			lastIndex = i
-		}
-		log.Println(listedAccounts, lastIndex)
+		datalen += len(results)
 	}
-	if dataFoundban {
-		for i, result := range resultsban {
-			listedAccounts[lastIndex+i+1] = fmt.Sprintf("%v", result["mcAccount"])
-		}
+	if dataFoundban && banned {
+		datalen += len(resultsban)
 	}
-	log.Println(listedAccounts)
-	return listedAccounts
+	if datalen > 0 {
+		listedAccounts := make([]string, datalen)
+		if dataFound {
+			for i, result := range results {
+				listedAccounts[i] = fmt.Sprintf("%v", result["mcAccount"])
+				lastIndex = i
+			}
+		}
+		if dataFoundban && banned {
+			for i, result := range resultsban {
+				listedAccounts[lastIndex+i+1] = fmt.Sprintf("%v", result["mcAccount"])
+			}
+		}
+		return listedAccounts
+	} else {
+		return
+	}
 }
 
-func BanUserID(userID string, roles []string, banID string, banAccounts bool, reason string) (allowed bool) {
+func BanUserID(userID string, roles []string, banID string, banAccounts bool, reason string, s *discordgo.Session) (allowed bool, alreadyBanned bool) {
 	banAllowed := false
-	listedAccounts := ListedAccountsOf(banID)
+	listedAccounts := ListedAccountsOf(banID, false)
 	for _, role := range roles {
 		for _, neededRole := range config.Discord.WhitelistBanRoleID {
 			if role == neededRole {
@@ -269,38 +283,53 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 		}
 	}
 	if banAllowed {
-		log.Printf("%v is banning %v", userID, banID)
-		mongodb.Write(banCollection, bson.D{
-			{"dcUserID", banID},
-			{"reason", reason},
-		})
-		if banAccounts {
-			for _, account := range listedAccounts {
-				mongodb.Remove(whitelistCollection, bson.M{
-					"mcAccount": account,
-				})
-				if pterodactylEnabled {
-					command := fmt.Sprintf(removeCommand, account)
-					for _, listedServer := range config.Whitelist.Servers {
-						for _, server := range config.Pterodactyl.Servers {
-							if server.ServerName == listedServer {
-								pterodactyl.SendCommand(command, server.ServerID)
+		_, banned, _ := CheckBanned("", banID)
+		if banned {
+			return true, true
+		} else {
+
+			log.Printf("%v is banning %v", userID, banID)
+			mongodb.Write(banCollection, bson.D{
+				{"dcUserID", banID},
+				{"reason", reason},
+			})
+			if banAccounts {
+				for _, account := range listedAccounts {
+					mongodb.Remove(whitelistCollection, bson.M{
+						"mcAccount": account,
+					})
+					if pterodactylEnabled {
+						command := fmt.Sprintf(removeCommand, account)
+						for _, listedServer := range config.Whitelist.Servers {
+							for _, server := range config.Pterodactyl.Servers {
+								if server.ServerName == listedServer {
+									pterodactyl.SendCommand(command, server.ServerID)
+								}
 							}
 						}
 					}
+					mongodb.Write(banCollection, bson.D{
+						{"mcAccount", account},
+						{"dcUserID", banID},
+					})
 				}
-				mongodb.Write(banCollection, bson.D{
-					{"mcAccount", account},
-					{"dcUserID", banID},
-				})
-
+				messageEmbedDM := banembed.DMBan(false, banID, reason, s)
+				messageEmbedDMFailed := banembed.DMBan(true, banID, reason, s)
+				discordMember.SendDM(banID, s, &discordgo.MessageSend{
+					Embed: &messageEmbedDM,
+				}, &discordgo.MessageSend{
+					Content: fmt.Sprintf("<@%v>", banID),
+					Embed:   &messageEmbedDMFailed,
+				},
+				)
 			}
 		}
+		return banAllowed, false
 	}
-	return banAllowed
+	return
 }
 
-func BanAccount(userID string, roles []string, account string, reason string) (allowed bool, ownerID string) {
+func BanAccount(userID string, roles []string, account string, reason string, s *discordgo.Session) (allowed bool, ownerID string) {
 	var (
 		banAllowed = false
 	)
@@ -313,36 +342,49 @@ func BanAccount(userID string, roles []string, account string, reason string) (a
 		}
 	}
 
-	dcUser, _ := GetOwner(account)
-	_, alreadyBanned := mongodb.Read(banCollection, bson.M{
-		"mcAccount": account,
-	})
-
-	if banAllowed && !alreadyBanned {
-		log.Printf("%v is banning %v", userID, account)
-		mongodb.Write(banCollection, bson.D{
-			{"mcAccount", account},
-			{"dcUserID", dcUser},
-			{"reason", reason},
-		})
-		mongodb.Remove(whitelistCollection, bson.M{
+	dcUser, found := GetOwner(account)
+	if found {
+		_, alreadyBanned := mongodb.Read(banCollection, bson.M{
 			"mcAccount": account,
 		})
-		if pterodactylEnabled {
-			command := fmt.Sprintf(removeCommand, account)
-			for _, listedServer := range config.Whitelist.Servers {
-				for _, server := range config.Pterodactyl.Servers {
-					if server.ServerName == listedServer {
-						pterodactyl.SendCommand(command, server.ServerID)
+
+		if banAllowed && !alreadyBanned {
+			log.Printf("%v is banning %v", userID, account)
+			mongodb.Write(banCollection, bson.D{
+				{"mcAccount", account},
+				{"dcUserID", dcUser},
+				{"reason", reason},
+			})
+			mongodb.Remove(whitelistCollection, bson.M{
+				"mcAccount": account,
+			})
+			messageEmbedDM := banembed.DMBanAccount(account, false, dcUser, reason, s)
+			messageEmbedDMFailed := banembed.DMBanAccount(account, true, dcUser, reason, s)
+			discordMember.SendDM(dcUser, s, &discordgo.MessageSend{
+				Embed: &messageEmbedDM,
+			}, &discordgo.MessageSend{
+				Content: fmt.Sprintf("<@%v>", dcUser),
+				Embed:   &messageEmbedDMFailed,
+			},
+			)
+			if pterodactylEnabled {
+				command := fmt.Sprintf(removeCommand, account)
+				for _, listedServer := range config.Whitelist.Servers {
+					for _, server := range config.Pterodactyl.Servers {
+						if server.ServerName == listedServer {
+							pterodactyl.SendCommand(command, server.ServerID)
+						}
 					}
 				}
 			}
 		}
+	} else {
+		return
 	}
 
 	return banAllowed, dcUser
 }
-func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool) (allowed bool) {
+func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool, s *discordgo.Session) (allowed bool) {
 	unBanAllowed := false
 	for _, role := range roles {
 		for _, neededRole := range config.Discord.WhitelistBanRoleID {
@@ -371,12 +413,21 @@ func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool
 					})
 				}
 			}
+			messageEmbedDM := banembed.DMUnBan(false, banID, s)
+			messageEmbedDMFailed := banembed.DMUnBan(true, banID, s)
+			discordMember.SendDM(banID, s, &discordgo.MessageSend{
+				Embed: &messageEmbedDM,
+			}, &discordgo.MessageSend{
+				Content: fmt.Sprintf("<@%v>", banID),
+				Embed:   &messageEmbedDMFailed,
+			},
+			)
 		}
 	}
 	return unBanAllowed
 }
 
-func UnBanAccount(userID string, roles []string, account string) (allowed bool) {
+func UnBanAccount(userID string, roles []string, account string, s *discordgo.Session) (allowed bool) {
 	unBanAllowed := false
 	for _, role := range roles {
 		for _, neededRole := range config.Discord.WhitelistBanRoleID {
@@ -391,6 +442,15 @@ func UnBanAccount(userID string, roles []string, account string) (allowed bool) 
 		mongodb.Remove(banCollection, bson.M{
 			"mcAccount": account,
 		})
+		messageEmbedDM := banembed.DMUnBanAccount(account, false, userID, s)
+		messageEmbedDMFailed := banembed.DMUnBanAccount(account, true, userID, s)
+		discordMember.SendDM(userID, s, &discordgo.MessageSend{
+			Embed: &messageEmbedDM,
+		}, &discordgo.MessageSend{
+			Content: fmt.Sprintf("<@%v>", userID),
+			Embed:   &messageEmbedDMFailed,
+		},
+		)
 
 	}
 
@@ -440,20 +500,22 @@ func CheckBans(userID string) (bannedPlayers []string) {
 		"mcAccount": bson.M{"$exists": true},
 	})
 
-	var bannedAccounts = make([]string, len(results), 10)
 	if dataFound {
+		var bannedAccounts = make([]string, len(results))
 		for i, result := range results {
 			bannedAccounts[i] = fmt.Sprintf("%v", result["mcAccount"])
 
 		}
+		return bannedAccounts
+	} else {
+		return
 	}
-	return bannedAccounts
 }
 
 func RemoveMyAccounts(userID string) (hadListedAccounts bool, listedAccounts []string) {
 
 	var (
-		accounts          = ListedAccountsOf(userID)
+		accounts          = ListedAccountsOf(userID, false)
 		hasListedAccounts = false
 	)
 	if len(accounts) > 0 {

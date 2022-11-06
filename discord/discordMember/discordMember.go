@@ -23,10 +23,12 @@ func GetRoles(userID string, s *discordgo.Session) []string {
 
 	user, err := s.GuildMember(config.Discord.ServerID, userID)
 	if err != nil {
-		log.Printf("Error getting user: %v", err)
+		log.Printf("Error getting user %v: %v", userID, err)
+	} else {
+		return user.Roles
 	}
 
-	return user.Roles
+	return nil
 }
 
 func SendDM(userID string, s *discordgo.Session, messageComplexDM *discordgo.MessageSend, messageComplexDMFailed *discordgo.MessageSend) (success bool) {

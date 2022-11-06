@@ -8,6 +8,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
+	"github.com/Sharktheone/Scharsch-bot-discord/types"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/robfig/cron"
 	"log"
@@ -16,16 +17,9 @@ import (
 	"time"
 )
 
-type EventJson struct {
-	Name   string `json:"name"`
-	Value  string `json:"value"`
-	Type   string `json:"type"`
-	Server string `json:"server"`
-}
-
 var (
 	config        = conf.GetConf()
-	eventJson     EventJson
+	eventJson     types.EventJson
 	Session       = bot.Session
 	OnlinePlayers []string
 	port          = config.SRV.API.Port
@@ -209,7 +203,7 @@ func checkAccount(Name string) (accounts []string, bannedAccounts []string) {
 			}
 		}
 	}
-	ListedAccounts := whitelist.ListedAccountsOf(userID)
+	ListedAccounts := whitelist.ListedAccountsOf(userID, false)
 	Banned := whitelist.CheckBans(userID)
 	return ListedAccounts, Banned
 }

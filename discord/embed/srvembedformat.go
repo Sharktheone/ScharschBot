@@ -6,7 +6,7 @@ import (
 	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/Sharktheone/Scharsch-bot-discord/minecraft/advancements"
 	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
-	"github.com/Sharktheone/Scharsch-bot-discord/srv"
+	"github.com/Sharktheone/Scharsch-bot-discord/types"
 	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
@@ -16,7 +16,7 @@ import (
 func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
-		Players               = whitelist.ListedAccountsOf(playerID)
+		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
 		Title                 = fmt.Sprintf("%v joined the game", PlayerName)
@@ -101,7 +101,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string,
 func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
-		Players               = whitelist.ListedAccountsOf(playerID)
+		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
 		Title                 = fmt.Sprintf("%v left the game", PlayerName)
@@ -184,12 +184,12 @@ func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string,
 	return Embed
 }
 
-func PlayerAdvancement(eventJson srv.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerAdvancement(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
 		PlayerName            = eventJson.Name
 		advancement           = advancements.Decode(eventJson.Value)
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
-		Players               = whitelist.ListedAccountsOf(playerID)
+		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
 		Title                 = fmt.Sprintf("%v made the Advancement %v", PlayerName, advancement)
@@ -271,11 +271,11 @@ func PlayerAdvancement(eventJson srv.EventJson, serverConf conf.Server, footerIc
 	return Embed
 }
 
-func PlayerDeath(eventJson srv.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
 		PlayerName            = eventJson.Name
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
-		Players               = whitelist.ListedAccountsOf(playerID)
+		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
 		Title                 = fmt.Sprintf("%v %v", PlayerName, eventJson.Value)
@@ -357,12 +357,12 @@ func PlayerDeath(eventJson srv.EventJson, serverConf conf.Server, footerIconURL 
 	return Embed
 }
 
-func Chat(eventJson srv.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
 	var (
 		PlayerName            = eventJson.Name
 		Message               = eventJson.Value
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
-		Players               = whitelist.ListedAccountsOf(playerID)
+		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
