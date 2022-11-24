@@ -62,18 +62,9 @@ func CheckRoles() {
 					if err != nil {
 						log.Printf("Error getting user %v: %v", userID, err)
 					}
-					serverPerms := false
-					for _, role := range user.Roles {
-						for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
-							if role == neededRole {
-								serverPerms = true
-								break
-							}
-						}
-					}
-					if serverPerms == false {
-						removedIDs = append(removedIDs, userID)
+					if user == nil {
 
+						removedIDs = append(removedIDs, userID)
 						mongodb.Remove(whitelistCollection, bson.M{
 							"dcUserID": userID,
 						})
@@ -81,7 +72,28 @@ func CheckRoles() {
 							{"dcUserID", userID},
 							{"mcAccount", entry["mcAccount"]},
 						})
+					} else {
+						serverPerms := false
+						for _, role := range user.Roles {
+							for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
+								if role == neededRole {
+									serverPerms = true
+									break
+								}
+							}
+						}
+						if serverPerms == false {
+							removedIDs = append(removedIDs, userID)
 
+							mongodb.Remove(whitelistCollection, bson.M{
+								"dcUserID": userID,
+							})
+							mongodb.Write(reWhitelistCollection, bson.D{
+								{"dcUserID", userID},
+								{"mcAccount", entry["mcAccount"]},
+							})
+
+						}
 					}
 				}
 
@@ -114,28 +126,30 @@ func CheckRoles() {
 					if err != nil {
 						log.Printf("Error getting user %v: %v", userID, err)
 					}
-					serverPerms := false
-					for _, role := range user.Roles {
-						for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
-							if role == neededRole {
-								serverPerms = true
-								break
+					if user != nil {
+						serverPerms := false
+						for _, role := range user.Roles {
+							for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
+								if role == neededRole {
+									serverPerms = true
+									break
+								}
 							}
 						}
-					}
-					if serverPerms == true {
+						if serverPerms == true {
 
-						addedIDs = append(addedIDs, userID)
+							addedIDs = append(addedIDs, userID)
 
-						mongodb.Remove(reWhitelistCollection, bson.M{
-							"dcUserID":  userID,
-							"mcAccount": entry["mcAccount"],
-						})
-						mongodb.Write(whitelistCollection, bson.D{
-							{"dcUserID", userID},
-							{"mcAccount", entry["mcAccount"]},
-						})
+							mongodb.Remove(reWhitelistCollection, bson.M{
+								"dcUserID":  userID,
+								"mcAccount": entry["mcAccount"],
+							})
+							mongodb.Write(whitelistCollection, bson.D{
+								{"dcUserID", userID},
+								{"mcAccount", entry["mcAccount"]},
+							})
 
+						}
 					}
 				}
 			}
