@@ -58,10 +58,7 @@ func CheckRoles() {
 					}
 				}
 				if checkID {
-					user, err := session.GuildMember(config.Discord.ServerID, userID)
-					if err != nil {
-						log.Printf("Error getting user %v: %v", userID, err)
-					}
+					user, _ := session.GuildMember(config.Discord.ServerID, userID)
 					if user == nil {
 
 						removedIDs = append(removedIDs, userID)
@@ -122,10 +119,7 @@ func CheckRoles() {
 					}
 				}
 				if checkID {
-					user, err := session.GuildMember(config.Discord.ServerID, userID)
-					if err != nil {
-						log.Printf("Error getting user %v: %v", userID, err)
-					}
+					user, _ := session.GuildMember(config.Discord.ServerID, userID)
 					if user != nil {
 						serverPerms := false
 						for _, role := range user.Roles {

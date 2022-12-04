@@ -23,7 +23,7 @@ func GetRoles(userID string, s *discordgo.Session) []string {
 
 	user, err := s.GuildMember(config.Discord.ServerID, userID)
 	if err != nil {
-		log.Printf("Error getting user %v: %v", userID, err)
+		log.Printf("(GetRoles) Error getting user %v: %v", userID, err)
 	} else {
 		return user.Roles
 	}
