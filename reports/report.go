@@ -1,10 +1,10 @@
 package reports
 
 import (
+	"Scharsch-Bot/conf"
+	"Scharsch-Bot/database/mongodb"
+	"Scharsch-Bot/discord/discordMember"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
-	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"

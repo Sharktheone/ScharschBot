@@ -1,13 +1,13 @@
 package commands
 
 import (
+	"Scharsch-Bot/conf"
+	"Scharsch-Bot/database/mongodb"
+	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/pterodactyl"
+	"Scharsch-Bot/reports"
+	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
-	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
-	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
-	"github.com/Sharktheone/Scharsch-bot-discord/reports"
-	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"

@@ -1,9 +1,9 @@
 package pterodactyl
 
 import (
+	"Scharsch-Bot/conf"
 	"encoding/json"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"

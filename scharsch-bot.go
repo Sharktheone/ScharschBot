@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
-	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
-	"github.com/Sharktheone/Scharsch-bot-discord/srv"
-	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/checkroles"
+	"Scharsch-Bot/conf"
+	"Scharsch-Bot/database/mongodb"
+	"Scharsch-Bot/discord/bot"
+	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/srv"
+	"Scharsch-Bot/whitelist/checkroles"
 	"github.com/bwmarrin/discordgo"
 	"github.com/robfig/cron"
 	"log"

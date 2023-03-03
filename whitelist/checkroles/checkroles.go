@@ -1,12 +1,12 @@
 package checkroles
 
 import (
+	"Scharsch-Bot/conf"
+	"Scharsch-Bot/database/mongodb"
+	"Scharsch-Bot/discord/bot"
+	"Scharsch-Bot/pterodactyl"
+	"Scharsch-Bot/srv"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
-	"github.com/Sharktheone/Scharsch-bot-discord/database/mongodb"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
-	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
-	"github.com/Sharktheone/Scharsch-bot-discord/srv"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
 )

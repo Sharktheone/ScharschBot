@@ -1,8 +1,8 @@
 package srv
 
 import (
+	"Scharsch-Bot/conf"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"log"
 )
 

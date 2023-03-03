@@ -1,15 +1,15 @@
 package srv
 
 import (
+	"Scharsch-Bot/conf"
+	"Scharsch-Bot/discord/bot"
+	"Scharsch-Bot/discord/discordMember"
+	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/pterodactyl"
+	"Scharsch-Bot/types"
+	"Scharsch-Bot/whitelist/whitelist"
 	"encoding/json"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/bot"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/embed"
-	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
-	"github.com/Sharktheone/Scharsch-bot-discord/types"
-	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/robfig/cron"
 	"log"
 	"net/http"

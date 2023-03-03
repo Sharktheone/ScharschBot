@@ -1,13 +1,13 @@
 package embed
 
 import (
+	"Scharsch-Bot/conf"
+	"Scharsch-Bot/discord/discordMember"
+	"Scharsch-Bot/minecraft/advancements"
+	"Scharsch-Bot/pterodactyl"
+	"Scharsch-Bot/types"
+	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
-	"github.com/Sharktheone/Scharsch-bot-discord/discord/discordMember"
-	"github.com/Sharktheone/Scharsch-bot-discord/minecraft/advancements"
-	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
-	"github.com/Sharktheone/Scharsch-bot-discord/types"
-	"github.com/Sharktheone/Scharsch-bot-discord/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"

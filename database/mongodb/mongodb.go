@@ -1,9 +1,9 @@
 package mongodb
 
 import (
+	"Scharsch-Bot/conf"
 	"context"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

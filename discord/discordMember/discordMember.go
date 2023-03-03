@@ -1,7 +1,7 @@
 package discordMember
 
 import (
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
+	"Scharsch-Bot/conf"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )

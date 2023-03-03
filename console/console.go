@@ -1,9 +1,9 @@
 package console
 
 import (
+	"Scharsch-Bot/conf"
+	"Scharsch-Bot/pterodactyl"
 	"fmt"
-	"github.com/Sharktheone/Scharsch-bot-discord/conf"
-	"github.com/Sharktheone/Scharsch-bot-discord/pterodactyl"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"strings"
