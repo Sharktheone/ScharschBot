@@ -16,72 +16,14 @@ type Format struct {
 		FooterIcon            bool     `yaml:"footerIcon"`
 	} `yaml:"discord"`
 	Pterodactyl struct {
-		Enabled                bool   `yaml:"enabled"`
-		RegexRemoveAnsi        string `yaml:"regexRemoveAnsi"`
-		APIKey                 string `yaml:"APIKey"`
-		PanelURL               string `yaml:"panelURL"`
-		WhitelistAddCommand    string `yaml:"whitelistAddCommand"`
-		WhitelistRemoveCommand string `yaml:"whitelistRemoveCommand"`
-		ChatCommand            string `yaml:"chatCommand"`
-		Servers                []struct {
-			ServerID      string `yaml:"serverID"`
-			ServerName    string `yaml:"serverName"`
-			StateMessages struct {
-				Enabled        bool     `yaml:"enabled"`
-				Start          string   `yaml:"start"`
-				Stop           string   `yaml:"stop"`
-				Online         string   `yaml:"online"`
-				Offline        string   `yaml:"offline"`
-				StartEnabled   bool     `yaml:"startEnabled"`
-				StopEnabled    bool     `yaml:"stopEnabled"`
-				OfflineEnabled bool     `yaml:"offlineEnabled"`
-				OnlineEnabled  bool     `yaml:"onlineEnabled"`
-				ChannelID      []string `yaml:"channelID"`
-			} `yaml:"stateMessages"`
-			ChannelInfo struct {
-				Enabled   bool     `yaml:"enabled"`
-				ChannelID []string `yaml:"channelID"`
-				Format    string   `yaml:"format"`
-			} `yaml:"channelInfo"`
-			PowerActionsRoleIDs struct {
-				Start   []string `yaml:"start"`
-				Stop    []string `yaml:"stop"`
-				Restart []string `yaml:"restart"`
-			} `yaml:"powerActionsRoleIDs"`
-			Console struct {
-				Enabled          bool     `yaml:"enabled"`
-				MessageLines     int      `yaml:"messageLines"`
-				MaxTimeInSeconds int      `yaml:"maxTimeInSeconds"`
-				ChannelID        []string `yaml:"channelID"`
-				Reverse          bool     `yaml:"reverse"`
-				ReverseRoleID    []string `yaml:"reverseRoleID"`
-				ReversePrefix    string   `yaml:"reversePrefix"`
-			} `yaml:"console"`
-			Chat struct {
-				Enabled      bool     `yaml:"enabled"`
-				Embed        bool     `yaml:"embed"`
-				Prefix       string   `yaml:"prefix"`
-				ChannelID    []string `yaml:"channelID"`
-				EmbedFooter  bool     `yaml:"embedFooter"`
-				EmbedOneLine bool     `yaml:"oneLine"`
-				FooterIcon   bool     `yaml:"footerIcon"`
-				Reverse      bool     `yaml:"reverse"`
-				RoleID       []string `yaml:"roleID"`
-			} `yaml:"chat"`
-			SRV struct {
-				Enabled    bool     `yaml:"enabled"`
-				OneLine    bool     `yaml:"oneLine"`
-				Footer     bool     `yaml:"footer"`
-				ChannelID  []string `yaml:"channelID"`
-				FooterIcon bool     `yaml:"footerIcon"`
-				Events     struct {
-					Join        bool `yaml:"join"`
-					Quit        bool `yaml:"quit"`
-					Advancement bool `yaml:"advancement"`
-					Death       bool `yaml:"death"`
-				} `yaml:"events"`
-			} `yaml:"srv"`
-		} `yaml:"servers"`
+		Enabled                bool     `yaml:"enabled"`
+		RegexRemoveAnsi        string   `yaml:"regexRemoveAnsi"`
+		APIKey                 string   `yaml:"APIKey"`
+		PanelURL               string   `yaml:"panelURL"`
+		WhitelistAddCommand    string   `yaml:"whitelistAddCommand"`
+		WhitelistRemoveCommand string   `yaml:"whitelistRemoveCommand"`
+		ChatCommand            string   `yaml:"chatCommand"`
+		Servers                []Server `yaml:"servers"`
 	} `yaml:"pterodactyl"`
 	SRV struct {
 		API struct {
@@ -144,61 +86,61 @@ type Format struct {
 }
 
 type Server struct {
-	ServerID      string
-	ServerName    string
+	ServerID      string `yaml:"serverID"`
+	ServerName    string `yaml:"serverName"`
 	StateMessages struct {
-		Enabled        bool
-		Start          string
-		Stop           string
-		Online         string
-		Offline        string
-		StartEnabled   bool
-		StopEnabled    bool
-		OfflineEnabled bool
-		OnlineEnabled  bool
-		ChannelID      []string
-	}
+		Enabled        bool     `yaml:"enabled"`
+		Start          string   `yaml:"start"`
+		Stop           string   `yaml:"stop"`
+		Online         string   `yaml:"online"`
+		Offline        string   `yaml:"offline"`
+		StartEnabled   bool     `yaml:"startEnabled"`
+		StopEnabled    bool     `yaml:"stopEnabled"`
+		OfflineEnabled bool     `yaml:"offlineEnabled"`
+		OnlineEnabled  bool     `yaml:"onlineEnabled"`
+		ChannelID      []string `yaml:"channelID"`
+	} `yaml:"stateMessages"`
 	ChannelInfo struct {
-		Enabled   bool
-		ChannelID []string
-		Format    string
-	}
+		Enabled   bool     `yaml:"enabled"`
+		ChannelID []string `yaml:"channelID"`
+		Format    string   `yaml:"format"`
+	} `yaml:"channelInfo"`
 	PowerActionsRoleIDs struct {
-		Start   []string
-		Stop    []string
-		Restart []string
-	}
+		Start   []string `yaml:"start"`
+		Stop    []string `yaml:"stop"`
+		Restart []string `yaml:"restart"`
+	} `yaml:"powerActionsRoleIDs"`
 	Console struct {
-		Enabled          bool
-		MessageLines     int
-		MaxTimeInSeconds int
-		ChannelID        []string
-		Reverse          bool
-		ReverseRoleID    []string
-		ReversePrefix    string
-	}
+		Enabled          bool     `yaml:"enabled"`
+		MessageLines     int      `yaml:"messageLines"`
+		MaxTimeInSeconds int      `yaml:"maxTimeInSeconds"`
+		ChannelID        []string `yaml:"channelID"`
+		Reverse          bool     `yaml:"reverse"`
+		ReverseRoleID    []string `yaml:"reverseRoleID"`
+		ReversePrefix    string   `yaml:"reversePrefix"`
+	} `yaml:"console"`
 	Chat struct {
-		Enabled      bool
-		Embed        bool
-		Prefix       string
-		ChannelID    []string
-		EmbedFooter  bool
-		EmbedOneLine bool
-		FooterIcon   bool
-		Reverse      bool
-		RoleID       []string
-	}
+		Enabled      bool     `yaml:"enabled"`
+		Embed        bool     `yaml:"embed"`
+		Prefix       string   `yaml:"prefix"`
+		ChannelID    []string `yaml:"channelID"`
+		EmbedFooter  bool     `yaml:"embedFooter"`
+		EmbedOneLine bool     `yaml:"oneLine"`
+		FooterIcon   bool     `yaml:"footerIcon"`
+		Reverse      bool     `yaml:"reverse"`
+		RoleID       []string `yaml:"roleID"`
+	} `yaml:"chat"`
 	SRV struct {
-		Enabled    bool
-		OneLine    bool
-		Footer     bool
-		ChannelID  []string
-		FooterIcon bool
+		Enabled    bool     `yaml:"enabled"`
+		OneLine    bool     `yaml:"oneLine"`
+		Footer     bool     `yaml:"footer"`
+		ChannelID  []string `yaml:"channelID"`
+		FooterIcon bool     `yaml:"footerIcon"`
 		Events     struct {
-			Join        bool
-			Quit        bool
-			Advancement bool
-			Death       bool
-		}
-	}
+			Join        bool `yaml:"join"`
+			Quit        bool `yaml:"quit"`
+			Advancement bool `yaml:"advancement"`
+			Death       bool `yaml:"death"`
+		} `yaml:"events"`
+	} `yaml:"srv"`
 }
