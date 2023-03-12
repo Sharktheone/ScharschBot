@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/discord/embed/srvEmbed"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -96,7 +96,7 @@ func power(s *discordgo.Session, i *discordgo.InteractionCreate, option string) 
 		},
 	}
 
-	messageEmbed = embed.Power(option)
+	messageEmbed = srvEmbed.Power(option)
 	var err error
 	if option != "status" {
 		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -163,9 +163,9 @@ func powerSelect(s *discordgo.Session, i *discordgo.InteractionCreate, action st
 	}
 	var messageEmbed discordgo.MessageEmbed
 	if !allowed {
-		messageEmbed = embed.PowerNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.String(), action, serverConf.ServerName)
+		messageEmbed = srvEmbed.PowerNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.String(), action, serverConf.ServerName)
 	} else {
-		messageEmbed = embed.PowerAction(action, serverConf.ServerName, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+		messageEmbed = srvEmbed.PowerAction(action, serverConf.ServerName, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 		switch action {
 		case "start":
 			pterodactyl.Start(serverConf.ServerID)

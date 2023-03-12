@@ -3,8 +3,8 @@ package whitelist
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/banembed"
 	"Scharsch-Bot/discord/discordMember"
+	"Scharsch-Bot/discord/embed/banEmbed"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -313,8 +313,8 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 						{"dcUserID", banID},
 					})
 				}
-				messageEmbedDM := banembed.DMBan(false, banID, reason, s)
-				messageEmbedDMFailed := banembed.DMBan(true, banID, reason, s)
+				messageEmbedDM := banEmbed.DMBan(false, banID, reason, s)
+				messageEmbedDMFailed := banEmbed.DMBan(true, banID, reason, s)
 				discordMember.SendDM(banID, s, &discordgo.MessageSend{
 					Embed: &messageEmbedDM,
 				}, &discordgo.MessageSend{
@@ -358,8 +358,8 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 			mongodb.Remove(whitelistCollection, bson.M{
 				"mcAccount": account,
 			})
-			messageEmbedDM := banembed.DMBanAccount(account, false, dcUser, reason, s)
-			messageEmbedDMFailed := banembed.DMBanAccount(account, true, dcUser, reason, s)
+			messageEmbedDM := banEmbed.DMBanAccount(account, false, dcUser, reason, s)
+			messageEmbedDMFailed := banEmbed.DMBanAccount(account, true, dcUser, reason, s)
 			discordMember.SendDM(dcUser, s, &discordgo.MessageSend{
 				Embed: &messageEmbedDM,
 			}, &discordgo.MessageSend{
@@ -413,8 +413,8 @@ func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool
 					})
 				}
 			}
-			messageEmbedDM := banembed.DMUnBan(false, banID, s)
-			messageEmbedDMFailed := banembed.DMUnBan(true, banID, s)
+			messageEmbedDM := banEmbed.DMUnBan(false, banID, s)
+			messageEmbedDMFailed := banEmbed.DMUnBan(true, banID, s)
 			discordMember.SendDM(banID, s, &discordgo.MessageSend{
 				Embed: &messageEmbedDM,
 			}, &discordgo.MessageSend{
@@ -442,8 +442,8 @@ func UnBanAccount(userID string, roles []string, account string, s *discordgo.Se
 		mongodb.Remove(banCollection, bson.M{
 			"mcAccount": account,
 		})
-		messageEmbedDM := banembed.DMUnBanAccount(account, false, userID, s)
-		messageEmbedDMFailed := banembed.DMUnBanAccount(account, true, userID, s)
+		messageEmbedDM := banEmbed.DMUnBanAccount(account, false, userID, s)
+		messageEmbedDMFailed := banEmbed.DMUnBanAccount(account, true, userID, s)
 		discordMember.SendDM(userID, s, &discordgo.MessageSend{
 			Embed: &messageEmbedDM,
 		}, &discordgo.MessageSend{

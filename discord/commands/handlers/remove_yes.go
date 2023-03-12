@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/discord/embed/wEmbed"
 	"Scharsch-Bot/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"log"
@@ -14,15 +14,15 @@ func RemoveYes(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		allowed, onWhitelist := whitelist.RemoveAll(i.Member.User.ID, i.Member.Roles)
 		if allowed {
 			if onWhitelist {
-				messageEmbed = embed.WhitelistRemoveAll(i)
+				messageEmbed = wEmbed.WhitelistRemoveAll(i)
 			} else {
-				messageEmbed = embed.WhitelistRemoveAllNoWhitelistEntries(i)
+				messageEmbed = wEmbed.WhitelistRemoveAllNoWhitelistEntries(i)
 			}
 		} else {
-			messageEmbed = embed.WhitelistRemoveAllNotAllowed(i)
+			messageEmbed = wEmbed.WhitelistRemoveAllNotAllowed(i)
 		}
 	} else {
-		messageEmbed = embed.DatabaseNotReady
+		messageEmbed = wEmbed.DatabaseNotReady
 	}
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

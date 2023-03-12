@@ -4,7 +4,7 @@ import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
 	"Scharsch-Bot/discord/bot"
-	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/discord/embed/wEmbed"
 	"Scharsch-Bot/srv"
 	"Scharsch-Bot/whitelist/checkroles"
 	"github.com/bwmarrin/discordgo"
@@ -29,7 +29,7 @@ func main() {
 		}
 		rolesCron.Start()
 	}
-	embed.BotAvatarURL = dcBot.State.User.AvatarURL("40")
+	wEmbed.BotAvatarURL = dcBot.State.User.AvatarURL("40")
 	srv.Start()
 
 	defer mongodb.Disconnect()
@@ -39,12 +39,10 @@ func main() {
 		if err != nil {
 
 		}
-
 	}(dcBot)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	log.Println("Press Ctrl+C to exit")
 	<-stop
 	defer bot.RemoveCommands()
-
 }

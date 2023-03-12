@@ -4,7 +4,7 @@ import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/discord/discordMember"
-	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/discord/embed/srvEmbed"
 	"Scharsch-Bot/pterodactyl"
 	"Scharsch-Bot/types"
 	"Scharsch-Bot/whitelist/whitelist"
@@ -42,18 +42,18 @@ func Start() {
 		var doStats = true
 		if server.Console.Enabled {
 			maxTime := server.Console.MaxTimeInSeconds * int(time.Second)
-			// TODO remove go-routine - fixed maybe
+			// TODO: remove go-routine - fixed maybe
 			//goland:noinspection GoBoolExpressions
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false, doStats)
 			doStats = false
 		}
 		if server.StateMessages.Enabled {
-			// TODO remove go-routine - fixed maybe
+			// TODO: remove go-routine - fixed maybe
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0, true, doStats)
 			doStats = false
 		}
 		if server.ChannelInfo.Enabled {
-			// TODO remove go-routine - fixed maybe
+			// TODO: remove go-routine - fixed maybe
 			go pterodactyl.Websocket(server.ServerID, pterodactyl.Stats, nil, 0, 0, true, doStats)
 			doStats = false
 
@@ -88,7 +88,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 
 		for _, server := range config.Pterodactyl.Servers {
 			if server.ServerName == eventJson.Server {
-				serverConf = conf.Server(server)
+				serverConf = server
 				found = true
 			}
 		}
@@ -120,7 +120,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		switch eventJson.Type {
 		case "chat":
 			if serverConf.Chat.Embed {
-				messageEmbed := embed.Chat(eventJson, serverConf, FooterIcon, username, Session)
+				messageEmbed := srvEmbed.Chat(eventJson, serverConf, FooterIcon, username, Session)
 				for _, channelID := range serverConf.Chat.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -138,7 +138,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 
 		case "death":
 			if serverConf.SRV.Events.Death {
-				messageEmbed := embed.PlayerDeath(eventJson, serverConf, FooterIcon, username, Session)
+				messageEmbed := srvEmbed.PlayerDeath(eventJson, serverConf, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -148,7 +148,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		case "advancement":
 			if serverConf.SRV.Events.Advancement {
-				messageEmbed := embed.PlayerAdvancement(eventJson, serverConf, FooterIcon, username, Session)
+				messageEmbed := srvEmbed.PlayerAdvancement(eventJson, serverConf, FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -159,7 +159,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		case "join":
 			if serverConf.SRV.Events.Join {
 				OnlinePlayers = append(OnlinePlayers, strings.ToLower(eventJson.Name))
-				messageEmbed := embed.PlayerJoin(serverConf, strings.ToLower(eventJson.Name), FooterIcon, username, Session)
+				messageEmbed := srvEmbed.PlayerJoin(serverConf, strings.ToLower(eventJson.Name), FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {
@@ -175,7 +175,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 				}
-				messageEmbed := embed.PlayerQuit(serverConf, strings.ToLower(eventJson.Name), FooterIcon, username, Session)
+				messageEmbed := srvEmbed.PlayerQuit(serverConf, strings.ToLower(eventJson.Name), FooterIcon, username, Session)
 				for _, channelID := range serverConf.SRV.ChannelID {
 					_, err = Session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 					if err != nil {

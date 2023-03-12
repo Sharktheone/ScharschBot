@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/embed"
+	"Scharsch-Bot/discord/embed/wEmbed"
 	"Scharsch-Bot/reports"
 	"Scharsch-Bot/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
@@ -48,26 +48,26 @@ func Whitelist(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					if freeAccount {
 						if existingAcc {
 							if alreadyListed {
-								messageEmbed = embed.WhitelistAlreadyListed(name, i)
+								messageEmbed = wEmbed.WhitelistAlreadyListed(name, i)
 							} else {
-								messageEmbed = embed.WhitelistAdding(name, i)
+								messageEmbed = wEmbed.WhitelistAdding(name, i)
 							}
 						} else {
-							messageEmbed = embed.WhitelistNotExisting(name, i)
+							messageEmbed = wEmbed.WhitelistNotExisting(name, i)
 						}
 					} else {
-						messageEmbed = embed.WhitelistNoFreeAccounts(name, i)
+						messageEmbed = wEmbed.WhitelistNoFreeAccounts(name, i)
 						noFree = true
 					}
 				} else {
-					messageEmbed = embed.WhitelistAddNotAllowed(name, i)
+					messageEmbed = wEmbed.WhitelistAddNotAllowed(name, i)
 
 				}
 			} else {
-				messageEmbed = embed.WhitelistBanned(name, dcBan, banReason, i)
+				messageEmbed = wEmbed.WhitelistBanned(name, dcBan, banReason, i)
 			}
 		} else {
-			messageEmbed = embed.DatabaseNotReady
+			messageEmbed = wEmbed.DatabaseNotReady
 		}
 		var err error
 		if noFree {
@@ -107,15 +107,15 @@ func Whitelist(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 			if allowed {
 				if onWhitelist {
-					messageEmbed = embed.WhitelistRemoving(name, i)
+					messageEmbed = wEmbed.WhitelistRemoving(name, i)
 				} else {
-					messageEmbed = embed.WhitelistNotListed(name, i)
+					messageEmbed = wEmbed.WhitelistNotListed(name, i)
 				}
 			} else {
-				messageEmbed = embed.WhitelistRemoveNotAllowed(name, i)
+				messageEmbed = wEmbed.WhitelistRemoveNotAllowed(name, i)
 			}
 		} else {
-			messageEmbed = embed.DatabaseNotReady
+			messageEmbed = wEmbed.DatabaseNotReady
 		}
 
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -135,15 +135,15 @@ func Whitelist(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			accounts, allowed, found, bannedPlayers := whitelist.HasListed(i.Member.User.ID, i.Member.User.ID, i.Member.Roles)
 			if allowed {
 				if found || len(bannedPlayers) > 0 {
-					messageEmbed = embed.WhitelistHasListed(accounts, i.Member.User.ID, bannedPlayers, i, s)
+					messageEmbed = wEmbed.WhitelistHasListed(accounts, i.Member.User.ID, bannedPlayers, i, s)
 				} else {
-					messageEmbed = embed.WhitelistNoAccounts(i, i.Member.User.ID)
+					messageEmbed = wEmbed.WhitelistNoAccounts(i, i.Member.User.ID)
 				}
 			} else {
-				messageEmbed = embed.WhitelistUserNotAllowed(accounts, i.Member.User.ID, bannedPlayers, i)
+				messageEmbed = wEmbed.WhitelistUserNotAllowed(accounts, i.Member.User.ID, bannedPlayers, i)
 			}
 		} else {
-			messageEmbed = embed.DatabaseNotReady
+			messageEmbed = wEmbed.DatabaseNotReady
 		}
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -163,12 +163,12 @@ func Whitelist(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			mcBans := whitelist.CheckBans(i.Member.User.ID)
 
 			if hasListedAccounts {
-				messageEmbed = embed.WhitelistRemoveMyAccounts(listedAccounts, mcBans, i)
+				messageEmbed = wEmbed.WhitelistRemoveMyAccounts(listedAccounts, mcBans, i)
 			} else {
-				messageEmbed = embed.WhitelistNoAccounts(i, i.Member.User.ID)
+				messageEmbed = wEmbed.WhitelistNoAccounts(i, i.Member.User.ID)
 			}
 		} else {
-			messageEmbed = embed.DatabaseNotReady
+			messageEmbed = wEmbed.DatabaseNotReady
 		}
 
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -196,20 +196,20 @@ func Whitelist(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		if mongodb.Ready {
-			reportEmbed := embed.NewReport(name, reason, i)
+			reportEmbed := wEmbed.NewReport(name, reason, i)
 			allowed, alreadyReportet, enabled := reports.Report(name, reason, i, s, reportEmbed)
 			if allowed {
 				if enabled {
 					if alreadyReportet {
-						messageEmbed = embed.AlreadyReported(name)
+						messageEmbed = wEmbed.AlreadyReported(name)
 					} else {
-						messageEmbed = embed.ReportPlayer(name, reason, i)
+						messageEmbed = wEmbed.ReportPlayer(name, reason, i)
 					}
 				} else {
-					messageEmbed = embed.ReportDisabled(i)
+					messageEmbed = wEmbed.ReportDisabled(i)
 				}
 			} else {
-				messageEmbed = embed.ReportNotALlowed(i)
+				messageEmbed = wEmbed.ReportNotALlowed(i)
 			}
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,

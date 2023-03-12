@@ -1,4 +1,4 @@
-package banembed
+package banEmbed
 
 import (
 	"Scharsch-Bot/conf"

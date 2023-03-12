@@ -1,4 +1,4 @@
-package embed
+package srvEmbed
 
 import (
 	"Scharsch-Bot/conf"
@@ -11,6 +11,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+)
+
+var (
+	config     = conf.GetConf()
+	bansToMax  = config.Whitelist.BannedUsersToMaxAccounts
+	footerIcon = config.Discord.FooterIcon
 )
 
 func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
@@ -502,7 +508,7 @@ func PowerNotAllowed(avatarURL string, name string, action string, serverName st
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    name,
 			IconURL: avatarURL,
-			URL:     ErrorURL,
+			URL:     config.Discord.EmbedErrorAuthorURL,
 		},
 	}
 	return Embed
