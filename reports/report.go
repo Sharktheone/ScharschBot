@@ -28,7 +28,7 @@ func GetReports() (reports []bson.M, anyReports bool) {
 	return report, dataFound
 }
 
-func Report(name string, reason string, i *discordgo.InteractionCreate, s *discordgo.Session, messageEmbed discordgo.MessageEmbed) (reporAllowed bool, alreadyReported bool, enabled bool) {
+func Report(name string, reason string, i *discordgo.InteractionCreate, s *discordgo.Session, messageEmbed discordgo.MessageEmbed) (reportAllowed bool, alreadyReported bool, enabled bool) {
 	var (
 		allowed   = false
 		dataFound bool
@@ -72,7 +72,7 @@ func Report(name string, reason string, i *discordgo.InteractionCreate, s *disco
 	return allowed, dataFound, config.Whitelist.Report.Enabled
 }
 
-func Reject(name string, i *discordgo.InteractionCreate, s *discordgo.Session, notifyreporter bool, messageEmbed *discordgo.MessageEmbed, messageEmbedDMFailed *discordgo.MessageEmbed) (rejectAllowed bool, enabled bool) {
+func Reject(name string, i *discordgo.InteractionCreate, s *discordgo.Session, notifyReporter bool, messageEmbed *discordgo.MessageEmbed, messageEmbedDMFailed *discordgo.MessageEmbed) (rejectAllowed bool, enabled bool) {
 	var (
 		allowed  = false
 		notifyDM = config.Whitelist.Report.PlayerNotifyDM
@@ -92,7 +92,7 @@ func Reject(name string, i *discordgo.InteractionCreate, s *discordgo.Session, n
 		report, reportFound := GetReport(name)
 		if reportFound {
 			if notifyDM {
-				if notifyreporter {
+				if notifyReporter {
 					channel, err := s.UserChannelCreate(report.ReporterID)
 					if err != nil {
 						log.Printf("Failed to create DM with reporter: %v", err)
@@ -111,7 +111,7 @@ func Reject(name string, i *discordgo.InteractionCreate, s *discordgo.Session, n
 
 				}
 			} else {
-				if notifyreporter {
+				if notifyReporter {
 					for _, channelID := range config.Whitelist.Report.ChannelID {
 						_, err := s.ChannelMessageSendEmbed(channelID, messageEmbed)
 						if err != nil {
