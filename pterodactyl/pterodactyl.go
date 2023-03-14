@@ -4,8 +4,6 @@ import (
 	"Scharsch-Bot/conf"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"net/http"
-	url2 "net/url"
 	"strings"
 )
 
@@ -61,26 +59,16 @@ func (s *Server) Restart() error {
 
 func (s *Server) Power(signal string) error {
 	var (
-		url, _  = url2.JoinPath(panelUrl, fmt.Sprintf("/api/client/servers/%s/power", s.server.ServerID))
 		payload = strings.NewReader(fmt.Sprintf(`{"signal": "%s"}`, signal))
 	)
-	req, _ := http.NewRequest("POST", url, payload)
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", apiKey)
-	res, _ := http.DefaultClient.Do(req)
+	res, err := request("POST", fmt.Sprintf("/api/client/servers/%s/power", s.server.ServerID), payload)
+	if err != nil {
+		return err
+	}
 	if res.StatusCode != 204 {
 		return fmt.Errorf("could not send power signal to server %s. Failed with %s", s.server.ServerID, res.Status)
 	}
 	return nil
-}
-
-func (s *Server) getWebsocket() {
-
-}
-
-func (s *Server) Websocket() { // start the websocket
-
 }
 
 func (s *Server) AddListener(listener func(server *conf.Server, data chan string)) {
