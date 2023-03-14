@@ -17,18 +17,26 @@ const (
 	WebsocketStats         = "stats"
 	WebsocketTokenExpiring = "token expiring"
 	WebsocketTokenExpired  = "token expired"
-	PowerSignalStart       = "start"
-	PowerSignalStop        = "stop"
-	PowerSignalKill        = "kill"
-	PowerSignalRestart     = "restart"
+
+	PowerSignalStart   = "start"
+	PowerSignalStop    = "stop"
+	PowerSignalKill    = "kill"
+	PowerSignalRestart = "restart"
 )
 
 type Server struct {
 	server    *conf.Server
-	maxLines  *int
 	listeners []func(server *conf.Server, data chan string)
 	data      chan string
 	socket    *websocket.Conn
+}
+
+func New(server *conf.Server) *Server {
+	return &Server{
+		server:    server,
+		listeners: []func(serverID *conf.Server, data chan string){},
+		data:      make(chan string),
+	}
 }
 
 func (s *Server) SendCommand() {
@@ -75,6 +83,7 @@ func (s *Server) Websocket() { // start the websocket
 
 }
 
-func (s *Server) AddListener() {
-
+func (s *Server) AddListener(listener func(server *conf.Server, data chan string)) {
+	s.listeners = append(s.listeners, listener)
+	go listener(s.server, s.data)
 }
