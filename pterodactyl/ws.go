@@ -36,12 +36,26 @@ func (s *Server) connectWS() error {
 			}); err != nil {
 				return fmt.Errorf("failed to encode pterodactyl websocket auth for server %v: %s", s.server.ServerName, err)
 			}
-			s.socket, _, err = websocket.DefaultDialer.Dial(socketInfo.Data.Socket, nil)
-			if err != nil {
-				return fmt.Errorf("failed to connect to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
+			if !s.connected {
+				s.socket, _, err = websocket.DefaultDialer.Dial(socketInfo.Data.Socket, nil)
+				if err != nil {
+					return fmt.Errorf("failed to connect to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
+				}
 			}
 			if err := s.socket.WriteMessage(websocket.TextMessage, auth.Bytes()); err != nil {
 				return fmt.Errorf("failed to send auth to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
+			}
+			var (
+				event eventType
+			)
+			if err := s.socket.ReadJSON(event); err != nil {
+				fmt.Printf("failed to read websocket message: %s", err)
+				return err
+			}
+			if event.Event == WebsocketAuthSuccess {
+				return nil
+			} else {
+				return fmt.Errorf("failed to authenticate to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
 			}
 
 		} else {
@@ -50,12 +64,43 @@ func (s *Server) connectWS() error {
 	} else {
 		return fmt.Errorf("cannot reach pterodactyl instance with panel url %v", panelUrl)
 	}
-
-	return nil
 }
 
-func (s *Server) Listen() {
-
+func (s *Server) Listen() error {
+	if !s.connected {
+		if err := s.connectWS(); err != nil {
+			return err
+		} else {
+			s.connected = true
+		}
+	}
+	for {
+		var (
+			event eventType
+		)
+		if err := s.socket.ReadJSON(&event); err != nil {
+			fmt.Printf("failed to read websocket message: %s", err)
+			continue
+		}
+		if event.Event == WebsocketTokenExpired || event.Event == WebsocketTokenExpiring {
+			if event.Event == WebsocketTokenExpired {
+				s.connected = false
+			}
+			if err := s.connectWS(); err != nil {
+				var tries int
+				for tries < 5 && err != nil {
+					if err := s.connectWS(); err != nil {
+						tries++
+					}
+				}
+				if err != nil {
+					return err
+				}
+			}
+			continue
+		}
+		s.setStats(&event)
+	}
 }
 
 func (s *Server) setStats(data *eventType) {
