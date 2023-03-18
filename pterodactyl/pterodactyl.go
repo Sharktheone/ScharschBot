@@ -3,7 +3,7 @@ package pterodactyl
 import (
 	"Scharsch-Bot/conf"
 	"fmt"
-	"github.com/gorilla/websocket"
+	"github.com/fasthttp/websocket"
 	"strings"
 )
 
@@ -22,18 +22,32 @@ const (
 	PowerSignalRestart = "restart"
 )
 
+type ServerStatus struct {
+	State   string  `json:"state"`
+	Ram     int     `json:"memory_bytes"`
+	RamMax  int     `json:"memory_limit_bytes"`
+	Cpu     float64 `json:"cpu_absolute"`
+	Network struct {
+		Rx int `json:"rx_bytes"`
+		Tx int `json:"tx_bytes"`
+	} `json:"network"`
+	Disk   int `json:"disk_bytes"`
+	Uptime int `json:"uptime"`
+}
+
 type Server struct {
 	server    *conf.Server
-	listeners []func(server *conf.Server, data chan string)
-	data      chan string
+	data      chan *ServerStatus
+	console   chan string
+	status    ServerStatus
 	socket    *websocket.Conn
+	connected bool
 }
 
 func New(server *conf.Server) *Server {
 	return &Server{
-		server:    server,
-		listeners: []func(serverID *conf.Server, data chan string){},
-		data:      make(chan string),
+		server: server,
+		data:   make(chan *ServerStatus),
 	}
 }
 
@@ -71,7 +85,9 @@ func (s *Server) Power(signal string) error {
 	return nil
 }
 
-func (s *Server) AddListener(listener func(server *conf.Server, data chan string)) {
-	s.listeners = append(s.listeners, listener)
+func (s *Server) AddListener(listener func(server *conf.Server, data chan *ServerStatus), event string) {
 	go listener(s.server, s.data)
+}
+func (s *Server) AddConsoleListener(listener func(server *conf.Server, console chan string)) {
+	go listener(s.server, s.console)
 }

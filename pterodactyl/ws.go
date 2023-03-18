@@ -106,7 +106,6 @@ func (s *Server) Listen() error {
 func (s *Server) setStats(data *eventType) {
 	switch data.Event {
 	case WebsocketConsoleOutput:
-		s.consoleOutput = append(s.consoleOutput, data.Args[0])
 		s.console <- data.Args[0]
 	case WebsocketStatus:
 		s.status.State = data.Args[0]
