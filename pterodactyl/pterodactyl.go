@@ -2,24 +2,30 @@ package pterodactyl
 
 import (
 	"Scharsch-Bot/conf"
+	"context"
 	"fmt"
 	"github.com/fasthttp/websocket"
-	"strings"
+	"sync"
 )
 
 //goland:noinspection GoUnusedConst
 const (
-	WebsocketAuthSuccess   = "auth success"
+	websocketAuthSuccess   = "auth success"
 	WebsocketStatus        = "status"
 	WebsocketConsoleOutput = "console output"
 	WebsocketStats         = "stats"
-	WebsocketTokenExpiring = "token expiring"
-	WebsocketTokenExpired  = "token expired"
+	websocketTokenExpiring = "token expiring"
+	websocketTokenExpired  = "token expired"
 
 	PowerSignalStart   = "start"
 	PowerSignalStop    = "stop"
 	PowerSignalKill    = "kill"
 	PowerSignalRestart = "restart"
+
+	PowerStatusRunning  = "running"
+	PowerStatusOffline  = "offline"
+	PowerStatusStarting = "starting"
+	PowerStatusStopping = "stopping"
 )
 
 type ServerStatus struct {
@@ -35,24 +41,71 @@ type ServerStatus struct {
 	Uptime int `json:"uptime"`
 }
 
+type ChanData struct {
+	Event string
+	Data  *ServerStatus
+}
+
+type listenerCtx struct {
+	id     string
+	cancel context.CancelFunc
+	ctx    *context.Context
+}
+
 type Server struct {
 	server    *conf.Server
-	data      chan *ServerStatus
+	data      chan *ChanData
 	console   chan string
 	status    ServerStatus
 	socket    *websocket.Conn
 	connected bool
+	lCtx      struct {
+		ctx []*listenerCtx
+		mu  sync.Mutex
+	}
+	ctx *context.Context
 }
 
-func New(server *conf.Server) *Server {
+func New(ctx *context.Context, server *conf.Server) *Server {
 	return &Server{
+		ctx:    ctx,
 		server: server,
-		data:   make(chan *ServerStatus),
+		data:   make(chan *ChanData),
 	}
 }
 
-func (s *Server) SendCommand() {
+func (s *Server) SendCommand(command string) error {
+	var (
+		commandAction = []byte(fmt.Sprintf(`{"event":"set command", "args": "%s"}`, command))
+	)
+	return s.socket.WriteMessage(websocket.TextMessage, commandAction)
 
+}
+
+func (s *Server) AddListener(listener func(ctx *context.Context, server *conf.Server, data chan *ChanData), name string) {
+	ctx, cancel := context.WithCancel(*s.ctx)
+	s.lCtx.ctx = append(s.lCtx.ctx, &listenerCtx{
+		id:     name,
+		cancel: cancel,
+		ctx:    &ctx,
+	})
+	go listener(&ctx, s.server, s.data)
+}
+
+func (s *Server) RemoveListener(name string) {
+	s.lCtx.mu.Lock()
+	for i, l := range s.lCtx.ctx {
+		if l.id == name || name == "*" {
+			l.cancel()
+			s.lCtx.ctx = append(s.lCtx.ctx[:i], s.lCtx.ctx[i+1:]...)
+			return
+		}
+	}
+	s.lCtx.mu.Unlock()
+}
+
+func (s *Server) AddConsoleListener(listener func(server *conf.Server, console chan string)) {
+	go listener(s.server, s.console)
 }
 
 func (s *Server) Start() error {
@@ -73,21 +126,7 @@ func (s *Server) Restart() error {
 
 func (s *Server) Power(signal string) error {
 	var (
-		payload = strings.NewReader(fmt.Sprintf(`{"signal": "%s"}`, signal))
+		powerAction = []byte(fmt.Sprintf(`{"event":"set state", "args": "%s"}`, signal))
 	)
-	res, err := request("POST", fmt.Sprintf("/api/client/servers/%s/power", s.server.ServerID), payload)
-	if err != nil {
-		return err
-	}
-	if res.StatusCode != 204 {
-		return fmt.Errorf("could not send power signal to server %s. Failed with %s", s.server.ServerID, res.Status)
-	}
-	return nil
-}
-
-func (s *Server) AddListener(listener func(server *conf.Server, data chan *ServerStatus), event string) {
-	go listener(s.server, s.data)
-}
-func (s *Server) AddConsoleListener(listener func(server *conf.Server, console chan string)) {
-	go listener(s.server, s.console)
+	return s.socket.WriteMessage(websocket.TextMessage, powerAction)
 }

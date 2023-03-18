@@ -29,20 +29,15 @@ func (s *Server) connectWS() error {
 				return fmt.Errorf("failed to decode pterodactyl websocket information for server %v: %s",
 					s.server.ServerName, err)
 			}
-			var auth bytes.Buffer
-			if err := json.NewEncoder(&auth).Encode(eventType{
-				Event: "auth",
-				Args:  []string{socketInfo.Data.Token},
-			}); err != nil {
-				return fmt.Errorf("failed to encode pterodactyl websocket auth for server %v: %s", s.server.ServerName, err)
-			}
+			var auth = []byte(fmt.Sprintf(`{"event":"auth","args":["%v"]}`, socketInfo.Data.Token))
+
 			if !s.connected {
 				s.socket, _, err = websocket.DefaultDialer.Dial(socketInfo.Data.Socket, nil)
 				if err != nil {
 					return fmt.Errorf("failed to connect to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
 				}
 			}
-			if err := s.socket.WriteMessage(websocket.TextMessage, auth.Bytes()); err != nil {
+			if err := s.socket.WriteMessage(websocket.TextMessage, auth); err != nil {
 				return fmt.Errorf("failed to send auth to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
 			}
 			var (
@@ -52,7 +47,7 @@ func (s *Server) connectWS() error {
 				fmt.Printf("failed to read websocket message: %s", err)
 				return err
 			}
-			if event.Event == WebsocketAuthSuccess {
+			if event.Event == websocketAuthSuccess {
 				return nil
 			} else {
 				return fmt.Errorf("failed to authenticate to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
@@ -82,8 +77,8 @@ func (s *Server) Listen() error {
 			fmt.Printf("failed to read websocket message: %s", err)
 			continue
 		}
-		if event.Event == WebsocketTokenExpired || event.Event == WebsocketTokenExpiring {
-			if event.Event == WebsocketTokenExpired {
+		if event.Event == websocketTokenExpired || event.Event == websocketTokenExpiring {
+			if event.Event == websocketTokenExpired {
 				s.connected = false
 			}
 			if err := s.connectWS(); err != nil {
@@ -109,6 +104,10 @@ func (s *Server) setStats(data *eventType) {
 		s.console <- data.Args[0]
 	case WebsocketStatus:
 		s.status.State = data.Args[0]
+		s.data <- &ChanData{
+			Event: WebsocketStatus,
+			Data:  &s.status,
+		}
 	case WebsocketStats:
 		var stats ServerStatus
 		if err := json.NewDecoder(bytes.NewBufferString(data.Args[0])).Decode(&stats); err != nil {
@@ -116,5 +115,9 @@ func (s *Server) setStats(data *eventType) {
 			return
 		}
 		s.status = stats
+		s.data <- &ChanData{
+			Event: WebsocketStats,
+			Data:  &s.status,
+		}
 	}
 }
