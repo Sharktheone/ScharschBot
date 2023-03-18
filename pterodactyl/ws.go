@@ -104,5 +104,18 @@ func (s *Server) Listen() error {
 }
 
 func (s *Server) setStats(data *eventType) {
-
+	switch data.Event {
+	case WebsocketConsoleOutput:
+		s.consoleOutput = append(s.consoleOutput, data.Args[0])
+		s.console <- data.Args[0]
+	case WebsocketStatus:
+		s.status.State = data.Args[0]
+	case WebsocketStats:
+		var stats ServerStatus
+		if err := json.NewDecoder(bytes.NewBufferString(data.Args[0])).Decode(&stats); err != nil {
+			fmt.Printf("failed to decode stats: %s", err)
+			return
+		}
+		s.status = stats
+	}
 }
