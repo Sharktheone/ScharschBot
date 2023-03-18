@@ -13,9 +13,9 @@ import (
 
 func channelStats() {
 	for _, server := range config.Pterodactyl.Servers {
-		var stat pterodactyl.ServerStat
+		var stat pterodactyl.ServerStatus
 		for _, serverStat := range pterodactyl.ServerStats {
-			if serverStat.Name == server.ServerName {
+			if serverStat.State == server.ServerName {
 				stat = *serverStat
 			}
 		}
@@ -26,7 +26,7 @@ func channelStats() {
 			//strings.ReplaceAll(info, "{{uptime}}", stats.Uptime)
 			info = strings.ReplaceAll(info, "{{ram}}", convertSize(stat.Ram))
 			info = strings.ReplaceAll(info, "{{cpu}}", fmt.Sprintf("%.2f", stat.Cpu))
-			info = strings.ReplaceAll(info, "{{state}}", stat.Status)
+			info = strings.ReplaceAll(info, "{{state}}", stat.State)
 			info = strings.ReplaceAll(info, "{{networkIn}}", convertSize(stat.Network.Rx))
 			info = strings.ReplaceAll(info, "{{networkOut}}", convertSize(stat.Network.Tx))
 			info = strings.ReplaceAll(info, "{{disk}}", convertSize(stat.Disk))
@@ -42,44 +42,40 @@ func channelStats() {
 		}
 	}
 }
-func serverStarting(serverID string) {
-	serverConf := conf.GetServerConf(serverID, "")
-	if serverConf.StateMessages.StartEnabled {
-		for _, channelID := range serverConf.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Start)
+func serverStarting(server *conf.Server) {
+	if server.StateMessages.StartEnabled {
+		for _, channelID := range server.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Start)
 			if err != nil {
 				log.Printf("Failed to send server start message to discord: %v, (channelID %v)", err, channelID)
 			}
 		}
 	}
 }
-func serverStopping(serverID string) {
-	serverConf := conf.GetServerConf(serverID, "")
-	if serverConf.StateMessages.StopEnabled {
-		for _, channelID := range serverConf.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Stop)
+func serverStopping(server *conf.Server) {
+	if server.StateMessages.StopEnabled {
+		for _, channelID := range server.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Stop)
 			if err != nil {
 				log.Printf("Failed to send server stop message to discord: %v (channelID: %v)", err, channelID)
 			}
 		}
 	}
 }
-func serverOnline(serverID string) {
-	serverConf := conf.GetServerConf(serverID, "")
-	if serverConf.StateMessages.OnlineEnabled {
-		for _, channelID := range serverConf.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Online)
+func serverOnline(server *conf.Server) {
+	if server.StateMessages.OnlineEnabled {
+		for _, channelID := range server.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Online)
 			if err != nil {
 				log.Printf("Failed to send server online message to discord: %v (channelID: %v)", err, channelID)
 			}
 		}
 	}
 }
-func serverOffline(serverID string) {
-	serverConf := conf.GetServerConf(serverID, "")
-	if serverConf.StateMessages.OfflineEnabled {
-		for _, channelID := range serverConf.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, serverConf.StateMessages.Offline)
+func serverOffline(server *conf.Server) {
+	if server.StateMessages.OfflineEnabled {
+		for _, channelID := range server.StateMessages.ChannelID {
+			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Offline)
 			if err != nil {
 				log.Printf("Failed to send server offline message to discord: %v (channelID: %v)", err, channelID)
 			}
@@ -88,21 +84,38 @@ func serverOffline(serverID string) {
 }
 
 func handlePower(power []string, serverID string) {
+	serverConf := conf.GetServerConf(serverID, "")
 	if power == nil {
 		return
 	} else if power[0] == "starting" {
-		serverStarting(serverID)
+		serverStarting(&serverConf)
 	} else if power[0] == "stopping" {
-		serverStopping(serverID)
+		serverStopping(&serverConf)
 	} else if power[0] == "running" {
-		serverOnline(serverID)
+		serverOnline(&serverConf)
 	} else if power[0] == "offline" {
-		serverOffline(serverID)
+		serverOffline(&serverConf)
 	} else {
 		log.Printf("Unknown power state: %v", power)
 		return
 	}
-
+}
+func HandlePower(status string, server *conf.Server) {
+	if status == "" {
+		return
+	}
+	switch status {
+	case pterodactyl.PowerStatusStarting:
+		serverStarting(server)
+	case pterodactyl.PowerStatusStopping:
+		serverStopping(server)
+	case pterodactyl.PowerStatusRunning:
+		serverOnline(server)
+	case pterodactyl.PowerStatusOffline:
+		serverOffline(server)
+	default:
+		log.Printf("Unknown power state: %v", status)
+	}
 }
 func convertSize(bytes int) string {
 	floatBytes := float64(bytes)
