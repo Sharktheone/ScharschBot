@@ -5,17 +5,23 @@ import (
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"log"
 	"math"
 	"strings"
 	"time"
 )
 
+type replacer struct {
+	string string
+}
+
 func channelStats() {
 	for _, server := range config.Pterodactyl.Servers {
-		var stat pterodactyl.ServerStatus
+		var stat pterodactyl.ServerStat
 		for _, serverStat := range pterodactyl.ServerStats {
-			if serverStat.State == server.ServerName {
+			if serverStat.Name == server.ServerName {
 				stat = *serverStat
 			}
 		}
@@ -26,7 +32,7 @@ func channelStats() {
 			//strings.ReplaceAll(info, "{{uptime}}", stats.Uptime)
 			info = strings.ReplaceAll(info, "{{ram}}", convertSize(stat.Ram))
 			info = strings.ReplaceAll(info, "{{cpu}}", fmt.Sprintf("%.2f", stat.Cpu))
-			info = strings.ReplaceAll(info, "{{state}}", stat.State)
+			info = strings.ReplaceAll(info, "{{state}}", stat.Status)
 			info = strings.ReplaceAll(info, "{{networkIn}}", convertSize(stat.Network.Rx))
 			info = strings.ReplaceAll(info, "{{networkOut}}", convertSize(stat.Network.Tx))
 			info = strings.ReplaceAll(info, "{{disk}}", convertSize(stat.Disk))
@@ -42,6 +48,44 @@ func channelStats() {
 		}
 	}
 }
+
+func ChannelStats(status *pterodactyl.ServerStatus, server *conf.Server) func() {
+	f := replacer{
+		string: server.ChannelInfo.Format,
+	}
+	title := cases.Title(language.Und)
+	return func() {
+		if server.ChannelInfo.Enabled {
+			var (
+				replace = map[string]string{
+					"cpu":        fmt.Sprintf("%.2f", status.Cpu),
+					"status":     title.String(status.State),
+					"ram":        convertSize(status.Ram),
+					"disk":       convertSize(status.Disk),
+					"networkIn":  convertSize(status.Network.Rx),
+					"networkOut": convertSize(status.Network.Tx),
+					"uptime":     convertTime(status.Uptime),
+				}
+			)
+			for variable, value := range replace {
+				f.inject(variable, value)
+			}
+		}
+	}
+}
+
+func (r *replacer) inject(variable string, value string) {
+	var (
+		formats = []string{
+			"{{%v}}",
+			"${%v}",
+		}
+	)
+	for _, format := range formats {
+		r.string = strings.ReplaceAll(r.string, fmt.Sprintf(format, variable), value)
+	}
+}
+
 func serverStarting(server *conf.Server) {
 	if server.StateMessages.StartEnabled {
 		for _, channelID := range server.StateMessages.ChannelID {
