@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"flag"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
@@ -10,7 +11,7 @@ const confPath = "config/config5.yml"
 
 func GetConf() Format {
 	var config Format
-	ymlConf, err := os.ReadFile(confPath)
+	ymlConf, err := os.ReadFile(*confPath)
 	if err != nil {
 		log.Fatalf("Failed to get config: %v", err)
 	}
