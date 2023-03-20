@@ -56,7 +56,7 @@ type Server struct {
 	server    *conf.Server
 	data      chan *ChanData
 	console   chan string
-	status    ServerStatus
+	status    *ServerStatus
 	socket    *websocket.Conn
 	connected bool
 	lCtx      struct {
@@ -79,7 +79,6 @@ func (s *Server) SendCommand(command string) error {
 		commandAction = []byte(fmt.Sprintf(`{"event":"set command", "args": "%s"}`, command))
 	)
 	return s.socket.WriteMessage(websocket.TextMessage, commandAction)
-
 }
 
 func (s *Server) AddListener(listener func(ctx *context.Context, server *conf.Server, data chan *ChanData), name string) {

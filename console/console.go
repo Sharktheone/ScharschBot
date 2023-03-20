@@ -2,6 +2,7 @@ package console
 
 import (
 	"Scharsch-Bot/conf"
+	"Scharsch-Bot/discord/discordMember"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -13,22 +14,13 @@ var config = conf.GetConf()
 
 //goland:noinspection GoUnusedParameter
 func Handler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	allowed := false
-	for _, server := range config.Pterodactyl.Servers {
+	for _, server := range conf.Config.Pterodactyl.Servers {
 		if server.Console.Reverse {
 			for _, neededChannelID := range server.Console.ChannelID {
 				if neededChannelID == m.ChannelID {
 					command := strings.SplitAfter(m.Message.Content, server.Console.ReversePrefix)
 					if command[0] == server.Console.ReversePrefix {
-						for _, role := range m.Member.Roles {
-							for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
-								if role == neededRole {
-									allowed = true
-									break
-								}
-							}
-						}
-						if allowed {
+						if discordMember.HasRole(m.Member, config.Whitelist.Roles.ServerRoleID) {
 							var commandString string
 							for _, element := range command[1:] {
 								commandString += element
@@ -46,20 +38,11 @@ func Handler(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func ChatHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	allowed := false
 	for _, server := range config.Pterodactyl.Servers {
 		if server.Chat.Reverse {
 			for _, neededChannelID := range server.Chat.ChannelID {
 				if neededChannelID == m.ChannelID && m.Author.ID != s.State.User.ID {
-					for _, role := range m.Member.Roles {
-						for _, neededRole := range config.Whitelist.Roles.ServerRoleID {
-							if role == neededRole {
-								allowed = true
-								break
-							}
-						}
-					}
-					if allowed {
+					if discordMember.HasRole(m.Member, config.Whitelist.Roles.ServerRoleID) {
 						message := fmt.Sprintf(" %v: %v", m.Author.Username, m.Message.Content)
 						command := fmt.Sprintf(config.Pterodactyl.ChatCommand, message)
 						pterodactyl.SendCommand(command, server.ServerID)

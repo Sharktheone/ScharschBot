@@ -104,6 +104,7 @@ type Server struct {
 		Enabled   bool     `yaml:"enabled"`
 		ChannelID []string `yaml:"channelID"`
 		Format    string   `yaml:"format"`
+		Interval  string   `yaml:"interval"`
 	} `yaml:"channelInfo"`
 	PowerActionsRoleIDs struct {
 		Start   []string `yaml:"start"`
