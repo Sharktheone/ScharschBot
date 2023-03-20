@@ -10,25 +10,21 @@ import (
 )
 
 var (
-	config              = conf.GetConf()
+	config              = conf.Config
 	GuildID             = flag.String("guild", config.Discord.ServerID, "Guild ID")
 	Session             *discordgo.Session
 	commandRegistration = make([]*discordgo.ApplicationCommand, len(commands.Commands))
 )
 
 func init() {
-	var BotToken string
-	flag.StringVar(&BotToken, "token", config.Discord.Token, "Bot Token")
-	flag.Parse()
-	var err error
-	Session, err = discordgo.New("Bot " + BotToken)
+	var BotToken = flag.String("token", config.Discord.Token, "Discord Bot Token")
+	Session, err := discordgo.New("Bot " + *BotToken)
 	if err != nil {
 		log.Fatal("Invalid Bot Configuration:", err)
 	}
 
-	err = Session.Open()
-	if err != nil {
-		log.Fatal("Cannot open connection:", err)
+	if err := Session.Open(); err != nil {
+		log.Fatal("Cannot open connection to discord:", err)
 	}
 }
 
@@ -39,11 +35,15 @@ func Registration() {
 		case discordgo.InteractionApplicationCommand:
 			if h, ok := commands.Handlers[i.ApplicationCommandData().Name]; ok {
 				h(s, i)
+			} else {
+				log.Printf("No handler for %v", i.ApplicationCommandData().Name)
 			}
 
 		case discordgo.InteractionMessageComponent:
 			if h, ok := commands.Handlers[i.MessageComponentData().CustomID]; ok {
 				h(s, i)
+			} else {
+				log.Printf("No handler for %v", i.MessageComponentData().CustomID)
 			}
 		}
 	})
