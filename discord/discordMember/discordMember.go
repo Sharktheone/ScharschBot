@@ -55,3 +55,14 @@ func SendDM(userID string, s *discordgo.Session, messageComplexDM *discordgo.Mes
 	}
 	return successDM
 }
+
+func HasRole(member *discordgo.Member, roleIDs []string) bool {
+	for _, role := range member.Roles {
+		for _, neededRole := range roleIDs {
+			if role == neededRole {
+				return true
+			}
+		}
+	}
+	return false
+}
