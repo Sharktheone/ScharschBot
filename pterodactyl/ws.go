@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/fasthttp/websocket"
+	"log"
 )
 
 type eventType struct {
@@ -43,8 +44,8 @@ func (s *Server) connectWS() error {
 			var (
 				event eventType
 			)
-			if err := s.socket.ReadJSON(event); err != nil {
-				fmt.Printf("failed to read websocket message: %s", err)
+			if err := s.socket.ReadJSON(&event); err != nil {
+				log.Printf("failed to read websocket message: %s", err)
 				return err
 			}
 			if event.Event == websocketAuthSuccess {
@@ -74,7 +75,7 @@ func (s *Server) Listen() error {
 			event eventType
 		)
 		if err := s.socket.ReadJSON(&event); err != nil {
-			fmt.Printf("failed to read websocket message: %s", err)
+			log.Printf("failed to read websocket message: %s", err)
 			continue
 		}
 		if event.Event == websocketTokenExpired || event.Event == websocketTokenExpiring {
@@ -106,18 +107,18 @@ func (s *Server) setStats(data *eventType) {
 		s.status.State = data.Args[0]
 		s.data <- &ChanData{
 			Event: WebsocketStatus,
-			Data:  &s.status,
+			Data:  s.status,
 		}
 	case WebsocketStats:
 		var stats ServerStatus
 		if err := json.NewDecoder(bytes.NewBufferString(data.Args[0])).Decode(&stats); err != nil {
-			fmt.Printf("failed to decode stats: %s", err)
+			log.Printf("failed to decode stats: %s", err)
 			return
 		}
-		s.status = stats
+		s.status = &stats
 		s.data <- &ChanData{
 			Event: WebsocketStats,
-			Data:  &s.status,
+			Data:  s.status,
 		}
 	}
 }

@@ -17,38 +17,6 @@ type replacer struct {
 	string string
 }
 
-func channelStats() {
-	for _, server := range config.Pterodactyl.Servers {
-		var stat pterodactyl.ServerStat
-		for _, serverStat := range pterodactyl.ServerStats {
-			if serverStat.Name == server.ServerName {
-				stat = *serverStat
-			}
-		}
-		if server.ChannelInfo.Enabled {
-			info := server.ChannelInfo.Format
-			// {{onlineNumber}} players are Online | Server online for {{uptime}} | {{ram}} RAM | {{cpu}}% CPU | Server is {{state}} | Network in {{networkIn}} | Network out {{networkOut}}
-			info = strings.ReplaceAll(info, "{{onlineNumber}}", fmt.Sprintf("%v", len(OnlinePlayers)))
-			//strings.ReplaceAll(info, "{{uptime}}", stats.Uptime)
-			info = strings.ReplaceAll(info, "{{ram}}", convertSize(stat.Ram))
-			info = strings.ReplaceAll(info, "{{cpu}}", fmt.Sprintf("%.2f", stat.Cpu))
-			info = strings.ReplaceAll(info, "{{state}}", stat.Status)
-			info = strings.ReplaceAll(info, "{{networkIn}}", convertSize(stat.Network.Rx))
-			info = strings.ReplaceAll(info, "{{networkOut}}", convertSize(stat.Network.Tx))
-			info = strings.ReplaceAll(info, "{{disk}}", convertSize(stat.Disk))
-			info = strings.ReplaceAll(info, "{{uptime}}", convertTime(stat.Uptime))
-			for _, channelID := range server.ChannelInfo.ChannelID {
-				_, err := Session.ChannelEditComplex(channelID, &discordgo.ChannelEdit{
-					Topic: info,
-				})
-				if err != nil {
-					log.Printf("Failed to edit channel topic: %v (channelID %v)", err, channelID)
-				}
-			}
-		}
-	}
-}
-
 func ChannelStats(status *pterodactyl.ServerStatus, server *conf.Server) func() {
 	f := replacer{
 		string: server.ChannelInfo.Format,
@@ -130,23 +98,6 @@ func serverOffline(server *conf.Server) {
 	}
 }
 
-func handlePower(power []string, serverID string) {
-	serverConf := conf.GetServerConf(serverID, "")
-	if power == nil {
-		return
-	} else if power[0] == "starting" {
-		serverStarting(&serverConf)
-	} else if power[0] == "stopping" {
-		serverStopping(&serverConf)
-	} else if power[0] == "running" {
-		serverOnline(&serverConf)
-	} else if power[0] == "offline" {
-		serverOffline(&serverConf)
-	} else {
-		log.Printf("Unknown power state: %v", power)
-		return
-	}
-}
 func HandlePower(status string, server *conf.Server) {
 	if status == "" {
 		return
