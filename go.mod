@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/bwmarrin/discordgo v0.27.0
 	github.com/fasthttp/websocket v1.5.1
+	github.com/gorilla/websocket v1.4.2
 	github.com/robfig/cron v1.2.0
 	go.mongodb.org/mongo-driver v1.11.2
 	golang.org/x/text v0.7.0

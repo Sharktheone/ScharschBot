@@ -18,7 +18,8 @@ var (
 
 func init() {
 	var BotToken = flag.String("token", config.Discord.Token, "Discord Bot Token")
-	Session, err := discordgo.New("Bot " + *BotToken)
+	var err error
+	Session, err = discordgo.New("Bot " + *BotToken)
 	if err != nil {
 		log.Fatal("Invalid Bot Configuration:", err)
 	}

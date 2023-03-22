@@ -1,12 +1,12 @@
 package pterodactyl
 
 import (
+	"io"
 	"net/http"
 	url2 "net/url"
-	"strings"
 )
 
-func request(path string, method string, payload *strings.Reader) (*http.Response, error) {
+func request(path string, method string, payload io.Reader) (*http.Response, error) {
 	var (
 		url, err = url2.JoinPath(panelUrl, path)
 	)

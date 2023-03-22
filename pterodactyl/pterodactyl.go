@@ -68,9 +68,12 @@ type Server struct {
 
 func New(ctx *context.Context, server *conf.Server) *Server {
 	return &Server{
-		ctx:    ctx,
-		server: server,
-		data:   make(chan *ChanData),
+		ctx:       ctx,
+		server:    server,
+		data:      make(chan *ChanData),
+		console:   make(chan string),
+		status:    &ServerStatus{},
+		connected: false,
 	}
 }
 

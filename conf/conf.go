@@ -13,6 +13,7 @@ var (
 )
 
 func init() {
+	flag.Parse()
 	GetConf()
 }
 func GetConf() Format {
