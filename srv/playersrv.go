@@ -10,11 +10,9 @@ import (
 	"Scharsch-Bot/whitelist/whitelist"
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron"
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var (
@@ -27,49 +25,7 @@ var (
 	APIPassword   = config.SRV.API.Password
 )
 
-func Start() {
-	http.HandleFunc("/", EventHandler)
-	log.Printf("Starting http server on port %v", port)
-	addr := fmt.Sprintf(":%v", port)
-	var err error
-	go func() { err = http.ListenAndServe(addr, nil) }()
-	if err != nil {
-		log.Fatalf("Failed to start http server: %v", err)
-	}
-	log.Println("Started http server")
-
-	for _, server := range config.Pterodactyl.Servers {
-		var doStats = true
-		if server.Console.Enabled {
-			maxTime := server.Console.MaxTimeInSeconds * int(time.Second)
-			// TODO: remove go-routine - fixed maybe
-			//goland:noinspection GoBoolExpressions
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.ConsoleOutput, ConsoleSrv, server.Console.MessageLines, time.Duration(maxTime), false, doStats)
-			doStats = false
-		}
-		if server.StateMessages.Enabled {
-			// TODO: remove go-routine - fixed maybe
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.Status, handlePower, 0, 0, true, doStats)
-			doStats = false
-		}
-		if server.ChannelInfo.Enabled {
-			// TODO: remove go-routine - fixed maybe
-			go pterodactyl.Websocket(server.ServerID, pterodactyl.Stats, nil, 0, 0, true, doStats)
-			doStats = false
-
-		}
-
-	}
-	channelCron := cron.New()
-	err = channelCron.AddFunc("0 * * * * *", channelStats)
-	if err != nil {
-		log.Fatalf("Error adding ChannelCron job: %v", err)
-	}
-	channelCron.Start()
-
-}
-
-func EventHandler(w http.ResponseWriter, r *http.Request) {
+func playerSRVEventHandler(w http.ResponseWriter, r *http.Request) {
 	user, pass, _ := r.BasicAuth()
 	if user == "" || pass == "" {
 		w.WriteHeader(http.StatusUnauthorized)
