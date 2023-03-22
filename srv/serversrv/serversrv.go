@@ -1,10 +1,10 @@
-package srv
+package serversrv
 
 import (
 	"Scharsch-Bot/conf"
+	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"log"
@@ -89,37 +89,40 @@ func (r *replacer) inject(variable string, value string) {
 func serverStarting(server *conf.Server) {
 	if server.StateMessages.StartEnabled {
 		for _, channelID := range server.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Start)
+			_, err := bot.Session.ChannelMessageSend(channelID, server.StateMessages.Start)
 			if err != nil {
 				log.Printf("Failed to send server start message to discord: %v, (channelID %v)", err, channelID)
 			}
 		}
 	}
 }
+
 func serverStopping(server *conf.Server) {
 	if server.StateMessages.StopEnabled {
 		for _, channelID := range server.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Stop)
+			_, err := bot.Session.ChannelMessageSend(channelID, server.StateMessages.Stop)
 			if err != nil {
 				log.Printf("Failed to send server stop message to discord: %v (channelID: %v)", err, channelID)
 			}
 		}
 	}
 }
+
 func serverOnline(server *conf.Server) {
 	if server.StateMessages.OnlineEnabled {
 		for _, channelID := range server.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Online)
+			_, err := bot.Session.ChannelMessageSend(channelID, server.StateMessages.Online)
 			if err != nil {
 				log.Printf("Failed to send server online message to discord: %v (channelID: %v)", err, channelID)
 			}
 		}
 	}
 }
+
 func serverOffline(server *conf.Server) {
 	if server.StateMessages.OfflineEnabled {
 		for _, channelID := range server.StateMessages.ChannelID {
-			_, err := Session.ChannelMessageSend(channelID, server.StateMessages.Offline)
+			_, err := bot.Session.ChannelMessageSend(channelID, server.StateMessages.Offline)
 			if err != nil {
 				log.Printf("Failed to send server offline message to discord: %v (channelID: %v)", err, channelID)
 			}
