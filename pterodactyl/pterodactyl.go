@@ -28,6 +28,16 @@ const (
 	PowerStatusStopping = "stopping"
 )
 
+var (
+	_config   = conf.Config
+	_panelURL = _config.Pterodactyl.PanelURL
+	_apiKey   = fmt.Sprintf("Bearer %s", _config.Pterodactyl.APIKey)
+)
+var (
+	Servers []*Server
+	mu      sync.RWMutex
+)
+
 type ServerStatus struct {
 	State   string  `json:"state"`
 	Ram     int     `json:"memory_bytes"`
@@ -53,10 +63,10 @@ type listenerCtx struct {
 }
 
 type Server struct {
-	server    *conf.Server
-	data      chan *ChanData
-	console   chan string
-	status    *ServerStatus
+	Server    *conf.Server
+	Data      chan *ChanData
+	Console   chan string
+	Status    *ServerStatus
 	socket    *websocket.Conn
 	connected bool
 	lCtx      struct {
@@ -67,14 +77,19 @@ type Server struct {
 }
 
 func New(ctx *context.Context, server *conf.Server) *Server {
-	return &Server{
+	s := &Server{
 		ctx:       ctx,
-		server:    server,
-		data:      make(chan *ChanData),
-		console:   make(chan string),
-		status:    &ServerStatus{},
+		Server:    server,
+		Data:      make(chan *ChanData),
+		Console:   make(chan string),
+		Status:    &ServerStatus{},
 		connected: false,
 	}
+	mu.Lock()
+	Servers = append(Servers, s)
+	mu.Unlock()
+
+	return s
 }
 
 func (s *Server) SendCommand(command string) error {
@@ -91,7 +106,7 @@ func (s *Server) AddListener(listener func(ctx *context.Context, server *conf.Se
 		cancel: cancel,
 		ctx:    &ctx,
 	})
-	go listener(&ctx, s.server, s.data)
+	go listener(&ctx, s.Server, s.Data)
 }
 
 func (s *Server) RemoveListener(name string) {
@@ -107,7 +122,7 @@ func (s *Server) RemoveListener(name string) {
 }
 
 func (s *Server) AddConsoleListener(listener func(server *conf.Server, console chan string)) {
-	go listener(s.server, s.console)
+	go listener(s.Server, s.Console)
 }
 
 func (s *Server) Start() error {

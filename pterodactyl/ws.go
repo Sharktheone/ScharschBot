@@ -14,7 +14,7 @@ type eventType struct {
 }
 
 func (s *Server) connectWS() error {
-	res, err := request(fmt.Sprintf("/api/client/servers/%s/websocket", s.server.ServerID), "GET", nil)
+	res, err := request(fmt.Sprintf("/api/client/servers/%s/websocket", s.Server.ServerID), "GET", nil)
 	if err != nil {
 		return fmt.Errorf("could not connect to websocket: %w", err)
 	}
@@ -28,18 +28,18 @@ func (s *Server) connectWS() error {
 			}
 			if err := json.NewDecoder(res.Body).Decode(&socketInfo); err != nil {
 				return fmt.Errorf("failed to decode pterodactyl websocket information for server %v: %s",
-					s.server.ServerName, err)
+					s.Server.ServerName, err)
 			}
 			var auth = []byte(fmt.Sprintf(`{"event":"auth","args":["%v"]}`, socketInfo.Data.Token))
 
 			if !s.connected {
 				s.socket, _, err = websocket.DefaultDialer.Dial(socketInfo.Data.Socket, nil)
 				if err != nil {
-					return fmt.Errorf("failed to connect to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
+					return fmt.Errorf("failed to connect to pterodactyl websocket for server %v: %s", s.Server.ServerName, err)
 				}
 			}
 			if err := s.socket.WriteMessage(websocket.TextMessage, auth); err != nil {
-				return fmt.Errorf("failed to send auth to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
+				return fmt.Errorf("failed to send auth to pterodactyl websocket for server %v: %s", s.Server.ServerName, err)
 			}
 			var (
 				event eventType
@@ -51,14 +51,14 @@ func (s *Server) connectWS() error {
 			if event.Event == websocketAuthSuccess {
 				return nil
 			} else {
-				return fmt.Errorf("failed to authenticate to pterodactyl websocket for server %v: %s", s.server.ServerName, err)
+				return fmt.Errorf("failed to authenticate to pterodactyl websocket for server %v: %s", s.Server.ServerName, err)
 			}
 
 		} else {
 			return fmt.Errorf("could not connect to websocket: %v", res.Status)
 		}
 	} else {
-		return fmt.Errorf("cannot reach pterodactyl instance with panel url %v", panelUrl)
+		return fmt.Errorf("cannot reach pterodactyl instance with panel url %v", _panelURL)
 	}
 }
 
@@ -102,12 +102,12 @@ func (s *Server) Listen() error {
 func (s *Server) setStats(data *eventType) {
 	switch data.Event {
 	case WebsocketConsoleOutput:
-		s.console <- data.Args[0]
+		s.Console <- data.Args[0]
 	case WebsocketStatus:
-		s.status.State = data.Args[0]
-		s.data <- &ChanData{
+		s.Status.State = data.Args[0]
+		s.Data <- &ChanData{
 			Event: WebsocketStatus,
-			Data:  s.status,
+			Data:  s.Status,
 		}
 	case WebsocketStats:
 		var stats ServerStatus
@@ -115,10 +115,10 @@ func (s *Server) setStats(data *eventType) {
 			log.Printf("failed to decode stats: %s", err)
 			return
 		}
-		s.status = &stats
-		s.data <- &ChanData{
+		s.Status = &stats
+		s.Data <- &ChanData{
 			Event: WebsocketStats,
-			Data:  s.status,
+			Data:  s.Status,
 		}
 	}
 }
