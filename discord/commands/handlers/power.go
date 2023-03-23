@@ -6,8 +6,6 @@ import (
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"log"
 )
 
@@ -15,64 +13,35 @@ func PowerMain(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	power(s, i, i.ApplicationCommandData().Options[0].Name)
 }
 func PowerStart(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	power(s, i, "start")
+	power(s, i, pterodactyl.PowerSignalStart)
 }
 func PowerRestart(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	power(s, i, "restart")
+	power(s, i, pterodactyl.PowerSignalRestart)
 }
 func PowerStop(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	power(s, i, "stop")
+	power(s, i, pterodactyl.PowerSignalStop)
 }
 
 func power(s *discordgo.Session, i *discordgo.InteractionCreate, option string) {
 	var (
-		c               = cases.Title(language.English)
-		messageEmbed    discordgo.MessageEmbed
-		serverOptions   []discordgo.SelectMenuOption
-		restartDisabled = true
-		stopDisabled    = true
-		startDisabled   = true
+		restartDisabled = false
+		stopDisabled    = false
+		startDisabled   = false
 	)
-	for _, server := range pterodactyl.ServerStates {
-		if option == "start" && (server.Status == "offline" || server.Status == "stopping") {
-			serverOptions = append(serverOptions, discordgo.SelectMenuOption{
-				Label: server.Name,
-				Value: server.ID,
-			})
-		} else if option == "stop" && (server.Status == "starting" || server.Status == "running") {
-			serverOptions = append(serverOptions, discordgo.SelectMenuOption{
-				Label: server.Name,
-				Value: server.ID,
-			})
-		} else if option == "restart" {
-			serverOptions = append(serverOptions, discordgo.SelectMenuOption{
-				Label: server.Name,
-				Value: server.ID,
-			})
-		}
 
-	}
 	serverSelect := discordgo.SelectMenu{
-		Placeholder: fmt.Sprintf("Select a server to %s", c.String(option)),
+		Placeholder: fmt.Sprintf("Select a server to %s", option),
 		CustomID:    fmt.Sprintf("power_%s_select", option),
-		Options:     serverOptions,
+		Options:     getServerOptions(option),
 	}
-	if option == "start" {
+
+	switch option {
+	case pterodactyl.PowerSignalStart:
 		startDisabled = true
-		stopDisabled = false
-		restartDisabled = false
-	} else if option == "stop" {
-		startDisabled = false
+	case pterodactyl.PowerSignalStop:
 		stopDisabled = true
-		restartDisabled = false
-	} else if option == "restart" {
-		startDisabled = false
-		stopDisabled = false
+	case pterodactyl.PowerSignalRestart:
 		restartDisabled = true
-	} else if option == "status" {
-		startDisabled = false
-		stopDisabled = false
-		restartDisabled = false
 	}
 
 	buttonRow := []discordgo.MessageComponent{
@@ -96,45 +65,46 @@ func power(s *discordgo.Session, i *discordgo.InteractionCreate, option string) 
 		},
 	}
 
-	messageEmbed = srvEmbed.Power(option)
-	var err error
-	if option != "status" {
-		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{
-					&messageEmbed,
-				},
-				Components: []discordgo.MessageComponent{
-					discordgo.ActionsRow{
-						Components: buttonRow,
-					},
-					discordgo.ActionsRow{
-						Components: []discordgo.MessageComponent{
-							&serverSelect,
-						},
-					},
-				},
+	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				srvEmbed.Power(option),
 			},
-		})
-	} else {
-		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{
-					&messageEmbed,
+			Components: []discordgo.MessageComponent{
+				discordgo.ActionsRow{
+					Components: buttonRow,
 				},
-				Components: []discordgo.MessageComponent{
-					discordgo.ActionsRow{
-						Components: buttonRow,
-					},
-				},
+				func(option string) discordgo.ActionsRow {
+					if option != "status" {
+						return discordgo.ActionsRow{
+							Components: []discordgo.MessageComponent{
+								&serverSelect,
+							},
+						}
+					}
+					return discordgo.ActionsRow{}
+				}(option),
 			},
+		},
+	}); err != nil {
+		log.Printf("Failed to respond to command power: %v", err)
+	}
+}
+
+func getServerOptions(option string) []discordgo.SelectMenuOption {
+	var fields []discordgo.SelectMenuOption
+	for _, server := range pterodactyl.Servers {
+		if option == pterodactyl.PowerSignalStart && server.Status.State == pterodactyl.PowerStatusRunning ||
+			option == pterodactyl.PowerSignalStop && server.Status.State == pterodactyl.PowerStatusOffline {
+			continue
+		}
+		fields = append(fields, discordgo.SelectMenuOption{
+			Label: server.Server.ServerName,
+			Value: server.Server.ServerID,
 		})
 	}
-	if err != nil {
-		log.Printf("Failed execute command power: %v", err)
-	}
+	return fields
 }
 
 func powerSelect(s *discordgo.Session, i *discordgo.InteractionCreate, action string) {

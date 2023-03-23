@@ -9,8 +9,6 @@ import (
 	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 var (
@@ -449,50 +447,54 @@ func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL strin
 	return Embed
 }
 
-func Power(action string) discordgo.MessageEmbed {
+func Power(action string) *discordgo.MessageEmbed {
 	var (
-		c      = cases.Title(language.English)
-		Title  = fmt.Sprintf("%v server(s)", c.String(action))
 		color  int
-		Fields []*discordgo.MessageEmbedField
+		Fields = getServerFields()
 	)
-	for _, server := range pterodactyl.ServerStates {
-		var StateMsg string
-		if server.Status == "starting" {
-			StateMsg = config.SRV.States.Starting
-		} else if server.Status == "stopping" {
-			StateMsg = config.SRV.States.Stopping
-		} else if server.Status == "running" {
-			StateMsg = config.SRV.States.Online
-		} else if server.Status == "offline" {
-			StateMsg = config.SRV.States.Offline
-		}
-		Field := &discordgo.MessageEmbedField{
-			Name:  fmt.Sprintf("%v:", server.Name),
-			Value: StateMsg,
-		}
-		Fields = append(Fields, Field)
-	}
-	if action == "start" {
+	switch action {
+	case pterodactyl.PowerSignalStart:
 		color = 0x00FF00
-	} else if action == "stop" {
+	case pterodactyl.PowerSignalStop:
 		color = 0xFF0000
-	} else if action == "restart" {
+	case pterodactyl.PowerSignalRestart:
 		color = 0xFFFF00
-	} else if action == "status" {
+	case "status":
 		color = 0x00AAFF
-	} else {
+	default:
 		color = 0x000000
 	}
-	Embed := discordgo.MessageEmbed{
-		Title:  Title,
+	return &discordgo.MessageEmbed{
+		Title:  fmt.Sprintf("Select a server to %v", action),
 		Color:  color,
 		Fields: Fields,
 	}
-	return Embed
+}
+
+func getServerFields() []*discordgo.MessageEmbedField {
+	var (
+		Fields []*discordgo.MessageEmbedField
+	)
+	for _, server := range pterodactyl.Servers {
+		var StateMsg string
+		switch server.Status.State {
+		case pterodactyl.PowerStatusStarting:
+			StateMsg = config.SRV.States.Starting
+		case pterodactyl.PowerStatusStopping:
+			StateMsg = config.SRV.States.Stopping
+		case pterodactyl.PowerStatusRunning:
+			StateMsg = config.SRV.States.Online
+		case pterodactyl.PowerStatusOffline:
+			StateMsg = config.SRV.States.Offline
+		}
+		Fields = append(Fields, &discordgo.MessageEmbedField{
+			Name:  fmt.Sprintf("%v:", server.Server.ServerName),
+			Value: StateMsg,
+		})
+	}
+	return Fields
 }
 func PowerNotAllowed(avatarURL string, name string, action string, serverName string) discordgo.MessageEmbed {
-
 	var (
 		Title string
 	)
