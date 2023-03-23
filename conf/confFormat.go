@@ -101,10 +101,12 @@ type Server struct {
 		ChannelID      []string `yaml:"channelID"`
 	} `yaml:"stateMessages"`
 	ChannelInfo struct {
-		Enabled   bool     `yaml:"enabled"`
-		ChannelID []string `yaml:"channelID"`
-		Format    string   `yaml:"format"`
-		Interval  string   `yaml:"interval"`
+		Enabled       bool     `yaml:"enabled"`
+		ChannelID     []string `yaml:"channelID"`
+		Format        string   `yaml:"format"`
+		OfflineFormat string   `yaml:"offlineFormat"`
+		InfoState     string   `yaml:"-"`
+		Interval      string   `yaml:"interval"`
 	} `yaml:"channelInfo"`
 	PowerActionsRoleIDs struct {
 		Start   []string `yaml:"start"`

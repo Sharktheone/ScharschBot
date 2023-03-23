@@ -5,6 +5,7 @@ import (
 	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"log"
@@ -17,29 +18,44 @@ type replacer struct {
 	string string
 }
 
-func ChannelStats(status *pterodactyl.ServerStatus, server *conf.Server) func() {
+func ChannelStats(status *pterodactyl.ServerStatus, server *conf.Server) {
 	f := replacer{
-		string: server.ChannelInfo.Format,
+		string: func(state string) string {
+			if state != pterodactyl.PowerStatusOffline {
+				return server.ChannelInfo.Format
+			} else {
+				return server.ChannelInfo.OfflineFormat
+			}
+		}(status.State),
 	}
 	title := cases.Title(language.Und)
-	return func() {
-		if server.ChannelInfo.Enabled {
-			var (
-				replace = map[string]string{
-					"cpu":        fmt.Sprintf("%.2f", status.Cpu),
-					"status":     title.String(status.State),
-					"ram":        convertSize(status.Ram),
-					"disk":       convertSize(status.Disk),
-					"networkIn":  convertSize(status.Network.Rx),
-					"networkOut": convertSize(status.Network.Tx),
-					"uptime":     convertTime(status.Uptime),
-				}
-			)
-			for variable, value := range replace {
-				f.inject(variable, value)
+	if server.ChannelInfo.Enabled {
+		var (
+			replace = map[string]string{
+				"cpu":        fmt.Sprintf("%.2f", status.Cpu),
+				"state":      title.String(status.State),
+				"ram":        convertSize(status.Ram),
+				"disk":       convertSize(status.Disk),
+				"networkIn":  convertSize(status.Network.Rx),
+				"networkOut": convertSize(status.Network.Tx),
+				"uptime":     convertTime(status.Uptime),
+			}
+		)
+		for variable, value := range replace {
+			f.inject(variable, value)
+		}
+	}
+	if server.ChannelInfo.InfoState != f.string {
+		server.ChannelInfo.InfoState = f.string
+		for _, channelID := range server.ChannelInfo.ChannelID {
+			if _, err := bot.Session.ChannelEditComplex(channelID, &discordgo.ChannelEdit{
+				Topic: f.string,
+			}); err != nil {
+				log.Printf("Failed to edit channel topic: %v (channelID %v)", err, channelID)
 			}
 		}
 	}
+
 }
 
 func (r *replacer) inject(variable string, value string) {
