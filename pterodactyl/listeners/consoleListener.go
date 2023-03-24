@@ -12,15 +12,31 @@ func ConsoleListener(ctx context.Context, server *conf.Server, console chan stri
 	var (
 		consoleOutput []string
 	)
+	t, err := newTimer(server.Console.MaxTime)
+	if err != nil {
+		log.Fatalf("Failed to create ticker: %v", err)
+		return
+	}
 	for {
 		select {
 		case output := <-console:
 			consoleOutput = append(consoleOutput, output)
+			t.start()
 			if len(consoleOutput) > server.Console.MessageLines {
 				sendConsoleOutput(server, consoleOutput)
+				consoleOutput = []string{}
+				t.stop()
 			}
 		case <-commandSent:
 			sendConsoleOutput(server, consoleOutput)
+			consoleOutput = []string{}
+			t.stop()
+		case <-t.c:
+			if len(consoleOutput) > 0 {
+				sendConsoleOutput(server, consoleOutput)
+				consoleOutput = []string{}
+				t.stop()
+			}
 		case <-ctx.Done():
 			return
 		}

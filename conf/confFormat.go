@@ -114,13 +114,13 @@ type Server struct {
 		Restart []string `yaml:"restart"`
 	} `yaml:"powerActionsRoleIDs"`
 	Console struct {
-		Enabled          bool     `yaml:"enabled"`
-		MessageLines     int      `yaml:"messageLines"`
-		MaxTimeInSeconds int      `yaml:"maxTimeInSeconds"`
-		ChannelID        []string `yaml:"channelID"`
-		Reverse          bool     `yaml:"reverse"`
-		ReverseRoleID    []string `yaml:"reverseRoleID"`
-		ReversePrefix    string   `yaml:"reversePrefix"`
+		Enabled       bool     `yaml:"enabled"`
+		MessageLines  int      `yaml:"messageLines"`
+		MaxTime       string   `yaml:"maxTime"`
+		ChannelID     []string `yaml:"channelID"`
+		Reverse       bool     `yaml:"reverse"`
+		ReverseRoleID []string `yaml:"reverseRoleID"`
+		ReversePrefix string   `yaml:"reversePrefix"`
 	} `yaml:"console"`
 	Chat struct {
 		Enabled      bool     `yaml:"enabled"`
