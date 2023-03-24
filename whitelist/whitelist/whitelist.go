@@ -61,7 +61,9 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 				for _, listedServer := range config.Whitelist.Servers {
 					for _, server := range config.Pterodactyl.Servers {
 						if server.ServerName == listedServer {
-							pterodactyl.SendCommand(command, server.ServerID)
+							if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+								log.Printf("Failed to send command to server %v: %v", server.ServerID, err)
+							}
 						}
 					}
 				}
@@ -101,7 +103,9 @@ func Remove(username string, userID string, roles []string) (allowed bool, onWhi
 			for _, listedServer := range config.Whitelist.Servers {
 				for _, server := range config.Pterodactyl.Servers {
 					if server.ServerName == listedServer {
-						pterodactyl.SendCommand(command, server.ServerID)
+						if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+							log.Printf("Failed to send command to server %v: %v", server.ServerID, err)
+						}
 					}
 				}
 			}
@@ -137,7 +141,9 @@ func RemoveAll(userID string, roles []string) (allowed bool, onWhitelist bool) {
 				for _, listedServer := range config.Whitelist.Servers {
 					for _, server := range config.Pterodactyl.Servers {
 						if server.ServerName == listedServer {
-							pterodactyl.SendCommand(command, server.ServerID)
+							if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+								log.Printf("Failed to send command to server %v: %v", server.ServerID, err)
+							}
 						}
 					}
 				}
@@ -303,7 +309,9 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 						for _, listedServer := range config.Whitelist.Servers {
 							for _, server := range config.Pterodactyl.Servers {
 								if server.ServerName == listedServer {
-									pterodactyl.SendCommand(command, server.ServerID)
+									if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+										log.Printf("Failed to send command to server %v: %v", server.ServerName, err)
+									}
 								}
 							}
 						}
@@ -372,7 +380,9 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 				for _, listedServer := range config.Whitelist.Servers {
 					for _, server := range config.Pterodactyl.Servers {
 						if server.ServerName == listedServer {
-							pterodactyl.SendCommand(command, server.ServerID)
+							if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+								log.Printf("Failed to send command to server %v: %v", server.ServerID, err)
+							}
 						}
 					}
 				}
@@ -535,7 +545,9 @@ func RemoveMyAccounts(userID string) (hadListedAccounts bool, listedAccounts []s
 					for _, listedServer := range config.Whitelist.Servers {
 						for _, server := range config.Pterodactyl.Servers {
 							if server.ServerName == listedServer {
-								pterodactyl.SendCommand(command, server.ServerID)
+								if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+									log.Printf("Error while sending command to server %v: %v", server.ServerID, err)
+								}
 							}
 						}
 					}

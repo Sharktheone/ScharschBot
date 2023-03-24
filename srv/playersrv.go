@@ -153,7 +153,9 @@ func checkAccount(Name string) (accounts []string, bannedAccounts []string) {
 			for _, listedServer := range config.Whitelist.Servers {
 				for _, server := range config.Pterodactyl.Servers {
 					if server.ServerName == listedServer {
-						pterodactyl.SendCommand(command, server.ServerID)
+						if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+							log.Printf("Failed to send command to server %v: %v", server.ServerID, err)
+						}
 					}
 				}
 			}

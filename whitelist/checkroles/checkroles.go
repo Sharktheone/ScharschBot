@@ -32,7 +32,9 @@ func CheckRoles() {
 				for _, listedServer := range config.Whitelist.Servers {
 					for _, server := range config.Pterodactyl.Servers {
 						if server.ServerName == listedServer {
-							pterodactyl.SendCommand(command, server.ServerID)
+							if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+								log.Printf("Failed to kick %v from server %v: %v", player, server.ServerID, err)
+							}
 						}
 					}
 				}

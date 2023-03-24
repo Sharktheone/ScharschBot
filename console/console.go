@@ -26,7 +26,9 @@ func Handler(s *discordgo.Session, m *discordgo.MessageCreate) {
 								commandString += element
 							}
 							log.Printf("%v is sending command to server %v: %v", m.Author.ID, server.ServerName, commandString)
-							pterodactyl.SendCommand(commandString, server.ServerID)
+							if err := pterodactyl.SendCommand(commandString, server.ServerID); err != nil {
+								log.Printf("Failed to send command to server %v: %v", server.ServerID, err)
+							}
 						}
 					}
 					break
@@ -45,7 +47,9 @@ func ChatHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					if discordMember.HasRole(m.Member, config.Whitelist.Roles.ServerRoleID) {
 						message := fmt.Sprintf(" %v: %v", m.Author.Username, m.Message.Content)
 						command := fmt.Sprintf(config.Pterodactyl.ChatCommand, message)
-						pterodactyl.SendCommand(command, server.ServerID)
+						if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
+							log.Printf("Failed to send chat message to server %v: %v", server.ServerID, err)
+						}
 					}
 				}
 
