@@ -136,13 +136,24 @@ func powerSelect(s *discordgo.Session, i *discordgo.InteractionCreate, action st
 		messageEmbed = srvEmbed.PowerNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.String(), action, serverConf.ServerName)
 	} else {
 		messageEmbed = srvEmbed.PowerAction(action, serverConf.ServerName, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+		s, err := pterodactyl.GetServer(serverConf.ServerID)
+		if err != nil {
+			log.Printf("Failed to get server %s: %v", serverConf.ServerName, err)
+			return
+		}
 		switch action {
 		case "start":
-			pterodactyl.Start(serverConf.ServerID)
+			if err := s.Start(); err != nil {
+				log.Printf("Failed to start server %s: %v", serverConf.ServerName, err)
+			}
 		case "stop":
-			pterodactyl.Stop(serverConf.ServerID)
+			if err := s.Stop(); err != nil {
+				log.Printf("Failed to stop server %s: %v", serverConf.ServerName, err)
+			}
 		case "restart":
-			pterodactyl.Restart(serverConf.ServerID)
+			if err := s.Restart(); err != nil {
+				log.Printf("Failed to restart server %s: %v", serverConf.ServerName, err)
+			}
 
 		}
 	}
