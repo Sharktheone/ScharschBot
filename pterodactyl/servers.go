@@ -18,3 +18,16 @@ func GetServer(serverID string) (*Server, error) {
 	}
 	return nil, ServerNotFoundErr
 }
+
+func GetServerByName(serverName string) (*Server, error) {
+	var (
+		server *Server
+	)
+	for _, s := range Servers {
+		if s.Config.ServerName == serverName {
+			server = s
+			return server, nil
+		}
+	}
+	return nil, ServerNotFoundErr
+}

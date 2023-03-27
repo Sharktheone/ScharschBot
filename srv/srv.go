@@ -4,24 +4,15 @@ import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/pterodactyl"
 	"Scharsch-Bot/pterodactyl/listeners"
+	"Scharsch-Bot/srv/api"
 	"context"
-	"fmt"
 	"log"
-	"net/http"
 )
 
-func Start() {
-	log.Printf("Starting http server on port %v", port)
-	//TODO: replace with gin or fiber
-	http.HandleFunc("/", playerSRVEventHandler)
-	addr := fmt.Sprintf(":%v", port)
-	var err error
-	go func() { err = http.ListenAndServe(addr, nil) }()
-	if err != nil {
-		log.Fatalf("Failed to start http server: %v", err)
-	}
-	log.Println("Started http server")
+var config = conf.GetConf()
 
+func Start() {
+	go api.Start()
 	for _, server := range config.Pterodactyl.Servers {
 		go func(server conf.Server) {
 			ctx := context.Background()

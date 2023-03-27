@@ -63,6 +63,10 @@ type listenerCtx struct {
 }
 
 type Server struct {
+	OnlinePlayers struct {
+		Players []*string
+		Mu      sync.Mutex
+	}
 	Config    *conf.Server
 	Data      chan *ChanData
 	Console   chan string

@@ -5,7 +5,6 @@ import (
 	"Scharsch-Bot/database/mongodb"
 	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/pterodactyl"
-	"Scharsch-Bot/srv"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
@@ -22,20 +21,24 @@ var (
 
 func CheckRoles() {
 	if kickUnWhitelisted {
-		for _, player := range srv.OnlinePlayers {
-			_, found := mongodb.Read(whitelistCollection, bson.M{
-				"dcUserID":  bson.M{"$exists": true},
-				"mcAccount": player,
-			})
-			if !found {
-				command := fmt.Sprintf(config.Whitelist.KickCommand, player)
-				for _, listedServer := range config.Whitelist.Servers {
-					for _, server := range config.Pterodactyl.Servers {
-						if server.ServerName == listedServer {
-							if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {
-								log.Printf("Failed to kick %v from server %v: %v", player, server.ServerID, err)
+		for _, server := range pterodactyl.Servers {
+			for _, player := range server.OnlinePlayers.Players {
+				_, found := mongodb.Read(whitelistCollection, bson.M{
+					"dcUserID":  bson.M{"$exists": true},
+					"mcAccount": player,
+				})
+				if !found {
+					command := fmt.Sprintf(config.Whitelist.KickCommand, player)
+					if err := pterodactyl.SendCommand(command, server.Config.ServerID); err != nil {
+						log.Printf("Failed to kick %v from server %v: %v", player, server.Config.ServerID, err)
+					} else {
+						server.OnlinePlayers.Mu.Lock()
+						for i, player := range server.OnlinePlayers.Players {
+							if player == player {
+								server.OnlinePlayers.Players = append(server.OnlinePlayers.Players[:i], server.OnlinePlayers.Players[i+1:]...)
 							}
 						}
+						server.OnlinePlayers.Mu.Unlock()
 					}
 				}
 			}
