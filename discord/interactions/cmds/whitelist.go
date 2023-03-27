@@ -4,7 +4,7 @@ import "github.com/bwmarrin/discordgo"
 
 var (
 	DefaultPermission = true
-	WhitelistCommand  = discordgo.ApplicationCommand{
+	WhitelistCommand  = &discordgo.ApplicationCommand{
 		Name:              "whitelist",
 		Description:       "User cmds of the Scharsch-Bot",
 		DefaultPermission: &DefaultPermission,

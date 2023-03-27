@@ -3,7 +3,7 @@ package cmds
 import "github.com/bwmarrin/discordgo"
 
 var (
-	PowerCommand = discordgo.ApplicationCommand{
+	PowerCommand = &discordgo.ApplicationCommand{
 		Name:              "power",
 		Description:       "power cmds of the Scharsch-Bot",
 		DefaultPermission: &DefaultPermission,

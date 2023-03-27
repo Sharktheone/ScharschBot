@@ -1,7 +1,7 @@
-package commands
+package interactions
 
 import (
-	"Scharsch-Bot/discord/commands/handlers"
+	"Scharsch-Bot/discord/interactions/handlers"
 	"github.com/bwmarrin/discordgo"
 )
 

@@ -3,7 +3,7 @@ package cmds
 import "github.com/bwmarrin/discordgo"
 
 var (
-	AdminCommand = discordgo.ApplicationCommand{
+	AdminCommand = &discordgo.ApplicationCommand{
 		Name:              "admin",
 		Description:       "Admin cmds of the Scharsch-Bot",
 		DefaultPermission: &DefaultPermission,
