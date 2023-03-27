@@ -20,7 +20,6 @@ func GetUserProfile(userID string, s *discordgo.Session) (User *discordgo.Member
 }
 
 func GetRoles(userID string, s *discordgo.Session) []string {
-
 	user, err := s.GuildMember(config.Discord.ServerID, userID)
 	if err != nil {
 		log.Printf("(GetRoles) Error getting user %v: %v", userID, err)

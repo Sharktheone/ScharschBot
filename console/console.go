@@ -12,7 +12,6 @@ import (
 
 var config = conf.GetConf()
 
-//goland:noinspection GoUnusedParameter
 func Handler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	for _, server := range conf.Config.Pterodactyl.Servers {
 		if server.Console.Reverse {

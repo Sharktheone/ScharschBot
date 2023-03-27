@@ -11,7 +11,7 @@ func GetServer(serverID string) (*Server, error) {
 		server *Server
 	)
 	for _, s := range Servers {
-		if s.Server.ServerID == serverID {
+		if s.Config.ServerID == serverID {
 			server = s
 			return server, nil
 		}

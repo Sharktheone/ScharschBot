@@ -100,8 +100,8 @@ func getServerOptions(option string) []discordgo.SelectMenuOption {
 			continue
 		}
 		fields = append(fields, discordgo.SelectMenuOption{
-			Label: server.Server.ServerName,
-			Value: server.Server.ServerID,
+			Label: server.Config.ServerName,
+			Value: server.Config.ServerID,
 		})
 	}
 	return fields

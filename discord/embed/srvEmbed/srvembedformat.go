@@ -488,7 +488,7 @@ func getServerFields() []*discordgo.MessageEmbedField {
 			StateMsg = config.SRV.States.Offline
 		}
 		Fields = append(Fields, &discordgo.MessageEmbedField{
-			Name:  fmt.Sprintf("%v:", server.Server.ServerName),
+			Name:  fmt.Sprintf("%v:", server.Config.ServerName),
 			Value: StateMsg,
 		})
 	}

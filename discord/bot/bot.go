@@ -3,7 +3,7 @@ package bot
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/console"
-	"Scharsch-Bot/discord/commands"
+	"Scharsch-Bot/discord/interactions"
 	"flag"
 	"github.com/bwmarrin/discordgo"
 	"log"
@@ -13,7 +13,7 @@ var (
 	config              = conf.Config
 	GuildID             = flag.String("guild", config.Discord.ServerID, "Guild ID")
 	Session             *discordgo.Session
-	commandRegistration = make([]*discordgo.ApplicationCommand, len(commands.Commands))
+	commandRegistration = make([]*discordgo.ApplicationCommand, len(interactions.Commands))
 )
 
 func init() {
@@ -34,14 +34,14 @@ func Registration() {
 	Session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
-			if h, ok := commands.Handlers[i.ApplicationCommandData().Name]; ok {
+			if h, ok := interactions.Handlers[i.ApplicationCommandData().Name]; ok {
 				h(s, i)
 			} else {
 				log.Printf("No handler for %v", i.ApplicationCommandData().Name)
 			}
 
 		case discordgo.InteractionMessageComponent:
-			if h, ok := commands.Handlers[i.MessageComponentData().CustomID]; ok {
+			if h, ok := interactions.Handlers[i.MessageComponentData().CustomID]; ok {
 				h(s, i)
 			} else {
 				log.Printf("No handler for %v", i.MessageComponentData().CustomID)
@@ -49,7 +49,7 @@ func Registration() {
 		}
 	})
 
-	for i, rawCommand := range commands.Commands {
+	for i, rawCommand := range interactions.Commands {
 		command, err := Session.ApplicationCommandCreate(Session.State.User.ID, *GuildID, rawCommand)
 		if err != nil {
 			log.Fatalf("Failed to create %v: %v", rawCommand.Name, err)

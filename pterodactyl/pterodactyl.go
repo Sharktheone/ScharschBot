@@ -63,7 +63,7 @@ type listenerCtx struct {
 }
 
 type Server struct {
-	Server    *conf.Server
+	Config    *conf.Server
 	Data      chan *ChanData
 	Console   chan string
 	Status    *ServerStatus
@@ -76,10 +76,10 @@ type Server struct {
 	ctx *context.Context
 }
 
-func New(ctx *context.Context, server *conf.Server) *Server {
+func New(ctx *context.Context, config *conf.Server) *Server {
 	s := &Server{
 		ctx:       ctx,
-		Server:    server,
+		Config:    config,
 		Data:      make(chan *ChanData),
 		Console:   make(chan string),
 		Status:    &ServerStatus{},
@@ -106,7 +106,7 @@ func (s *Server) AddListener(listener func(ctx *context.Context, server *conf.Se
 		cancel: cancel,
 		ctx:    &ctx,
 	})
-	go listener(&ctx, s.Server, s.Data)
+	go listener(&ctx, s.Config, s.Data)
 }
 
 func (s *Server) RemoveListener(name string) {
@@ -122,7 +122,7 @@ func (s *Server) RemoveListener(name string) {
 }
 
 func (s *Server) AddConsoleListener(listener func(server *conf.Server, console chan string)) {
-	go listener(s.Server, s.Console)
+	go listener(s.Config, s.Console)
 }
 
 func (s *Server) Start() error {

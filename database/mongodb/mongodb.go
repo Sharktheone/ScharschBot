@@ -50,7 +50,6 @@ func Connect() *mongo.Database {
 }
 
 func Disconnect() {
-
 	var ctx context.Context
 	ctx, Cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	err := Client.Disconnect(ctx)

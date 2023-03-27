@@ -14,7 +14,7 @@ type eventType struct {
 }
 
 func (s *Server) connectWS() error {
-	res, err := request(fmt.Sprintf("/api/client/servers/%s/websocket", s.Server.ServerID), "GET", nil)
+	res, err := request(fmt.Sprintf("/api/client/servers/%s/websocket", s.Config.ServerID), "GET", nil)
 	if err != nil {
 		return fmt.Errorf("could not connect to websocket: %w", err)
 	}
@@ -28,18 +28,18 @@ func (s *Server) connectWS() error {
 			}
 			if err := json.NewDecoder(res.Body).Decode(&socketInfo); err != nil {
 				return fmt.Errorf("failed to decode pterodactyl websocket information for server %v: %s",
-					s.Server.ServerName, err)
+					s.Config.ServerName, err)
 			}
 			var auth = []byte(fmt.Sprintf(`{"event":"auth","args":["%v"]}`, socketInfo.Data.Token))
 
 			if !s.connected {
 				s.socket, _, err = websocket.DefaultDialer.Dial(socketInfo.Data.Socket, nil)
 				if err != nil {
-					return fmt.Errorf("failed to connect to pterodactyl websocket for server %v: %s", s.Server.ServerName, err)
+					return fmt.Errorf("failed to connect to pterodactyl websocket for server %v: %s", s.Config.ServerName, err)
 				}
 			}
 			if err := s.socket.WriteMessage(websocket.TextMessage, auth); err != nil {
-				return fmt.Errorf("failed to send auth to pterodactyl websocket for server %v: %s", s.Server.ServerName, err)
+				return fmt.Errorf("failed to send auth to pterodactyl websocket for server %v: %s", s.Config.ServerName, err)
 			}
 			var (
 				event eventType
@@ -51,7 +51,7 @@ func (s *Server) connectWS() error {
 			if event.Event == websocketAuthSuccess {
 				return nil
 			} else {
-				return fmt.Errorf("failed to authenticate to pterodactyl websocket for server %v: %s", s.Server.ServerName, err)
+				return fmt.Errorf("failed to authenticate to pterodactyl websocket for server %v: %s", s.Config.ServerName, err)
 			}
 
 		} else {
