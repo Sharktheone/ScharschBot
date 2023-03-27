@@ -2,7 +2,7 @@ package console
 
 import (
 	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/discordMember"
+	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -19,7 +19,7 @@ func Handler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				if neededChannelID == m.ChannelID {
 					command := strings.SplitAfter(m.Message.Content, server.Console.ReversePrefix)
 					if command[0] == server.Console.ReversePrefix {
-						if discordMember.HasRole(m.Member, config.Whitelist.Roles.ServerRoleID) {
+						if session.HasRole(m.Member, config.Whitelist.Roles.ServerRoleID) {
 							var commandString string
 							for _, element := range command[1:] {
 								commandString += element
@@ -43,7 +43,7 @@ func ChatHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if server.Chat.Reverse {
 			for _, neededChannelID := range server.Chat.ChannelID {
 				if neededChannelID == m.ChannelID && m.Author.ID != s.State.User.ID {
-					if discordMember.HasRole(m.Member, config.Whitelist.Roles.ServerRoleID) {
+					if session.HasRole(m.Member, config.Whitelist.Roles.ServerRoleID) {
 						message := fmt.Sprintf(" %v: %v", m.Author.Username, m.Message.Content)
 						command := fmt.Sprintf(config.Pterodactyl.ChatCommand, message)
 						if err := pterodactyl.SendCommand(command, server.ServerID); err != nil {

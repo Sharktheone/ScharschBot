@@ -3,7 +3,7 @@ package reports
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/discordMember"
+	"Scharsch-Bot/discord/session"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,7 +28,7 @@ func GetReports() (reports []bson.M, anyReports bool) {
 	return report, dataFound
 }
 
-func Report(name string, reason string, i *discordgo.InteractionCreate, s *discordgo.Session, messageEmbed discordgo.MessageEmbed) (reportAllowed bool, alreadyReported bool, enabled bool) {
+func Report(name string, reason string, i *discordgo.InteractionCreate, s *session.Session, messageEmbed discordgo.MessageEmbed) (reportAllowed bool, alreadyReported bool, enabled bool) {
 	var (
 		allowed   = false
 		dataFound bool
@@ -72,7 +72,7 @@ func Report(name string, reason string, i *discordgo.InteractionCreate, s *disco
 	return allowed, dataFound, config.Whitelist.Report.Enabled
 }
 
-func Reject(name string, i *discordgo.InteractionCreate, s *discordgo.Session, notifyReporter bool, messageEmbed *discordgo.MessageEmbed, messageEmbedDMFailed *discordgo.MessageEmbed) (rejectAllowed bool, enabled bool) {
+func Reject(name string, i *discordgo.InteractionCreate, s *session.Session, notifyReporter bool, messageEmbed *discordgo.MessageEmbed, messageEmbedDMFailed *discordgo.MessageEmbed) (rejectAllowed bool, enabled bool) {
 	var (
 		allowed  = false
 		notifyDM = config.Whitelist.Report.PlayerNotifyDM
@@ -127,7 +127,7 @@ func Reject(name string, i *discordgo.InteractionCreate, s *discordgo.Session, n
 
 	return allowed, config.Whitelist.Report.Enabled
 }
-func Accept(name string, i *discordgo.InteractionCreate, s *discordgo.Session, notifyreporter bool, messageEmbed *discordgo.MessageEmbed, messageEmbedDMFailed *discordgo.MessageEmbed) (acceptAllowed bool, enabled bool) {
+func Accept(name string, i *discordgo.InteractionCreate, s *session.Session, notifyreporter bool, messageEmbed *discordgo.MessageEmbed, messageEmbedDMFailed *discordgo.MessageEmbed) (acceptAllowed bool, enabled bool) {
 	var (
 		allowed  = false
 		notifyDM = config.Whitelist.Report.PlayerNotifyDM
@@ -147,13 +147,15 @@ func Accept(name string, i *discordgo.InteractionCreate, s *discordgo.Session, n
 		if reportFound {
 			if notifyDM {
 				if notifyreporter {
-					discordMember.SendDM(report.ReporterID, s, &discordgo.MessageSend{
+					if err := s.SendDM(report.ReporterID, &discordgo.MessageSend{
 						Embed: messageEmbed,
 					},
 						&discordgo.MessageSend{
 							Content: fmt.Sprintf("<@%v>", report.ReporterID),
 							Embed:   messageEmbedDMFailed,
-						})
+						}); err != nil {
+						log.Printf("Failed to send DM for reporter: %v, sending Message in normal Channels", err)
+					}
 
 				}
 			} else {

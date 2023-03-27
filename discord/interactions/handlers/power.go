@@ -3,26 +3,27 @@ package handlers
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/discord/embed/srvEmbed"
+	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )
 
-func PowerMain(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PowerMain(s *session.Session, i *discordgo.InteractionCreate) {
 	power(s, i, i.ApplicationCommandData().Options[0].Name)
 }
-func PowerStart(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PowerStart(s *session.Session, i *discordgo.InteractionCreate) {
 	power(s, i, pterodactyl.PowerSignalStart)
 }
-func PowerRestart(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PowerRestart(s *session.Session, i *discordgo.InteractionCreate) {
 	power(s, i, pterodactyl.PowerSignalRestart)
 }
-func PowerStop(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PowerStop(s *session.Session, i *discordgo.InteractionCreate) {
 	power(s, i, pterodactyl.PowerSignalStop)
 }
 
-func power(s *discordgo.Session, i *discordgo.InteractionCreate, option string) {
+func power(s *session.Session, i *discordgo.InteractionCreate, option string) {
 	var (
 		restartDisabled = false
 		stopDisabled    = false
@@ -107,7 +108,7 @@ func getServerOptions(option string) []discordgo.SelectMenuOption {
 	return fields
 }
 
-func powerSelect(s *discordgo.Session, i *discordgo.InteractionCreate, action string) {
+func powerSelect(s *session.Session, i *discordgo.InteractionCreate, action string) {
 	var (
 		allowed      = false
 		options      = i.MessageComponentData()
@@ -170,14 +171,14 @@ func powerSelect(s *discordgo.Session, i *discordgo.InteractionCreate, action st
 	}
 }
 
-func PowerStartSelect(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PowerStartSelect(s *session.Session, i *discordgo.InteractionCreate) {
 	powerSelect(s, i, "start")
 }
-func PowerRestartSelect(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PowerRestartSelect(s *session.Session, i *discordgo.InteractionCreate) {
 	powerSelect(s, i, "restart")
 
 }
-func PowerStopSelect(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PowerStopSelect(s *session.Session, i *discordgo.InteractionCreate) {
 	powerSelect(s, i, "stop")
 
 }

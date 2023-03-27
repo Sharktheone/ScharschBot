@@ -4,6 +4,7 @@ import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
 	"Scharsch-Bot/discord/embed/wEmbed"
+	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/reports"
 	"Scharsch-Bot/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
@@ -15,7 +16,7 @@ var (
 	config = conf.GetConf()
 )
 
-func Admin(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Admin(s *session.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options
 	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
 	for _, opt := range options[0].Options {
@@ -52,7 +53,7 @@ func Admin(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			log.Printf("Failed execute command whitelist: %v", err)
 		}
 	case "user":
-		user := optionMap["user"].UserValue(s)
+		user := optionMap["user"].UserValue(s.Session)
 		playerID := user.ID
 		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
@@ -81,7 +82,7 @@ func Admin(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			log.Printf("Failed execute command whitelistuser: %v", err)
 		}
 	case "banuser":
-		user := optionMap["user"].UserValue(s)
+		user := optionMap["user"].UserValue(s.Session)
 		var reason = "No reason provided"
 		if optionMap["reason"] != nil {
 			reason = optionMap["reason"].StringValue()
@@ -147,7 +148,7 @@ func Admin(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			log.Printf("Failed execute command whitelistbanaccount: %v", err)
 		}
 	case "unbanuser":
-		user := optionMap["user"].UserValue(s)
+		user := optionMap["user"].UserValue(s.Session)
 		playerID := user.ID
 		unbanAccounts := false
 		if optionMap["unbanaccounts"] != nil {

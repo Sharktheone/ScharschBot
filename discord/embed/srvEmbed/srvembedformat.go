@@ -2,13 +2,14 @@ package srvEmbed
 
 import (
 	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/discordMember"
+	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/minecraft/advancements"
 	"Scharsch-Bot/pterodactyl"
 	"Scharsch-Bot/types"
 	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"log"
 )
 
 var (
@@ -17,18 +18,22 @@ var (
 	footerIcon = config.Discord.FooterIcon
 )
 
-func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
 	var (
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		roles, err            = s.GetRoles(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v joined the game", PlayerName)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText            string
 		Footer                *discordgo.MessageEmbedFooter
 	)
+	if err != nil {
+		log.Printf("Failed to get roles: %v", err)
+	}
 	if serverConf.SRV.Footer {
 		if whitelisted {
 			if !bansToMax {
@@ -102,18 +107,22 @@ func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string,
 	}
 	return Embed
 }
-func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
 	var (
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		roles, err            = s.GetRoles(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v left the game", PlayerName)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText            string
 		Footer                *discordgo.MessageEmbedFooter
 	)
+	if err != nil {
+		log.Printf("Failed to get roles: %v", err)
+	}
 	if serverConf.SRV.Footer {
 		if whitelisted {
 			if !bansToMax {
@@ -188,20 +197,24 @@ func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string,
 	return Embed
 }
 
-func PlayerAdvancement(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerAdvancement(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
 	var (
 		PlayerName            = eventJson.Name
 		advancement           = advancements.Decode(eventJson.Value)
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		roles, err            = s.GetRoles(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v made the Advancement %v", PlayerName, advancement)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText            string
 		Footer                *discordgo.MessageEmbedFooter
 	)
+	if err != nil {
+		log.Printf("Failed to get roles: %v", err)
+	}
 	if serverConf.SRV.Footer {
 		if whitelisted {
 			if !bansToMax {
@@ -275,19 +288,23 @@ func PlayerAdvancement(eventJson types.EventJson, serverConf conf.Server, footer
 	return Embed
 }
 
-func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
 	var (
 		PlayerName            = eventJson.Name
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		roles, err            = s.GetRoles(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v %v", PlayerName, eventJson.Value)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText            string
 		Footer                *discordgo.MessageEmbedFooter
 	)
+	if err != nil {
+		log.Printf("Failed to get roles: %v", err)
+	}
 	if serverConf.SRV.Footer {
 		if whitelisted {
 			if !bansToMax {
@@ -361,19 +378,23 @@ func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconUR
 	return Embed
 }
 
-func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *discordgo.Session) discordgo.MessageEmbed {
+func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
 	var (
 		PlayerName            = eventJson.Name
 		Message               = eventJson.Value
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		maxAccounts           = whitelist.GetMaxAccounts(discordMember.GetRoles(playerID, s))
+		roles, err            = s.GetRoles(playerID)
+		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText            string
 		Footer                *discordgo.MessageEmbedFooter
 	)
+	if err != nil {
+		log.Printf("Failed to get roles: %v", err)
+	}
 	if serverConf.SRV.Footer {
 		if whitelisted {
 			if !bansToMax {

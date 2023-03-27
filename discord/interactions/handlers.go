@@ -2,10 +2,11 @@ package interactions
 
 import (
 	"Scharsch-Bot/discord/interactions/handlers"
+	"Scharsch-Bot/discord/session"
 	"github.com/bwmarrin/discordgo"
 )
 
-var Handlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
+var Handlers = map[string]func(s *session.Session, i *discordgo.InteractionCreate){
 	"whitelist":            handlers.Whitelist,
 	"admin":                handlers.Admin,
 	"remove_yes":           handlers.RemoveYes,

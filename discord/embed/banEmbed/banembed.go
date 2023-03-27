@@ -2,9 +2,10 @@ package banEmbed
 
 import (
 	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/discordMember"
+	"Scharsch-Bot/discord/session"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"log"
 )
 
 var (
@@ -12,9 +13,9 @@ var (
 	serverName = config.Discord.ServerName
 )
 
-func DMBan(dmFailed bool, userID string, reason string, s *discordgo.Session) discordgo.MessageEmbed {
+func DMBan(dmFailed bool, userID string, reason string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		user, _     = discordMember.GetUserProfile(userID, s)
+		user, err   = s.GetUserProfile(userID)
 		authorName  = user.User.String()
 		avatarURL   = user.AvatarURL("40")
 		Title       = fmt.Sprintf("You got banned on the server %v", serverName)
@@ -22,6 +23,9 @@ func DMBan(dmFailed bool, userID string, reason string, s *discordgo.Session) di
 		FooterText  string
 		FooterIcon  = user.AvatarURL("40")
 	)
+	if err != nil {
+		log.Printf("Failed to get user profile: %v", err)
+	}
 
 	if dmFailed {
 		FooterText = fmt.Sprintf("Failed to send DM to %v. Maybe you have DMs disabled? Sending to channel instead.", user.User.String())
@@ -45,9 +49,9 @@ func DMBan(dmFailed bool, userID string, reason string, s *discordgo.Session) di
 	return Embed
 }
 
-func DMUnBan(dmFailed bool, userID string, s *discordgo.Session) discordgo.MessageEmbed {
+func DMUnBan(dmFailed bool, userID string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		user, _     = discordMember.GetUserProfile(userID, s)
+		user, err   = s.GetUserProfile(userID)
 		authorName  = user.User.String()
 		avatarURL   = user.AvatarURL("40")
 		Title       = fmt.Sprintf("You got Unbanned on the server %v", serverName)
@@ -55,6 +59,9 @@ func DMUnBan(dmFailed bool, userID string, s *discordgo.Session) discordgo.Messa
 		FooterText  string
 		FooterIcon  = user.AvatarURL("40")
 	)
+	if err != nil {
+		log.Printf("Failed to get user profile: %v", err)
+	}
 
 	if dmFailed {
 		FooterText = fmt.Sprintf("Failed to send DM to %v. Maybe you have DMs disabled? Sending to channel instead.", user.User.String())
@@ -78,9 +85,9 @@ func DMUnBan(dmFailed bool, userID string, s *discordgo.Session) discordgo.Messa
 	return Embed
 }
 
-func DMBanAccount(name string, dmFailed bool, userID string, reason string, s *discordgo.Session) discordgo.MessageEmbed {
+func DMBanAccount(name string, dmFailed bool, userID string, reason string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		user, _     = discordMember.GetUserProfile(userID, s)
+		user, err   = s.GetUserProfile(userID)
 		authorName  = user.User.String()
 		avatarURL   = user.AvatarURL("40")
 		Title       = fmt.Sprintf("Your account %v got banned on the server %v", name, serverName)
@@ -88,6 +95,9 @@ func DMBanAccount(name string, dmFailed bool, userID string, reason string, s *d
 		FooterText  string
 		FooterIcon  = user.AvatarURL("40")
 	)
+	if err != nil {
+		log.Printf("Error while getting user profile: %v", err)
+	}
 
 	if dmFailed {
 		FooterText = fmt.Sprintf("Failed to send DM to %v. Maybe you have DMs disabled? Sending to channel instead.", user.User.String())
@@ -111,9 +121,9 @@ func DMBanAccount(name string, dmFailed bool, userID string, reason string, s *d
 	return Embed
 }
 
-func DMUnBanAccount(name string, dmFailed bool, userID string, s *discordgo.Session) discordgo.MessageEmbed {
+func DMUnBanAccount(name string, dmFailed bool, userID string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		user, _     = discordMember.GetUserProfile(userID, s)
+		user, err   = s.GetUserProfile(userID)
 		authorName  = user.User.String()
 		avatarURL   = user.AvatarURL("40")
 		Title       = fmt.Sprintf("Your account %v got Unbanned on the server %v", name, serverName)
@@ -121,6 +131,9 @@ func DMUnBanAccount(name string, dmFailed bool, userID string, s *discordgo.Sess
 		FooterText  string
 		FooterIcon  = user.AvatarURL("40")
 	)
+	if err != nil {
+		log.Printf("Error while getting user profile: %v", err)
+	}
 
 	if dmFailed {
 		FooterText = fmt.Sprintf("Failed to send DM to %v. Maybe you have DMs disabled? Sending to channel instead.", user.User.String())

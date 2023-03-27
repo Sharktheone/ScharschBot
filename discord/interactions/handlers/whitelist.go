@@ -3,6 +3,7 @@ package handlers
 import (
 	"Scharsch-Bot/database/mongodb"
 	"Scharsch-Bot/discord/embed/wEmbed"
+	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/reports"
 	"Scharsch-Bot/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
@@ -10,7 +11,7 @@ import (
 	"strings"
 )
 
-func Whitelist(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Whitelist(s *session.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options
 	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
 	for _, opt := range options[0].Options {
@@ -198,10 +199,10 @@ func Whitelist(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		if mongodb.Ready {
 			reportEmbed := wEmbed.NewReport(name, reason, i)
-			allowed, alreadyReportet, enabled := reports.Report(name, reason, i, s, reportEmbed)
+			allowed, alreadyReported, enabled := reports.Report(name, reason, i, s, reportEmbed)
 			if allowed {
 				if enabled {
-					if alreadyReportet {
+					if alreadyReported {
 						messageEmbed = wEmbed.AlreadyReported(name)
 					} else {
 						messageEmbed = wEmbed.ReportPlayer(name, reason, i)

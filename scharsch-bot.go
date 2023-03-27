@@ -7,7 +7,6 @@ import (
 	"Scharsch-Bot/discord/embed/wEmbed"
 	"Scharsch-Bot/srv"
 	"Scharsch-Bot/whitelist/checkroles"
-	"github.com/bwmarrin/discordgo"
 	"github.com/robfig/cron"
 	"log"
 	"os"
@@ -34,12 +33,7 @@ func main() {
 
 	defer mongodb.Disconnect()
 	defer mongodb.Cancel()
-	defer func(bot *discordgo.Session) {
-		err := bot.Close()
-		if err != nil {
-
-		}
-	}(dcBot)
+	defer dcBot.Close()
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	log.Println("Press Ctrl+C to exit")

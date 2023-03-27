@@ -4,6 +4,7 @@ import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/console"
 	"Scharsch-Bot/discord/interactions"
+	"Scharsch-Bot/discord/session"
 	"flag"
 	"github.com/bwmarrin/discordgo"
 	"log"
@@ -12,17 +13,17 @@ import (
 var (
 	config              = conf.Config
 	GuildID             = flag.String("guild", config.Discord.ServerID, "Guild ID")
-	Session             *discordgo.Session
+	Session             *session.Session
 	commandRegistration = make([]*discordgo.ApplicationCommand, len(interactions.Commands))
 )
 
 func init() {
 	var BotToken = flag.String("token", config.Discord.Token, "Discord Bot Token")
-	var err error
-	Session, err = discordgo.New("Bot " + *BotToken)
+	s, err := discordgo.New("Bot " + *BotToken)
 	if err != nil {
 		log.Fatal("Invalid Bot Configuration:", err)
 	}
+	Session = &session.Session{Session: s}
 
 	if err := Session.Open(); err != nil {
 		log.Fatal("Cannot open connection to discord:", err)
@@ -35,14 +36,14 @@ func Registration() {
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
 			if h, ok := interactions.Handlers[i.ApplicationCommandData().Name]; ok {
-				h(s, i)
+				h(&session.Session{Session: s}, i)
 			} else {
 				log.Printf("No handler for %v", i.ApplicationCommandData().Name)
 			}
 
 		case discordgo.InteractionMessageComponent:
 			if h, ok := interactions.Handlers[i.MessageComponentData().CustomID]; ok {
-				h(s, i)
+				h(&session.Session{Session: s}, i)
 			} else {
 				log.Printf("No handler for %v", i.MessageComponentData().CustomID)
 			}

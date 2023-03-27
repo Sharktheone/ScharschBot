@@ -3,8 +3,8 @@ package whitelist
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/discordMember"
 	"Scharsch-Bot/discord/embed/banEmbed"
+	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -277,7 +277,7 @@ func ListedAccountsOf(userID string, banned bool) (Accounts []string) {
 	}
 }
 
-func BanUserID(userID string, roles []string, banID string, banAccounts bool, reason string, s *discordgo.Session) (allowed bool, alreadyBanned bool) {
+func BanUserID(userID string, roles []string, banID string, banAccounts bool, reason string, s *session.Session) (allowed bool, alreadyBanned bool) {
 	banAllowed := false
 	listedAccounts := ListedAccountsOf(banID, false)
 	for _, role := range roles {
@@ -323,13 +323,15 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 				}
 				messageEmbedDM := banEmbed.DMBan(false, banID, reason, s)
 				messageEmbedDMFailed := banEmbed.DMBan(true, banID, reason, s)
-				discordMember.SendDM(banID, s, &discordgo.MessageSend{
+				if err := s.SendDM(banID, &discordgo.MessageSend{
 					Embed: &messageEmbedDM,
 				}, &discordgo.MessageSend{
 					Content: fmt.Sprintf("<@%v>", banID),
 					Embed:   &messageEmbedDMFailed,
 				},
-				)
+				); err != nil {
+					log.Printf("Failed to send DM to %v: %v", banID, err)
+				}
 			}
 		}
 		return banAllowed, false
@@ -337,7 +339,7 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 	return
 }
 
-func BanAccount(userID string, roles []string, account string, reason string, s *discordgo.Session) (allowed bool, ownerID string) {
+func BanAccount(userID string, roles []string, account string, reason string, s *session.Session) (allowed bool, ownerID string) {
 	var (
 		banAllowed = false
 	)
@@ -368,13 +370,15 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 			})
 			messageEmbedDM := banEmbed.DMBanAccount(account, false, dcUser, reason, s)
 			messageEmbedDMFailed := banEmbed.DMBanAccount(account, true, dcUser, reason, s)
-			discordMember.SendDM(dcUser, s, &discordgo.MessageSend{
+			if err := s.SendDM(dcUser, &discordgo.MessageSend{
 				Embed: &messageEmbedDM,
 			}, &discordgo.MessageSend{
 				Content: fmt.Sprintf("<@%v>", dcUser),
 				Embed:   &messageEmbedDMFailed,
 			},
-			)
+			); err != nil {
+				log.Printf("Failed to send DM to %v: %v", dcUser, err)
+			}
 			if pterodactylEnabled {
 				command := fmt.Sprintf(removeCommand, account)
 				for _, listedServer := range config.Whitelist.Servers {
@@ -394,7 +398,7 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 
 	return banAllowed, dcUser
 }
-func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool, s *discordgo.Session) (allowed bool) {
+func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool, s *session.Session) (allowed bool) {
 	unBanAllowed := false
 	for _, role := range roles {
 		for _, neededRole := range config.Discord.WhitelistBanRoleID {
@@ -425,19 +429,21 @@ func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool
 			}
 			messageEmbedDM := banEmbed.DMUnBan(false, banID, s)
 			messageEmbedDMFailed := banEmbed.DMUnBan(true, banID, s)
-			discordMember.SendDM(banID, s, &discordgo.MessageSend{
+			if err := s.SendDM(banID, &discordgo.MessageSend{
 				Embed: &messageEmbedDM,
 			}, &discordgo.MessageSend{
 				Content: fmt.Sprintf("<@%v>", banID),
 				Embed:   &messageEmbedDMFailed,
 			},
-			)
+			); err != nil {
+				log.Printf("Failed to send DM to %v: %v", banID, err)
+			}
 		}
 	}
 	return unBanAllowed
 }
 
-func UnBanAccount(userID string, roles []string, account string, s *discordgo.Session) (allowed bool) {
+func UnBanAccount(userID string, roles []string, account string, s *session.Session) (allowed bool) {
 	unBanAllowed := false
 	for _, role := range roles {
 		for _, neededRole := range config.Discord.WhitelistBanRoleID {
@@ -454,13 +460,15 @@ func UnBanAccount(userID string, roles []string, account string, s *discordgo.Se
 		})
 		messageEmbedDM := banEmbed.DMUnBanAccount(account, false, userID, s)
 		messageEmbedDMFailed := banEmbed.DMUnBanAccount(account, true, userID, s)
-		discordMember.SendDM(userID, s, &discordgo.MessageSend{
+		if err := s.SendDM(userID, &discordgo.MessageSend{
 			Embed: &messageEmbedDM,
 		}, &discordgo.MessageSend{
 			Content: fmt.Sprintf("<@%v>", userID),
 			Embed:   &messageEmbedDMFailed,
 		},
-		)
+		); err != nil {
+			log.Printf("Failed to send DM to %v: %v", userID, err)
+		}
 
 	}
 
