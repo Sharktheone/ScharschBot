@@ -2,17 +2,22 @@ package advancements
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 )
 
-const langPath = "config/lang.json"
+var langPath = flag.String("minecraftLangPath", "config/lang.json", "Path to lang.json")
+
+func init() {
+	flag.Parse()
+}
 
 func GetLang() (lang map[string]interface{}) {
 	var langJson map[string]interface{}
-	jsonLang, err := os.ReadFile(langPath)
+	jsonLang, err := os.ReadFile(*langPath)
 	if err != nil {
 		log.Fatalf("Failed to get lang: %v", err)
 	}
