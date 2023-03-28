@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	confPath = flag.String("config", "config/config.yml", "Path to the config file")
+	confPath = flag.String("configPath", "config/config.yml", "Path to the config file")
 	Config   Format
 )
 
