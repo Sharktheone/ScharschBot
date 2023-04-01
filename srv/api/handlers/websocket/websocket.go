@@ -1,8 +1,11 @@
 package websocket
 
 import (
+	"Scharsch-Bot/pterodactyl"
+	"fmt"
 	"github.com/fasthttp/websocket"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // Bot => Server: SendPlayers
@@ -36,16 +39,33 @@ const (
 )
 
 type server struct {
+	conn   *websocket.Conn
+	server *pterodactyl.Server
 }
 
 var (
-	servers map[*websocket.Conn]*server
+	servers  = make(map[*websocket.Conn]*server)
+	upgrader = websocket.Upgrader{}
 )
 
-func init() {
-
-}
-
 func Handler(c *gin.Context) {
-
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("Failed to upgrade connection: %v", err),
+		})
+		return
+	}
+	defer conn.Close()
+	s, err := pterodactyl.GetServer(c.Param("serverID"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Failed to get server: %v", err),
+		})
+		return
+	}
+	servers[conn] = &server{
+		conn:   conn,
+		server: s,
+	}
 }
