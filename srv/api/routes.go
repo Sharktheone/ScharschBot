@@ -3,6 +3,7 @@ package api
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/srv/api/handlers"
+	"Scharsch-Bot/srv/api/handlers/websocket"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,7 @@ func Start() {
 	}))
 
 	r.POST("/", handlers.PlayerSRVEventHandler)
+	r.GET("/:serverID/ws", websocket.Handler)
 
 	if err := r.Run(fmt.Sprintf(":%v", *port)); err != nil {
 		log.Fatalf("Failed to start http server: %v", err)
