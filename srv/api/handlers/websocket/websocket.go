@@ -2,9 +2,11 @@ package websocket
 
 import (
 	"Scharsch-Bot/pterodactyl"
+	"context"
 	"fmt"
 	"github.com/fasthttp/websocket"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -36,36 +38,57 @@ const (
 	PlayerDeath       = "playerDeath"
 	PlayerAdvancement = "playerAdvancement"
 	Auth              = "auth"
+	AuthSuccess       = "authSuccess"
 )
 
-type server struct {
-	conn   *websocket.Conn
-	server *pterodactyl.Server
+type Handler struct {
+	conn    *websocket.Conn
+	server  *pterodactyl.Server
+	uuid    uuid.UUID
+	send    chan Event
+	receive chan Event
+	ctx     context.Context
 }
 
 var (
-	servers  = make(map[*websocket.Conn]*server)
 	upgrader = websocket.Upgrader{}
 )
 
-func Handler(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+func ServerWS(c *gin.Context) {
+	s, err := pterodactyl.GetServer(c.Param("serverID"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("Failed to upgrade connection: %v", err),
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("invalid server id %v: %v", c.Param("serverID"), err),
 		})
 		return
 	}
-	defer conn.Close()
-	s, err := pterodactyl.GetServer(c.Param("serverID"))
+	handler, err := getWSHandler(s, c.Writer, c.Request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("Failed to get server: %v", err),
 		})
 		return
 	}
-	servers[conn] = &server{
+	defer handler.conn.Close()
+
+	go handler.handleInbound()
+	go handler.handleOutbound()
+
+}
+
+func getWSHandler(s *pterodactyl.Server, w http.ResponseWriter, r *http.Request) (*Handler, error) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to upgrade connection: %v", err)
+	}
+	u, err := uuid.NewRandom()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate uuid: %v", err)
+	}
+	return &Handler{
 		conn:   conn,
 		server: s,
-	}
+		uuid:   u,
+	}, nil
+
 }

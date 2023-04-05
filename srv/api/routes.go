@@ -30,7 +30,7 @@ func Start() {
 	}))
 
 	r.POST("/", handlers.PlayerSRVEventHandler)
-	r.GET("/:serverID/ws", websocket.Handler)
+	r.GET("/:serverID/ws", websocket.ServerWS)
 
 	if err := r.Run(fmt.Sprintf(":%v", *port)); err != nil {
 		log.Fatalf("Failed to start http server: %v", err)

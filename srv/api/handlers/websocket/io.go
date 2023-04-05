@@ -1,9 +1,15 @@
 package websocket
 
-func (s *server) listen() {
+import "github.com/fasthttp/websocket"
+
+func (s *Handler) handleInbound() {
 	for {
 		var data Event
-		if err := s.conn.ReadJSON(&data); err == nil {
+		if err := s.conn.ReadJSON(&data); err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseServiceRestart) {
+				return
+			}
+		} else {
 			s.receive <- data
 		}
 		select {
@@ -15,7 +21,7 @@ func (s *server) listen() {
 	}
 }
 
-func (s *server) sendLoop() {
+func (s *Handler) handleOutbound() {
 	for {
 		select {
 		case data := <-s.send:
