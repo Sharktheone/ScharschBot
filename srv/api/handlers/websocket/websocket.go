@@ -42,12 +42,13 @@ const (
 )
 
 type Handler struct {
-	conn    *websocket.Conn
-	server  *pterodactyl.Server
-	uuid    uuid.UUID
-	send    chan Event
-	receive chan Event
-	ctx     context.Context
+	conn          *websocket.Conn
+	server        *pterodactyl.Server
+	uuid          uuid.UUID
+	send          chan Event
+	receive       chan Event
+	ctx           context.Context
+	authenticated bool
 }
 
 var (
