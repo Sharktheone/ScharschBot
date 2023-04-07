@@ -4,7 +4,7 @@ import "github.com/fasthttp/websocket"
 
 func (s *Handler) handleInbound() {
 	for {
-		var data Event
+		var data *Event
 		if err := s.conn.ReadJSON(&data); err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseServiceRestart) {
 				return

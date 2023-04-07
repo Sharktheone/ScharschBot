@@ -1,6 +1,13 @@
 package websocket
 
-import "context"
+import (
+	"Scharsch-Bot/conf"
+	"context"
+)
+
+var (
+	config = conf.GetConf()
+)
 
 func (s *Handler) processEvent(ctx *context.Context, e *Event) {
 	if s.authenticated == false && e.Event != Auth {
@@ -15,10 +22,6 @@ func (s *Handler) processEvent(ctx *context.Context, e *Event) {
 		s.banPlayer(ctx, e)
 	case UnbanPlayer:
 		s.unbanPlayer(ctx, e)
-	case SendCommand:
-		s.sendCommand(ctx, e)
-	case SendChatMessage:
-		s.sendChatMessage(ctx, e)
 	case PlayerJoined:
 		s.playerJoined(ctx, e)
 	case PlayerLeft:
@@ -33,8 +36,6 @@ func (s *Handler) processEvent(ctx *context.Context, e *Event) {
 		s.playerAdvancement(ctx, e)
 	case Auth:
 		s.auth(ctx, e)
-	case AuthSuccess:
-		s.authSuccess(ctx, e)
 	}
 }
 
@@ -51,14 +52,6 @@ func (s *Handler) banPlayer(ctx *context.Context, e *Event) {
 }
 
 func (s *Handler) unbanPlayer(ctx *context.Context, e *Event) {
-
-}
-
-func (s *Handler) sendCommand(ctx *context.Context, e *Event) {
-
-}
-
-func (s *Handler) sendChatMessage(ctx *context.Context, e *Event) {
 
 }
 
@@ -87,9 +80,15 @@ func (s *Handler) playerAdvancement(ctx *context.Context, e *Event) {
 }
 
 func (s *Handler) auth(ctx *context.Context, e *Event) {
-
-}
-
-func (s *Handler) authSuccess(ctx *context.Context, e *Event) {
-
+	if e.Data.Password == config.SRV.API.Password && e.Data.User == config.SRV.API.User {
+		s.authenticated = true
+		s.send <- &Event{
+			Event: AuthSuccess,
+		}
+	} else {
+		s.authenticated = false
+		s.send <- &Event{
+			Event: AuthFailed,
+		}
+	}
 }

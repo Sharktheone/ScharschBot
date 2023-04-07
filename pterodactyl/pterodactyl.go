@@ -115,6 +115,7 @@ func (s *Server) AddListener(listener func(ctx *context.Context, server *conf.Se
 
 func (s *Server) RemoveListener(name string) {
 	s.lCtx.mu.Lock()
+	defer s.lCtx.mu.Unlock()
 	for i, l := range s.lCtx.ctx {
 		if l.id == name || name == "*" {
 			l.cancel()
@@ -122,7 +123,6 @@ func (s *Server) RemoveListener(name string) {
 			return
 		}
 	}
-	s.lCtx.mu.Unlock()
 }
 
 func (s *Server) AddConsoleListener(listener func(server *conf.Server, console chan string)) {

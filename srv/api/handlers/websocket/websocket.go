@@ -39,14 +39,15 @@ const (
 	PlayerAdvancement = "playerAdvancement"
 	Auth              = "auth"
 	AuthSuccess       = "authSuccess"
+	AuthFailed        = "authFailed"
 )
 
 type Handler struct {
 	conn          *websocket.Conn
 	server        *pterodactyl.Server
 	uuid          uuid.UUID
-	send          chan Event
-	receive       chan Event
+	send          chan *Event
+	receive       chan *Event
 	ctx           context.Context
 	authenticated bool
 }
@@ -91,5 +92,4 @@ func getWSHandler(s *pterodactyl.Server, w http.ResponseWriter, r *http.Request)
 		server: s,
 		uuid:   u,
 	}, nil
-
 }

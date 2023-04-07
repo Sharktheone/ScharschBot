@@ -11,5 +11,6 @@ type Event struct {
 		DeathMessage string   `json:"death_message"`
 		Advancement  string   `json:"advancement"`
 		Password     string   `json:"password"`
+		User         string   `json:"user"`
 	}
 }
