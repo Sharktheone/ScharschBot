@@ -2,6 +2,7 @@ package playersrv
 
 import (
 	"Scharsch-Bot/discord/embed/srvEmbed"
+	"Scharsch-Bot/srv/api/handlers/websocket"
 	"fmt"
 	"log"
 	"strings"
@@ -39,7 +40,12 @@ func (p *PlayerSrv) SwitchEvents() {
 		}
 	case "advancement":
 		if p.server.Config.SRV.Events.Advancement {
-			messageEmbed := srvEmbed.PlayerAdvancement(*p.eventJson, *p.server.Config, p.footerIcon, p.username, s)
+			// Temporary conversion to websocket.Event
+			e := websocket.Event{}
+			e.Data.Player = p.eventJson.Name
+			e.Data.Advancement = p.eventJson.Value
+
+			messageEmbed := srvEmbed.PlayerAdvancement(&e, p.server.Config, &p.footerIcon, &p.username, s)
 			for _, channelID := range p.server.Config.SRV.ChannelID {
 				_, err := s.ChannelMessageSendEmbed(channelID, &messageEmbed)
 				if err != nil {
@@ -48,11 +54,11 @@ func (p *PlayerSrv) SwitchEvents() {
 			}
 		}
 	case "join":
-		if p.server.Config.SRV.Events.Join {
+		if p.server.Config.SRV.Events.PlayerJoinLeft {
 			p.server.OnlinePlayers.Mu.Lock()
 			defer p.server.OnlinePlayers.Mu.Unlock()
 			name := strings.ToLower(p.eventJson.Name)
-			p.server.OnlinePlayers.Players = append(p.server.OnlinePlayers.Players, &name)
+			*p.server.OnlinePlayers.Players = append(*p.server.OnlinePlayers.Players, name)
 			messageEmbed := srvEmbed.PlayerJoin(*p.server.Config, strings.ToLower(p.eventJson.Name), p.footerIcon, p.username, s)
 			for _, channelID := range p.server.Config.SRV.ChannelID {
 				_, err := s.ChannelMessageSendEmbed(channelID, &messageEmbed)
@@ -62,12 +68,13 @@ func (p *PlayerSrv) SwitchEvents() {
 			}
 		}
 	case "quit":
-		if p.server.Config.SRV.Events.Quit {
+		if p.server.Config.SRV.Events.PlayerJoinLeft {
 			p.server.OnlinePlayers.Mu.Lock()
 			defer p.server.OnlinePlayers.Mu.Unlock()
-			for i, player := range p.server.OnlinePlayers.Players {
-				if *player == strings.ToLower(p.eventJson.Name) {
-					p.server.OnlinePlayers.Players = append(p.server.OnlinePlayers.Players[:i], p.server.OnlinePlayers.Players[i+1:]...)
+			for i, player := range *p.server.OnlinePlayers.Players {
+				if player == strings.ToLower(p.eventJson.Name) {
+					players := *p.server.OnlinePlayers.Players
+					*p.server.OnlinePlayers.Players = append(players[:i], players[i+1:]...)
 					break
 				}
 			}

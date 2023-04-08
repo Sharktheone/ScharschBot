@@ -5,6 +5,7 @@ import (
 	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/minecraft/advancements"
 	"Scharsch-Bot/pterodactyl"
+	"Scharsch-Bot/srv/api/handlers/websocket"
 	"Scharsch-Bot/types"
 	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
@@ -197,10 +198,10 @@ func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string,
 	return Embed
 }
 
-func PlayerAdvancement(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
+func PlayerAdvancement(e *websocket.Event, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		PlayerName            = eventJson.Name
-		advancement           = advancements.Decode(eventJson.Value)
+		PlayerName            = e.Data.Player
+		advancement           = advancements.Decode(e.Data.Advancement)
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
@@ -228,7 +229,7 @@ func PlayerAdvancement(eventJson types.EventJson, serverConf conf.Server, footer
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
 				Text:    FooterText,
-				IconURL: footerIconURL,
+				IconURL: *footerIconURL,
 			}
 		} else {
 			Footer = &discordgo.MessageEmbedFooter{
