@@ -2,18 +2,18 @@ package websocket
 
 import "github.com/fasthttp/websocket"
 
-func (s *Handler) handleInbound() {
+func (h *Handler) handleInbound() {
 	for {
 		var data *Event
-		if err := s.conn.ReadJSON(&data); err != nil {
+		if err := h.conn.ReadJSON(&data); err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseServiceRestart) {
 				return
 			}
 		} else {
-			s.receive <- data
+			h.receive <- data
 		}
 		select {
-		case <-s.ctx.Done():
+		case <-h.ctx.Done():
 			return
 		default:
 			continue
@@ -21,14 +21,14 @@ func (s *Handler) handleInbound() {
 	}
 }
 
-func (s *Handler) handleOutbound() {
+func (h *Handler) handleOutbound() {
 	for {
 		select {
-		case data := <-s.send:
-			if err := s.conn.WriteJSON(data); err != nil {
+		case data := <-h.send:
+			if err := h.conn.WriteJSON(data); err != nil {
 				return
 			}
-		case <-s.ctx.Done():
+		case <-h.ctx.Done():
 			return
 		}
 	}
