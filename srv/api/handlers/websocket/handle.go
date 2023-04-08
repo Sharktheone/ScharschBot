@@ -2,92 +2,115 @@ package websocket
 
 import (
 	"Scharsch-Bot/conf"
+	"Scharsch-Bot/discord/bot"
+	"Scharsch-Bot/discord/embed/srvEmbed"
 	"context"
+	"log"
 )
 
 var (
 	config = conf.GetConf()
+	s      = bot.Session
 )
 
-func (s *Handler) processEvent(ctx *context.Context, e *Event) {
-	if s.authenticated == false && e.Event != Auth {
+func (p *PSRVEvent) processEvent(ctx *context.Context, e *Event) {
+	if p.h.authenticated == false && e.Event != Auth {
 		return
 	}
 	switch e.Event {
 	case SendPlayers:
-		s.sendPlayers(ctx, e)
+		p.sendPlayers(ctx, e)
 	case KickPlayer:
-		s.kickPlayer(ctx, e)
+		p.kickPlayer(ctx, e)
 	case BanPlayer:
-		s.banPlayer(ctx, e)
+		p.banPlayer(ctx, e)
 	case UnbanPlayer:
-		s.unbanPlayer(ctx, e)
+		p.unbanPlayer(ctx, e)
 	case PlayerJoined:
-		s.playerJoined(ctx, e)
+		p.playerJoined(ctx, e)
 	case PlayerLeft:
-		s.playerLeft(ctx, e)
+		p.playerLeft(ctx, e)
 	case Players:
-		s.players(ctx, e)
+		p.players(ctx, e)
 	case ChatMessage:
-		s.chatMessage(ctx, e)
+		p.chatMessage(ctx, e)
 	case PlayerDeath:
-		s.playerDeath(ctx, e)
+		p.playerDeath(ctx, e)
 	case PlayerAdvancement:
-		s.playerAdvancement(ctx, e)
+		p.playerAdvancement(ctx, e)
 	case Auth:
-		s.auth(ctx, e)
+		p.auth(ctx, e)
 	}
 }
 
-func (s *Handler) sendPlayers(ctx *context.Context, e *Event) {
+// sendPlayers send total online players to server
+func (p *PSRVEvent) sendPlayers(ctx *context.Context, e *Event) {
 
 }
 
-func (s *Handler) kickPlayer(ctx *context.Context, e *Event) {
+// kickPlayer kick player on all servers
+func (p *PSRVEvent) kickPlayer(ctx *context.Context, e *Event) {
 
 }
 
-func (s *Handler) banPlayer(ctx *context.Context, e *Event) {
+// banPlayer ban player on all servers
+func (p *PSRVEvent) banPlayer(ctx *context.Context, e *Event) {
 
 }
 
-func (s *Handler) unbanPlayer(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) unbanPlayer(ctx *context.Context, e *Event) {
 
 }
 
-func (s *Handler) playerJoined(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) playerJoined(ctx *context.Context, e *Event) {
+	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
+		*p.h.server.OnlinePlayers.Players = append(*p.h.server.OnlinePlayers.Players, e.Data.Player)
+	}
+}
+
+func (p *PSRVEvent) playerLeft(ctx *context.Context, e *Event) {
+	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
+		*p.h.server.OnlinePlayers.Players = append(*p.h.server.OnlinePlayers.Players, e.Data.Player)
+	}
+}
+
+func (p *PSRVEvent) players(ctx *context.Context, e *Event) {
+	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
+		p.h.server.OnlinePlayers.Mu.Lock()
+		defer p.h.server.OnlinePlayers.Mu.Unlock()
+		p.h.server.OnlinePlayers.Players = &e.Data.Players
+	}
+}
+
+func (p *PSRVEvent) chatMessage(ctx *context.Context, e *Event) {
 
 }
 
-func (s *Handler) playerLeft(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) playerDeath(ctx *context.Context, e *Event) {
 
 }
 
-func (s *Handler) players(ctx *context.Context, e *Event) {
-
+func (p *PSRVEvent) playerAdvancement(ctx *context.Context, e *Event) {
+	if p.h.server.Config.SRV.Events.Advancement {
+		messageEmbed := srvEmbed.PlayerAdvancement(p.e, p.h.server.Config, p.footerIcon, p.username, s)
+		for _, channelID := range p.h.server.Config.SRV.ChannelID {
+			_, err := s.ChannelMessageSendEmbed(channelID, &messageEmbed)
+			if err != nil {
+				log.Printf("Failed to send Advancement embed: %v (channelID: %v)", err, channelID)
+			}
+		}
+	}
 }
 
-func (s *Handler) chatMessage(ctx *context.Context, e *Event) {
-
-}
-
-func (s *Handler) playerDeath(ctx *context.Context, e *Event) {
-
-}
-
-func (s *Handler) playerAdvancement(ctx *context.Context, e *Event) {
-
-}
-
-func (s *Handler) auth(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) auth(ctx *context.Context, e *Event) {
 	if e.Data.Password == config.SRV.API.Password && e.Data.User == config.SRV.API.User {
-		s.authenticated = true
-		s.send <- &Event{
+		p.h.authenticated = true
+		p.h.send <- &Event{
 			Event: AuthSuccess,
 		}
 	} else {
-		s.authenticated = false
-		s.send <- &Event{
+		p.h.authenticated = false
+		p.h.send <- &Event{
 			Event: AuthFailed,
 		}
 	}

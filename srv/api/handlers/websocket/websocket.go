@@ -4,6 +4,7 @@ import (
 	"Scharsch-Bot/pterodactyl"
 	"context"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"github.com/fasthttp/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -50,6 +51,16 @@ type Handler struct {
 	receive       chan *Event
 	ctx           context.Context
 	authenticated bool
+}
+
+type PSRVEvent struct {
+	h           *Handler
+	e           *Event
+	userID      *string
+	onWhitelist *bool
+	footerIcon  *string
+	username    *string
+	member      *discordgo.Member
 }
 
 var (
