@@ -2,18 +2,17 @@ package websocket
 
 import (
 	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/discord/embed/srvEmbed"
+	"Scharsch-Bot/types"
 	"context"
 	"log"
 )
 
 var (
 	config = conf.GetConf()
-	s      = bot.Session
 )
 
-func (p *PSRVEvent) processEvent(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) processEvent(ctx *context.Context, e *types.WebsocketEvent) {
 	if p.h.authenticated == false && e.Event != Auth {
 		return
 	}
@@ -44,37 +43,37 @@ func (p *PSRVEvent) processEvent(ctx *context.Context, e *Event) {
 }
 
 // sendPlayers send total online players to server
-func (p *PSRVEvent) sendPlayers(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) sendPlayers(ctx *context.Context, e *types.WebsocketEvent) {
 
 }
 
 // kickPlayer kick player on all servers
-func (p *PSRVEvent) kickPlayer(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) kickPlayer(ctx *context.Context, e *types.WebsocketEvent) {
 
 }
 
 // banPlayer ban player on all servers
-func (p *PSRVEvent) banPlayer(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) banPlayer(ctx *context.Context, e *types.WebsocketEvent) {
 
 }
 
-func (p *PSRVEvent) unbanPlayer(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) unbanPlayer(ctx *context.Context, e *types.WebsocketEvent) {
 
 }
 
-func (p *PSRVEvent) playerJoined(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) playerJoined(ctx *context.Context, e *types.WebsocketEvent) {
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
 		*p.h.server.OnlinePlayers.Players = append(*p.h.server.OnlinePlayers.Players, e.Data.Player)
 	}
 }
 
-func (p *PSRVEvent) playerLeft(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) playerLeft(ctx *context.Context, e *types.WebsocketEvent) {
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
 		*p.h.server.OnlinePlayers.Players = append(*p.h.server.OnlinePlayers.Players, e.Data.Player)
 	}
 }
 
-func (p *PSRVEvent) players(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) players(ctx *context.Context, e *types.WebsocketEvent) {
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
 		p.h.server.OnlinePlayers.Mu.Lock()
 		defer p.h.server.OnlinePlayers.Mu.Unlock()
@@ -82,19 +81,19 @@ func (p *PSRVEvent) players(ctx *context.Context, e *Event) {
 	}
 }
 
-func (p *PSRVEvent) chatMessage(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) chatMessage(ctx *context.Context, e *types.WebsocketEvent) {
 
 }
 
-func (p *PSRVEvent) playerDeath(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) playerDeath(ctx *context.Context, e *types.WebsocketEvent) {
 
 }
 
-func (p *PSRVEvent) playerAdvancement(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) playerAdvancement(ctx *context.Context, e *types.WebsocketEvent) {
 	if p.h.server.Config.SRV.Events.Advancement {
-		messageEmbed := srvEmbed.PlayerAdvancement(p.e, p.h.server.Config, p.footerIcon, p.username, s)
+		messageEmbed := srvEmbed.PlayerAdvancement(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
 		for _, channelID := range p.h.server.Config.SRV.ChannelID {
-			_, err := s.ChannelMessageSendEmbed(channelID, &messageEmbed)
+			_, err := p.session.ChannelMessageSendEmbed(channelID, &messageEmbed)
 			if err != nil {
 				log.Printf("Failed to send Advancement embed: %v (channelID: %v)", err, channelID)
 			}
@@ -102,15 +101,15 @@ func (p *PSRVEvent) playerAdvancement(ctx *context.Context, e *Event) {
 	}
 }
 
-func (p *PSRVEvent) auth(ctx *context.Context, e *Event) {
+func (p *PSRVEvent) auth(ctx *context.Context, e *types.WebsocketEvent) {
 	if e.Data.Password == config.SRV.API.Password && e.Data.User == config.SRV.API.User {
 		p.h.authenticated = true
-		p.h.send <- &Event{
+		p.h.send <- &types.WebsocketEvent{
 			Event: AuthSuccess,
 		}
 	} else {
 		p.h.authenticated = false
-		p.h.send <- &Event{
+		p.h.send <- &types.WebsocketEvent{
 			Event: AuthFailed,
 		}
 	}

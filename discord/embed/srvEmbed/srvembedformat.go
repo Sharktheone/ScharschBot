@@ -4,8 +4,6 @@ import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/minecraft/advancements"
-	"Scharsch-Bot/pterodactyl"
-	"Scharsch-Bot/srv/api/handlers/websocket"
 	"Scharsch-Bot/types"
 	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
@@ -198,7 +196,7 @@ func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string,
 	return Embed
 }
 
-func PlayerAdvancement(e *websocket.Event, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
+func PlayerAdvancement(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
 	var (
 		PlayerName            = e.Data.Player
 		advancement           = advancements.Decode(e.Data.Advancement)

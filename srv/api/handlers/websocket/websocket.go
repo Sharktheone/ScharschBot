@@ -1,7 +1,9 @@
 package websocket
 
 import (
+	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
+	"Scharsch-Bot/types"
 	"context"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -47,20 +49,21 @@ type Handler struct {
 	conn          *websocket.Conn
 	server        *pterodactyl.Server
 	uuid          uuid.UUID
-	send          chan *Event
-	receive       chan *Event
+	send          chan *types.WebsocketEvent
+	receive       chan *types.WebsocketEvent
 	ctx           context.Context
 	authenticated bool
 }
 
 type PSRVEvent struct {
 	h           *Handler
-	e           *Event
+	e           *types.WebsocketEvent
 	userID      *string
 	onWhitelist *bool
 	footerIcon  *string
 	username    *string
 	member      *discordgo.Member
+	session     *session.Session
 }
 
 var (

@@ -19,7 +19,7 @@ var (
 )
 
 type PlayerSrv struct {
-	eventJson   *types.EventJson
+	event       *types.WebsocketEvent
 	userID      string
 	onWhitelist bool
 	footerIcon  string
@@ -37,8 +37,8 @@ func Decode(eventJson *types.EventJson) (error, int, *PlayerSrv) {
 		statusCode int
 		errMsg     error
 		pSrv       = &PlayerSrv{
-			eventJson: eventJson,
-			server:    server,
+			event:  &types.WebsocketEvent{},
+			server: server,
 		}
 	)
 	if userID, onWhitelist := whitelist.GetOwner(eventJson.Name); onWhitelist {
