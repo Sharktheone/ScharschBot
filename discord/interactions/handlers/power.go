@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/embed/srvEmbed"
+	"Scharsch-Bot/discord/embed/pEmbed"
 	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
 	"fmt"
@@ -70,7 +70,7 @@ func power(s *session.Session, i *discordgo.InteractionCreate, option string) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{
-				srvEmbed.Power(option),
+				pEmbed.Power(option),
 			},
 			Components: []discordgo.MessageComponent{
 				discordgo.ActionsRow{
@@ -134,9 +134,9 @@ func powerSelect(s *session.Session, i *discordgo.InteractionCreate, action stri
 	}
 	var messageEmbed discordgo.MessageEmbed
 	if !allowed {
-		messageEmbed = srvEmbed.PowerNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.String(), action, serverConf.ServerName)
+		messageEmbed = pEmbed.PowerNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.String(), action, serverConf.ServerName)
 	} else {
-		messageEmbed = srvEmbed.PowerAction(action, serverConf.ServerName, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+		messageEmbed = pEmbed.PowerAction(action, serverConf.ServerName, i.Member.User.AvatarURL("40"), i.Member.User.Username)
 		s, err := pterodactyl.GetServer(serverConf.ServerID)
 		if err != nil {
 			log.Printf("Failed to get server %s: %v", serverConf.ServerName, err)
