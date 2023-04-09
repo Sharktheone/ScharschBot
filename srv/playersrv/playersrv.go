@@ -28,7 +28,7 @@ type PlayerSrv struct {
 	server      *pterodactyl.Server
 }
 
-func Decode(eventJson *types.EventJson) (error, int, *PlayerSrv) {
+func DecodeV2(eventJson *types.EventJson) (error, int, *PlayerSrv) {
 	server, err := pterodactyl.GetServerByName(eventJson.Server)
 	if err != nil {
 		return fmt.Errorf("failed to get server: %v", err), http.StatusNotFound, nil
@@ -64,7 +64,38 @@ func Decode(eventJson *types.EventJson) (error, int, *PlayerSrv) {
 	checkAccount(strings.ToLower(eventJson.Name))
 
 	return errMsg, statusCode, pSrv
+}
 
+func DecodePlayer(e *types.WebsocketEvent) (error, *PlayerSrv) {
+	var (
+		errMsg error
+		pSrv   = &PlayerSrv{
+			event: e,
+		}
+	)
+	if e.Data.Player == "" {
+		return fmt.Errorf("player name is empty"), nil
+	}
+	if userID, onWhitelist := whitelist.GetOwner(e.Data.Player); onWhitelist {
+		pSrv.onWhitelist = true
+		pSrv.userID = userID
+		if member, err := s.GetUserProfile(userID); err != nil {
+			errMsg = fmt.Errorf("failed to get user profile: %v", err)
+			pSrv.footerIcon = config.Discord.EmbedErrorIcon
+			pSrv.username = e.Data.Player
+			pSrv.member = member
+		} else {
+			pSrv.footerIcon = member.User.AvatarURL("40")
+			pSrv.username = member.User.String()
+			pSrv.member = member
+		}
+	} else {
+		pSrv.onWhitelist = false
+		pSrv.footerIcon = config.Discord.EmbedErrorIcon
+	}
+	checkAccount(strings.ToLower(e.Data.Player))
+
+	return errMsg, pSrv
 }
 
 func checkAccount(Name string) ([]string, []string) {

@@ -17,7 +17,7 @@ func PlayerSRVEventHandler(c *gin.Context) {
 		})
 		return
 	}
-	err, status, pSrv := playersrv.Decode(eventJson)
+	err, status, pSrv := playersrv.DecodeV2(eventJson)
 	if err != nil {
 		c.JSON(status, gin.H{
 			"error": err,
