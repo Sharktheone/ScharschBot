@@ -8,16 +8,19 @@ type EventJson struct {
 }
 
 type WebsocketEvent struct {
-	Event string `json:"event"`
-	Data  struct {
-		Players      []string `json:"players"`
-		Player       string   `json:"player"`
-		Reason       string   `json:"reason"`
-		Command      string   `json:"command"`
-		Message      string   `json:"message"`
-		DeathMessage string   `json:"death_message"`
-		Advancement  string   `json:"advancement"`
-		Password     string   `json:"password"`
-		User         string   `json:"user"`
-	}
+	Event string             `json:"event"`
+	Data  WebsocketEventData `json:"data"`
+}
+
+type WebsocketEventData struct {
+	Players      []string `json:"players,omitempty"`
+	Player       string   `json:"player,omitempty"`
+	Reason       string   `json:"reason,omitempty"`
+	Command      string   `json:"command,omitempty"`
+	Message      string   `json:"message,omitempty"`
+	DeathMessage string   `json:"death_message,omitempty"`
+	Advancement  string   `json:"advancement,omitempty"`
+	Password     string   `json:"password,omitempty"`
+	User         string   `json:"user,omitempty"`
+	Error        string   `json:"error,omitempty"`
 }

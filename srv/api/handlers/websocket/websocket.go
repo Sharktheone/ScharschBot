@@ -43,6 +43,7 @@ const (
 	Auth              = "auth"
 	AuthSuccess       = "authSuccess"
 	AuthFailed        = "authFailed"
+	Error             = "error"
 )
 
 type Handler struct {
