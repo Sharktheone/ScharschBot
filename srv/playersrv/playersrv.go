@@ -66,15 +66,16 @@ func DecodeV2(eventJson *types.EventJson) (error, int, *PlayerSrv) {
 	return errMsg, statusCode, pSrv
 }
 
-func DecodePlayer(e *types.WebsocketEvent) (error, *PlayerSrv) {
+func DecodePlayer(e *types.WebsocketEvent, server *pterodactyl.Server) (*PlayerSrv, error) {
 	var (
 		errMsg error
 		pSrv   = &PlayerSrv{
-			event: e,
+			event:  e,
+			server: server,
 		}
 	)
 	if e.Data.Player == "" {
-		return fmt.Errorf("player name is empty"), nil
+		return pSrv, nil
 	}
 	if userID, onWhitelist := whitelist.GetOwner(e.Data.Player); onWhitelist {
 		pSrv.onWhitelist = true
@@ -95,7 +96,7 @@ func DecodePlayer(e *types.WebsocketEvent) (error, *PlayerSrv) {
 	}
 	checkAccount(strings.ToLower(e.Data.Player))
 
-	return errMsg, pSrv
+	return pSrv, errMsg
 }
 
 func checkAccount(Name string) ([]string, []string) {

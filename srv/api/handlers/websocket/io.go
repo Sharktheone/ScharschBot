@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"Scharsch-Bot/srv/playersrv"
 	"Scharsch-Bot/types"
 	"github.com/fasthttp/websocket"
 )
@@ -13,7 +14,7 @@ func (h *Handler) handleInbound() {
 				return
 			}
 		} else {
-			h.receive <- data
+			go h.handleEvents(data)
 		}
 		select {
 		case <-h.ctx.Done():
@@ -33,6 +34,30 @@ func (h *Handler) handleOutbound() {
 			}
 		case <-h.ctx.Done():
 			return
+		}
+	}
+}
+
+func (h *Handler) handleEvents(data *types.WebsocketEvent) {
+	for {
+		select {
+		case <-h.ctx.Done():
+			return
+		default:
+			h.receive <- data
+			pSRV, err := playersrv.DecodePlayer(data, h.server)
+			if err != nil {
+				h.send <- &types.WebsocketEvent{
+					Event: Error,
+					Data: types.WebsocketEventData{
+						Error: err.Error(),
+					},
+				}
+			}
+			if pSRV != nil {
+				pSRV.SwitchEvents()
+			}
+
 		}
 	}
 }
