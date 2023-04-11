@@ -61,45 +61,12 @@ func DecodeV2(eventJson *types.EventJson) (error, int, *PlayerSrv) {
 		pSrv.onWhitelist = false
 		pSrv.footerIcon = config.Discord.EmbedErrorIcon
 	}
-	checkAccount(strings.ToLower(eventJson.Name))
+	CheckAccount(strings.ToLower(eventJson.Name))
 
 	return errMsg, statusCode, pSrv
 }
 
-func DecodePlayer(e *types.WebsocketEvent, server *pterodactyl.Server) (*PlayerSrv, error) {
-	var (
-		errMsg error
-		pSrv   = &PlayerSrv{
-			event:  e,
-			server: server,
-		}
-	)
-	if e.Data.Player == "" {
-		return pSrv, nil
-	}
-	if userID, onWhitelist := whitelist.GetOwner(e.Data.Player); onWhitelist {
-		pSrv.onWhitelist = true
-		pSrv.userID = userID
-		if member, err := s.GetUserProfile(userID); err != nil {
-			errMsg = fmt.Errorf("failed to get user profile: %v", err)
-			pSrv.footerIcon = config.Discord.EmbedErrorIcon
-			pSrv.username = e.Data.Player
-			pSrv.member = member
-		} else {
-			pSrv.footerIcon = member.User.AvatarURL("40")
-			pSrv.username = member.User.String()
-			pSrv.member = member
-		}
-	} else {
-		pSrv.onWhitelist = false
-		pSrv.footerIcon = config.Discord.EmbedErrorIcon
-	}
-	checkAccount(strings.ToLower(e.Data.Player))
-
-	return pSrv, errMsg
-}
-
-func checkAccount(Name string) ([]string, []string) {
+func CheckAccount(Name string) ([]string, []string) {
 	userID, onWhitelist := whitelist.GetOwner(Name)
 	if config.Whitelist.KickUnWhitelisted {
 		if !onWhitelist {
