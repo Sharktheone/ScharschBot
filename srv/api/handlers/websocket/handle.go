@@ -12,7 +12,9 @@ var (
 	config = conf.GetConf()
 )
 
-func (p *PSRVEvent) processEvent(ctx *context.Context, e *types.WebsocketEvent) {
+func (p *PSRVEvent) processEvent() {
+	ctx := &p.h.ctx
+	e := p.e
 	if p.h.authenticated == false && e.Event != Auth {
 		return
 	}

@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"Scharsch-Bot/srv/playersrv"
 	"Scharsch-Bot/types"
 	"github.com/fasthttp/websocket"
 )
@@ -45,7 +44,7 @@ func (h *Handler) handleEvents(data *types.WebsocketEvent) {
 			return
 		default:
 			h.receive <- data
-			pSRV, err := playersrv.DecodePlayer(data, h.server)
+			pSRV, err := h.DecodePlayer(data)
 			if err != nil {
 				h.send <- &types.WebsocketEvent{
 					Event: Error,
@@ -55,7 +54,7 @@ func (h *Handler) handleEvents(data *types.WebsocketEvent) {
 				}
 			}
 			if pSRV != nil {
-				pSRV.SwitchEvents()
+				pSRV.processEvent()
 			}
 
 		}
