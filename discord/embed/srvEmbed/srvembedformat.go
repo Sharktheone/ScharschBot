@@ -377,7 +377,7 @@ func PlayerDeath(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL
 	return Embed
 }
 
-func Chat(eventJson *types.WebsocketEvent, serverConf conf.Server, footerIconURL, username *string, s *session.Session) *discordgo.MessageEmbed {
+func Chat(eventJson *types.WebsocketEvent, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) *discordgo.MessageEmbed {
 	var (
 		PlayerName            = eventJson.Data.Player
 		Message               = eventJson.Data.Message

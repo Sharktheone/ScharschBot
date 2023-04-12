@@ -11,7 +11,7 @@ func (p *PlayerSrv) SwitchEvents() {
 	switch p.event.Event {
 	case "chat":
 		if p.server.Config.Chat.Embed {
-			messageEmbed := srvEmbed.Chat(p.event, *p.server.Config, p.footerIcon, p.username, s)
+			messageEmbed := srvEmbed.Chat(p.event, p.server.Config, p.footerIcon, p.username, s)
 			for _, channelID := range p.server.Config.Chat.ChannelID {
 				_, err := s.ChannelMessageSendEmbed(channelID, messageEmbed)
 				if err != nil {
