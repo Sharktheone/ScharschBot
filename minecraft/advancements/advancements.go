@@ -1,6 +1,7 @@
 package advancements
 
 import (
+	"Scharsch-Bot/config"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -9,17 +10,28 @@ import (
 	"strings"
 )
 
-var langPath = flag.String("minecraftLangPath", "config/lang.json", "Path to lang.json")
+var langPath = flag.String("minecraftLangPath", "internal", "Path to lang.json")
 
 func init() {
 	flag.Parse()
 }
 
 func GetLang() (lang map[string]interface{}) {
-	var langJson map[string]interface{}
-	jsonLang, err := os.ReadFile(*langPath)
-	if err != nil {
-		log.Fatalf("Failed to get lang: %v", err)
+	var (
+		langJson map[string]interface{}
+		jsonLang []byte
+		err      error
+	)
+	if *langPath == "internal" {
+		jsonLang, err = config.MCLangJson.ReadFile("lang.json")
+		if err != nil {
+			log.Fatalf("Failed to get lang: %v", err)
+		}
+	} else {
+		jsonLang, err = os.ReadFile(*langPath)
+		if err != nil {
+			log.Fatalf("Failed to get lang: %v", err)
+		}
 	}
 
 	decoder := json.NewDecoder(strings.NewReader(string(jsonLang)))
