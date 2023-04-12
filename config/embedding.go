@@ -2,8 +2,13 @@ package config
 
 import "embed"
 
-//go:embed config.yml
-var StandardConf embed.FS
+//go:embed config.yml lang.json
+var eFS embed.FS
 
-//go:embed lang.json
-var MCLangJson embed.FS
+func GetLang() ([]byte, error) {
+	return eFS.ReadFile("lang.json")
+}
+
+func GetDefaultConf() ([]byte, error) {
+	return eFS.ReadFile("config.yml")
+}

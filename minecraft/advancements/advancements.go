@@ -23,7 +23,7 @@ func GetLang() (lang map[string]interface{}) {
 		err      error
 	)
 	if *langPath == "internal" {
-		jsonLang, err = config.MCLangJson.ReadFile("lang.json")
+		jsonLang, err = config.GetLang()
 		if err != nil {
 			log.Fatalf("Failed to get lang: %v", err)
 		}

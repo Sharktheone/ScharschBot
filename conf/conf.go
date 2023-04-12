@@ -22,7 +22,7 @@ func GetConf() Format {
 	ymlConf, err := os.ReadFile(*confPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			f, err := config.StandardConf.ReadFile("config.yml")
+			f, err := config.GetDefaultConf()
 			if err != nil {
 				log.Fatalf("Failed to get default config: %v", err)
 			}
