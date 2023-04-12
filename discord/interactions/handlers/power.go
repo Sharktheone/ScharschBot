@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"Scharsch-Bot/conf"
 	"Scharsch-Bot/discord/embed/pEmbed"
 	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
@@ -110,18 +109,22 @@ func getServerOptions(option string) []discordgo.SelectMenuOption {
 
 func powerSelect(s *session.Session, i *discordgo.InteractionCreate, action string) {
 	var (
-		allowed      = false
-		options      = i.MessageComponentData()
-		requiredRole []string
-		serverConf   = conf.GetServerConf(options.Values[0], "")
+		allowed         = false
+		options         = i.MessageComponentData()
+		requiredRole    []string
+		serverConf, err = pterodactyl.GetServer(options.Values[0])
 	)
+	if err != nil {
+		log.Printf("Failed to get server %s: %v", options.Values[0], err)
+		return
+	}
 	switch action {
 	case "start":
-		requiredRole = serverConf.PowerActionsRoleIDs.Start
+		requiredRole = serverConf.Config.PowerActionsRoleIDs.Start
 	case "stop":
-		requiredRole = serverConf.PowerActionsRoleIDs.Stop
+		requiredRole = serverConf.Config.PowerActionsRoleIDs.Stop
 	case "restart":
-		requiredRole = serverConf.PowerActionsRoleIDs.Restart
+		requiredRole = serverConf.Config.PowerActionsRoleIDs.Restart
 
 	}
 	for _, role := range i.Member.Roles {
@@ -134,39 +137,38 @@ func powerSelect(s *session.Session, i *discordgo.InteractionCreate, action stri
 	}
 	var messageEmbed discordgo.MessageEmbed
 	if !allowed {
-		messageEmbed = pEmbed.PowerNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.String(), action, serverConf.ServerName)
+		messageEmbed = pEmbed.PowerNotAllowed(i.Member.User.AvatarURL("40"), i.Member.User.String(), action, serverConf.Config.ServerName)
 	} else {
-		messageEmbed = pEmbed.PowerAction(action, serverConf.ServerName, i.Member.User.AvatarURL("40"), i.Member.User.Username)
-		s, err := pterodactyl.GetServer(serverConf.ServerID)
+		messageEmbed = pEmbed.PowerAction(action, serverConf.Config.ServerName, i.Member.User.AvatarURL("40"), i.Member.User.Username)
+		s, err := pterodactyl.GetServer(serverConf.Config.ServerID)
 		if err != nil {
-			log.Printf("Failed to get server %s: %v", serverConf.ServerName, err)
+			log.Printf("Failed to get server %s: %v", serverConf.Config.ServerName, err)
 			return
 		}
 		switch action {
 		case "start":
 			if err := s.Start(); err != nil {
-				log.Printf("Failed to start server %s: %v", serverConf.ServerName, err)
+				log.Printf("Failed to start server %s: %v", serverConf.Config.ServerName, err)
 			}
 		case "stop":
 			if err := s.Stop(); err != nil {
-				log.Printf("Failed to stop server %s: %v", serverConf.ServerName, err)
+				log.Printf("Failed to stop server %s: %v", serverConf.Config.ServerName, err)
 			}
 		case "restart":
 			if err := s.Restart(); err != nil {
-				log.Printf("Failed to restart server %s: %v", serverConf.ServerName, err)
+				log.Printf("Failed to restart server %s: %v", serverConf.Config.ServerName, err)
 			}
 
 		}
 	}
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{
 				&messageEmbed,
 			},
 		},
-	})
-	if err != nil {
+	}); err != nil {
 		log.Printf("Failed send power_%v Embed: %v", action, err)
 	}
 }

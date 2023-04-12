@@ -39,27 +39,3 @@ func GetConf() Format {
 	}
 	return Config
 }
-func GetServerConf(serverID string, serverName string) (serverConf Server) {
-	if serverID != "" && serverName != "" {
-		for _, server := range GetConf().Pterodactyl.Servers {
-			if server.ServerID == serverID && server.ServerName == serverName {
-				return server
-			}
-		}
-	} else if serverID != "" {
-		for _, server := range GetConf().Pterodactyl.Servers {
-			if server.ServerID == serverID {
-				return server
-			}
-		}
-	} else if serverName != "" {
-		for _, server := range GetConf().Pterodactyl.Servers {
-			if server.ServerName == serverName {
-				return server
-			}
-		}
-	} else {
-		return
-	}
-	return
-}
