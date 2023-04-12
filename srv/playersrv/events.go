@@ -39,16 +39,9 @@ func (p *PlayerSrv) SwitchEvents() {
 
 	case "death":
 		if p.server.Config.SRV.Events.Death {
-			// Temporary conversion to types.EventJson
-			e := types.EventJson{
-				Name:   p.event.Data.Player,
-				Value:  p.event.Data.DeathMessage,
-				Type:   p.event.Event,
-				Server: p.server.Config.ServerID,
-			}
-			messageEmbed := srvEmbed.PlayerDeath(e, *p.server.Config, p.footerIcon, p.username, s)
+			messageEmbed := srvEmbed.PlayerDeath(p.event, p.server.Config, &p.footerIcon, &p.username, s)
 			for _, channelID := range p.server.Config.SRV.ChannelID {
-				_, err := s.ChannelMessageSendEmbed(channelID, &messageEmbed)
+				_, err := s.ChannelMessageSendEmbed(channelID, messageEmbed)
 				if err != nil {
 					log.Printf("Failed to send Death embed: %v (channelID: %v)", err, channelID)
 				}

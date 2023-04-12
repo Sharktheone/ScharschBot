@@ -50,6 +50,14 @@ func (s *Session) SendDM(userID string, messageComplexDM *discordgo.MessageSend,
 	return nil
 }
 
+func (s *Session) SendEmbeds(channelID []string, embed *discordgo.MessageEmbed, embedType string) {
+	for _, channel := range channelID {
+		if _, err := s.ChannelMessageSendEmbed(channel, embed); err != nil {
+			log.Printf("Failed to send %v embed: %v (channelID: %v)", embedType, err, channel)
+		}
+	}
+}
+
 func HasRole(member *discordgo.Member, roleIDs []string) bool {
 	for _, role := range member.Roles {
 		for _, neededRole := range roleIDs {

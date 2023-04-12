@@ -5,7 +5,6 @@ import (
 	"Scharsch-Bot/discord/embed/srvEmbed"
 	"Scharsch-Bot/types"
 	"context"
-	"log"
 )
 
 var (
@@ -88,18 +87,17 @@ func (p *PSRVEvent) chatMessage(ctx *context.Context, e *types.WebsocketEvent) {
 }
 
 func (p *PSRVEvent) playerDeath(ctx *context.Context, e *types.WebsocketEvent) {
+	if p.h.server.Config.SRV.Events.Death {
+		messageEmbed := srvEmbed.PlayerDeath(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
+		p.session.SendEmbeds(p.h.server.Config.SRV.ChannelID, messageEmbed, "Death")
+	}
 
 }
 
 func (p *PSRVEvent) playerAdvancement(ctx *context.Context, e *types.WebsocketEvent) {
 	if p.h.server.Config.SRV.Events.Advancement {
 		messageEmbed := srvEmbed.PlayerAdvancement(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
-		for _, channelID := range p.h.server.Config.SRV.ChannelID {
-			_, err := p.session.ChannelMessageSendEmbed(channelID, &messageEmbed)
-			if err != nil {
-				log.Printf("Failed to send Advancement embed: %v (channelID: %v)", err, channelID)
-			}
-		}
+		p.session.SendEmbeds(p.h.server.Config.SRV.ChannelID, &messageEmbed, "Advancement")
 	}
 }
 

@@ -287,15 +287,15 @@ func PlayerAdvancement(e *types.WebsocketEvent, serverConf *conf.Server, footerI
 	return Embed
 }
 
-func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
+func PlayerDeath(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) *discordgo.MessageEmbed {
 	var (
-		PlayerName            = eventJson.Name
+		PlayerName            = e.Data.Player
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		roles, err            = s.GetRoles(playerID)
 		maxAccounts           = whitelist.GetMaxAccounts(roles)
-		Title                 = fmt.Sprintf("%v %v", PlayerName, eventJson.Value)
+		Title                 = fmt.Sprintf("%v %v", PlayerName, e.Data.DeathMessage)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText            string
@@ -317,7 +317,7 @@ func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconUR
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
 				Text:    FooterText,
-				IconURL: footerIconURL,
+				IconURL: *footerIconURL,
 			}
 		} else {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -326,12 +326,12 @@ func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconUR
 		}
 	}
 	var (
-		Embed discordgo.MessageEmbed
+		Embed *discordgo.MessageEmbed
 		color = 0x000000
 	)
 	if serverConf.SRV.Footer {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Title,
@@ -341,7 +341,7 @@ func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconUR
 				Footer: Footer,
 			}
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -354,7 +354,7 @@ func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconUR
 		}
 	} else {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Title,
@@ -363,7 +363,7 @@ func PlayerDeath(eventJson types.EventJson, serverConf conf.Server, footerIconUR
 				},
 			}
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{

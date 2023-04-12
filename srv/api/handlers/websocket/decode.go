@@ -17,14 +17,9 @@ func (h *Handler) DecodePlayer(e *types.WebsocketEvent) (*PSRVEvent, error) {
 	var (
 		errMsg error
 		pSrv   = &PSRVEvent{
-			h:           h,
-			e:           e,
-			userID:      nil,
-			onWhitelist: nil,
-			footerIcon:  nil,
-			username:    nil,
-			member:      nil,
-			session:     s,
+			h:       h,
+			e:       e,
+			session: s,
 		}
 	)
 	if e.Data.Player == "" {
