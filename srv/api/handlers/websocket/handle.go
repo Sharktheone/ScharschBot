@@ -83,7 +83,15 @@ func (p *PSRVEvent) players(ctx *context.Context, e *types.WebsocketEvent) {
 }
 
 func (p *PSRVEvent) chatMessage(ctx *context.Context, e *types.WebsocketEvent) {
+	if p.h.server.Config.Chat.Enabled {
+		if p.h.server.Config.Chat.Embed {
+			messageEmbed := srvEmbed.Chat(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
+			p.session.SendEmbeds(p.h.server.Config.SRV.ChannelID, messageEmbed, "Chat")
+		} else {
 
+		}
+
+	}
 }
 
 func (p *PSRVEvent) playerDeath(ctx *context.Context, e *types.WebsocketEvent) {

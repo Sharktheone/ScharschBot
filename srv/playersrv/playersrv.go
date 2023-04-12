@@ -20,10 +20,10 @@ var (
 
 type PlayerSrv struct {
 	event       *types.WebsocketEvent
-	userID      string
-	onWhitelist bool
-	footerIcon  string
-	username    string
+	userID      *string
+	onWhitelist *bool
+	footerIcon  *string
+	username    *string
 	member      *discordgo.Member
 	server      *pterodactyl.Server
 }
@@ -42,24 +42,27 @@ func DecodeV2(eventJson *types.EventJson) (error, int, *PlayerSrv) {
 		}
 	)
 	if userID, onWhitelist := whitelist.GetOwner(eventJson.Name); onWhitelist {
-		pSrv.onWhitelist = true
-		pSrv.userID = userID
+		pSrv.onWhitelist = &onWhitelist
+		pSrv.userID = &userID
 		if member, err := s.GetUserProfile(userID); err != nil {
 			statusCode = http.StatusOK
 			errMsg = fmt.Errorf("failed to get user profile: %v", err)
-			pSrv.footerIcon = config.Discord.EmbedErrorIcon
-			pSrv.username = fmt.Sprintf("%v (User not on whitelist)", eventJson.Name)
+			pSrv.footerIcon = &config.Discord.EmbedErrorIcon
+			u := fmt.Sprintf("%v (User not on whitelist)", eventJson.Name)
+			pSrv.username = &u
 			pSrv.member = member
 		} else {
 			statusCode = http.StatusNoContent
-			pSrv.footerIcon = member.User.AvatarURL("40")
-			pSrv.username = member.User.String()
+			a := member.User.AvatarURL("40")
+			u := member.User.String()
+			pSrv.footerIcon = &a
+			pSrv.username = &u
 			pSrv.member = member
 		}
 	} else {
 		statusCode = http.StatusAccepted
-		pSrv.onWhitelist = false
-		pSrv.footerIcon = config.Discord.EmbedErrorIcon
+		pSrv.onWhitelist = &onWhitelist
+		pSrv.footerIcon = &config.Discord.EmbedErrorIcon
 	}
 	CheckAccount(strings.ToLower(eventJson.Name))
 

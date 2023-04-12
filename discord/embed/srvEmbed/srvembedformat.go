@@ -17,9 +17,9 @@ var (
 	footerIcon = config.Discord.FooterIcon
 )
 
-func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
+func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		playerID, whitelisted = whitelist.GetOwner(PlayerName)
+		playerID, whitelisted = whitelist.GetOwner(*PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		roles, err            = s.GetRoles(playerID)
@@ -46,7 +46,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string,
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
 				Text:    FooterText,
-				IconURL: footerIconURL,
+				IconURL: *footerIconURL,
 			}
 		} else {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -75,7 +75,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string,
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    PlayerName,
+					Name:    *PlayerName,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},
@@ -97,7 +97,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string,
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    PlayerName,
+					Name:    *PlayerName,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},
@@ -106,9 +106,9 @@ func PlayerJoin(serverConf conf.Server, PlayerName string, footerIconURL string,
 	}
 	return Embed
 }
-func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
+func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		playerID, whitelisted = whitelist.GetOwner(PlayerName)
+		playerID, whitelisted = whitelist.GetOwner(*PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
 		roles, err            = s.GetRoles(playerID)
@@ -135,7 +135,7 @@ func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string,
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
 				Text:    FooterText,
-				IconURL: footerIconURL,
+				IconURL: *footerIconURL,
 			}
 		} else {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -164,7 +164,7 @@ func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string,
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    PlayerName,
+					Name:    *PlayerName,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},
@@ -186,7 +186,7 @@ func PlayerQuit(serverConf conf.Server, PlayerName string, footerIconURL string,
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    PlayerName,
+					Name:    *PlayerName,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},
@@ -377,10 +377,10 @@ func PlayerDeath(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL
 	return Embed
 }
 
-func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL string, username string, s *session.Session) discordgo.MessageEmbed {
+func Chat(eventJson *types.WebsocketEvent, serverConf conf.Server, footerIconURL, username *string, s *session.Session) *discordgo.MessageEmbed {
 	var (
-		PlayerName            = eventJson.Name
-		Message               = eventJson.Value
+		PlayerName            = eventJson.Data.Player
+		Message               = eventJson.Data.Message
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
@@ -407,7 +407,7 @@ func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL strin
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
 				Text:    FooterText,
-				IconURL: footerIconURL,
+				IconURL: *footerIconURL,
 			}
 		} else {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -416,12 +416,12 @@ func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL strin
 		}
 	}
 	var (
-		Embed discordgo.MessageEmbed
+		Embed *discordgo.MessageEmbed
 		color = 0x00AAFF
 	)
 	if serverConf.SRV.Footer {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Message,
@@ -431,7 +431,7 @@ func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL strin
 				Footer: Footer,
 			}
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Message,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
@@ -444,7 +444,7 @@ func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL strin
 		}
 	} else {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Message,
@@ -453,7 +453,7 @@ func Chat(eventJson types.EventJson, serverConf conf.Server, footerIconURL strin
 				},
 			}
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Message,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
