@@ -3,7 +3,6 @@ package api
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/flags"
-	"Scharsch-Bot/srv/api/handlers"
 	"Scharsch-Bot/srv/api/handlers/websocket"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -24,8 +23,6 @@ func Start() {
 	r.Use(gin.Recovery(), gin.BasicAuth(gin.Accounts{
 		*user: *password,
 	}))
-
-	r.POST("/", handlers.PlayerSRVEventHandler)
 	r.GET("/:serverID/ws", websocket.ServerWS)
 
 	if err := r.Run(fmt.Sprintf(":%v", *port)); err != nil {
