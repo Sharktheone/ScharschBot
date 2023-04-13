@@ -22,7 +22,7 @@ var (
 func CheckRoles() {
 	if kickUnWhitelisted {
 		for _, server := range pterodactyl.Servers {
-			for _, player := range *server.OnlinePlayers.Players {
+			for _, player := range server.OnlinePlayers.Players {
 				_, found := mongodb.Read(whitelistCollection, bson.M{
 					"dcUserID":  bson.M{"$exists": true},
 					"mcAccount": player,
@@ -33,10 +33,10 @@ func CheckRoles() {
 						log.Printf("Failed to kick %v from server %v: %v", player, server.Config.ServerID, err)
 					} else {
 						server.OnlinePlayers.Mu.Lock()
-						for i, player := range *server.OnlinePlayers.Players {
+						for i, player := range server.OnlinePlayers.Players {
 							if player == player {
-								players := *server.OnlinePlayers.Players
-								*server.OnlinePlayers.Players = append(players[:i], players[i+1:]...)
+								players := server.OnlinePlayers.Players
+								server.OnlinePlayers.Players = append(players[:i], players[i+1:]...)
 							}
 						}
 						server.OnlinePlayers.Mu.Unlock()

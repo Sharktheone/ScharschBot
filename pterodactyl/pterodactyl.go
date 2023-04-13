@@ -64,7 +64,7 @@ type listenerCtx struct {
 
 type Server struct {
 	OnlinePlayers struct {
-		Players *[]string
+		Players []*string
 		Mu      sync.Mutex
 	}
 	Config    *conf.Server

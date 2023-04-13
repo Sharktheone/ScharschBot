@@ -61,13 +61,13 @@ func (p *PSRVEvent) unbanPlayer() {
 
 func (p *PSRVEvent) playerJoined() {
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
-		*p.h.server.OnlinePlayers.Players = append(*p.h.server.OnlinePlayers.Players, p.e.Data.Player)
+		p.h.server.OnlinePlayers.Players = append(p.h.server.OnlinePlayers.Players, &p.e.Data.Player)
 	}
 }
 
 func (p *PSRVEvent) playerLeft() {
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
-		*p.h.server.OnlinePlayers.Players = append(*p.h.server.OnlinePlayers.Players, p.e.Data.Player)
+		p.h.server.OnlinePlayers.Players = append(p.h.server.OnlinePlayers.Players, &p.e.Data.Player)
 	}
 }
 
@@ -75,7 +75,11 @@ func (p *PSRVEvent) players() {
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
 		p.h.server.OnlinePlayers.Mu.Lock()
 		defer p.h.server.OnlinePlayers.Mu.Unlock()
-		p.h.server.OnlinePlayers.Players = &p.e.Data.Players
+		var players []*string
+		for _, player := range p.e.Data.Players {
+			players = append(players, &player)
+		}
+		p.h.server.OnlinePlayers.Players = players
 	}
 }
 
@@ -87,7 +91,6 @@ func (p *PSRVEvent) chatMessage() {
 		} else {
 
 		}
-
 	}
 }
 
