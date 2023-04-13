@@ -42,7 +42,17 @@ func (p *PSRVEvent) processEvent() {
 
 // sendPlayers send total online players to server
 func (p *PSRVEvent) sendPlayers() {
+	var players []string
+	for _, player := range p.h.server.OnlinePlayers.Players {
+		players = append(players, *player)
+	}
 
+	p.h.send <- &types.WebsocketEvent{
+		Event: Players,
+		Data: types.WebsocketEventData{
+			Players: players,
+		},
+	}
 }
 
 // kickPlayer kick player on all servers

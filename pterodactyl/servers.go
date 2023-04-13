@@ -31,3 +31,17 @@ func GetServerByName(serverName string) (*Server, error) {
 	}
 	return nil, ServerNotFoundErr
 }
+
+func GetAllPlayers() []*string {
+	var (
+		players []*string
+	)
+	for _, server := range Servers {
+		if server.Config.SRV.Events.PlayerJoinLeft {
+			for _, player := range server.OnlinePlayers.Players {
+				players = append(players, player)
+			}
+		}
+	}
+	return players
+}
