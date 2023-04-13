@@ -65,6 +65,7 @@ func (p *PSRVEvent) banPlayer() {
 
 }
 
+// unbanPlayer unban player on all servers
 func (p *PSRVEvent) unbanPlayer() {
 
 }

@@ -134,7 +134,7 @@ func Whitelist(s *session.Session, i *discordgo.InteractionCreate) {
 		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
 			// TODO: Use other function to get accounts, permission error for users with not the adminRemove role
-			accounts, allowed, found, bannedPlayers := whitelist.HasListed(i.Member.User.ID, i.Member.User.ID, i.Member.Roles)
+			accounts, allowed, found, bannedPlayers := whitelist.HasListed(i.Member.User.ID, i.Member.User.ID, i.Member.Roles, true)
 			if allowed {
 				if found || len(bannedPlayers) > 0 {
 					messageEmbed = wEmbed.WhitelistHasListed(accounts, i.Member.User.ID, bannedPlayers, i, s)

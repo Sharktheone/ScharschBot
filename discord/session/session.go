@@ -59,8 +59,12 @@ func (s *Session) SendEmbeds(channelID []string, embed *discordgo.MessageEmbed, 
 }
 
 func HasRole(member *discordgo.Member, roleIDs []string) bool {
-	for _, role := range member.Roles {
-		for _, neededRole := range roleIDs {
+	return HasRoleID(member.Roles, roleIDs)
+}
+
+func HasRoleID(hasRoles, neededRoles []string) bool {
+	for _, role := range hasRoles {
+		for _, neededRole := range neededRoles {
 			if role == neededRole {
 				return true
 			}

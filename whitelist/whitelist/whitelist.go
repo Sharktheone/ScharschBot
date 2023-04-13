@@ -194,7 +194,7 @@ func Whois(username string, userID string, roles []string) (dcUserID string, all
 	}
 	return dcUser, whoisAllowed, dataFound
 }
-func HasListed(lookupID string, userID string, roles []string) (accounts []string, allowed bool, found bool, bannedPlayers []string) {
+func HasListed(lookupID string, userID string, roles []string, isSelfLookup bool) (accounts []string, allowed bool, found bool, bannedPlayers []string) {
 	var listedAllowed = false
 	for _, role := range roles {
 		// TODO Add new Role
@@ -204,6 +204,9 @@ func HasListed(lookupID string, userID string, roles []string) (accounts []strin
 				break
 			}
 		}
+	}
+	if isSelfLookup && !listedAllowed {
+		session.HasRoleID(roles, config.Discord.WhitelistServerRoleID)
 	}
 	var (
 		results   []bson.M
