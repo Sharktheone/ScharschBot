@@ -5,20 +5,20 @@ import (
 	"Scharsch-Bot/console"
 	"Scharsch-Bot/discord/interactions"
 	"Scharsch-Bot/discord/session"
-	"flag"
+	"Scharsch-Bot/flags"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )
 
 var (
 	config              = conf.Config
-	GuildID             = flag.String("guild", config.Discord.ServerID, "Guild ID")
+	GuildID             = flags.StringWithFallback("guild", &config.Discord.ServerID)
 	Session             *session.Session
 	commandRegistration = make([]*discordgo.ApplicationCommand, len(interactions.Commands))
 )
 
 func init() {
-	var BotToken = flag.String("token", config.Discord.Token, "Discord Bot Token")
+	var BotToken = flags.StringWithFallback("token", &config.Discord.Token)
 	s, err := discordgo.New("Bot " + *BotToken)
 	if err != nil {
 		log.Fatal("Invalid Bot Configuration:", err)

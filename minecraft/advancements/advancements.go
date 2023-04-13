@@ -2,19 +2,15 @@ package advancements
 
 import (
 	"Scharsch-Bot/config"
+	"Scharsch-Bot/flags"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 )
 
-var langPath = flag.String("minecraftLangPath", "internal", "Path to lang.json")
-
-func init() {
-	flag.Parse()
-}
+var langPath = flags.String("minecraftLangPath")
 
 func GetLang() (lang map[string]interface{}) {
 	var (

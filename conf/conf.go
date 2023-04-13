@@ -2,7 +2,7 @@ package conf
 
 import (
 	"Scharsch-Bot/config"
-	"flag"
+	"Scharsch-Bot/flags"
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -10,12 +10,11 @@ import (
 )
 
 var (
-	confPath = flag.String("configPath", "config.yml", "Path to the config file (default: config/config.yml)")
+	confPath = flags.String("configPath")
 	Config   Format
 )
 
 func init() {
-	flag.Parse()
 	GetConf()
 }
 func GetConf() Format {

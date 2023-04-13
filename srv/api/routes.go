@@ -2,24 +2,20 @@ package api
 
 import (
 	"Scharsch-Bot/conf"
+	"Scharsch-Bot/flags"
 	"Scharsch-Bot/srv/api/handlers"
 	"Scharsch-Bot/srv/api/handlers/websocket"
-	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 )
 
 var (
-	config   = conf.GetConf()
-	user     = flag.String("apiUser", config.SRV.API.User, "Username for the API")
-	password = flag.String("apiPassword", config.SRV.API.Password, "Password for the API")
-	port     = flag.Int("apiPort", config.SRV.API.Port, "Port for the API")
+	config   = conf.Config
+	user     = flags.StringWithFallback("apiUser", &config.SRV.API.User)
+	password = flags.StringWithFallback("apiPassword", &config.SRV.API.Password)
+	port     = flags.IntWithFallback("apiPort", &config.SRV.API.Port)
 )
-
-func init() {
-	flag.Parse()
-}
 
 func Start() {
 	log.Printf("Starting http server on port %v", *port)
