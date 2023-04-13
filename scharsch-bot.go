@@ -3,6 +3,7 @@ package main
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
+	"Scharsch-Bot/diagnostics/pprof"
 	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/discord/embed/wEmbed"
 	"Scharsch-Bot/srv"
@@ -16,6 +17,7 @@ import (
 var config = conf.GetConf()
 
 func main() {
+	pprof.Start()
 	mongodb.Connect()
 	dcBot := bot.Session
 	bot.Registration()
