@@ -568,6 +568,9 @@ func RemoveMyAccounts(userID string) (hadListedAccounts bool, listedAccounts []s
 }
 
 func GetOwner(Account string) (ownerID string, onWhitelist bool) {
+
+	//TODO: return a owner struct with all the data, bans, roles, etc.
+
 	var (
 		dataFound bool
 		result    []bson.M

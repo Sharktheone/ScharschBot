@@ -22,7 +22,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 		playerID, whitelisted = whitelist.GetOwner(*PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		roles, err            = s.GetRoles(playerID)
+		roles, err            = s.GetRoles(playerID) // TODO: Only when whitelisted is true
 		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v joined the game", PlayerName)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
@@ -111,7 +111,7 @@ func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *str
 		playerID, whitelisted = whitelist.GetOwner(*PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		roles, err            = s.GetRoles(playerID)
+		roles, err            = s.GetRoles(playerID) // TODO: Only when whitelisted is true
 		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v left the game", PlayerName)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
@@ -203,7 +203,7 @@ func PlayerAdvancement(e *types.WebsocketEvent, serverConf *conf.Server, footerI
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		roles, err            = s.GetRoles(playerID)
+		roles, err            = s.GetRoles(playerID) // TODO: Only when whitelisted is true
 		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v made the Advancement %v", PlayerName, advancement)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
@@ -293,7 +293,7 @@ func PlayerDeath(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		roles, err            = s.GetRoles(playerID)
+		roles, err            = s.GetRoles(playerID) // TODO: Only when whitelisted is true
 		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		Title                 = fmt.Sprintf("%v %v", PlayerName, e.Data.DeathMessage)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
@@ -384,7 +384,7 @@ func Chat(eventJson *types.WebsocketEvent, serverConf *conf.Server, footerIconUR
 		playerID, whitelisted = whitelist.GetOwner(PlayerName)
 		Players               = whitelist.ListedAccountsOf(playerID, true)
 		bannedPlayers         = whitelist.CheckBans(playerID)
-		roles, err            = s.GetRoles(playerID)
+		roles, err            = s.GetRoles(playerID) // TODO: Only when whitelisted is true
 		maxAccounts           = whitelist.GetMaxAccounts(roles)
 		AuthorIconUrl         = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl             = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)

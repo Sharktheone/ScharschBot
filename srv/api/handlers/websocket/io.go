@@ -3,13 +3,19 @@ package websocket
 import (
 	"Scharsch-Bot/types"
 	"github.com/fasthttp/websocket"
+	"log"
 )
 
 func (h *Handler) handleInbound() {
 	for {
 		var data *types.WebsocketEvent
 		if err := h.conn.ReadJSON(&data); err != nil {
+			log.Printf("Failed to read websocket message: %v", err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseServiceRestart) {
+				h.cancel()
+				if err := h.conn.Close(); err != nil {
+					log.Printf("Failed to close websocket connection: %v", err)
+				}
 				return
 			}
 		} else {
@@ -38,25 +44,24 @@ func (h *Handler) handleOutbound() {
 }
 
 func (h *Handler) handleEvents(data *types.WebsocketEvent) {
-	for {
-		select {
-		case <-h.ctx.Done():
-			return
-		default:
-			h.receive <- data
-			pSRV, err := h.DecodePlayer(data)
-			if err != nil {
-				h.send <- &types.WebsocketEvent{
-					Event: Error,
-					Data: types.WebsocketEventData{
-						Error: err.Error(),
-					},
-				}
-			}
-			if pSRV != nil {
-				pSRV.processEvent()
-			}
-
+	select {
+	case h.receive <- data:
+		break
+	case <-h.ctx.Done():
+		return
+	default:
+		break
+	}
+	pSRV, err := h.DecodePlayer(data)
+	if err != nil {
+		h.send <- &types.WebsocketEvent{
+			Event: Error,
+			Data: types.WebsocketEventData{
+				Error: err.Error(),
+			},
 		}
+	}
+	if pSRV != nil {
+		pSRV.processEvent()
 	}
 }

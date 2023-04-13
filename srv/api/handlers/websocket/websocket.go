@@ -53,6 +53,7 @@ type Handler struct {
 	send          chan *types.WebsocketEvent
 	receive       chan *types.WebsocketEvent
 	ctx           context.Context
+	cancel        context.CancelFunc
 	authenticated bool
 }
 
@@ -79,22 +80,20 @@ func ServerWS(c *gin.Context) {
 		})
 		return
 	}
-	handler, err := getWSHandler(s, c.Writer, c.Request)
+	handler, err := getWSHandler(s, c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("Failed to get server: %v", err),
 		})
 		return
 	}
-	defer handler.conn.Close()
 
 	go handler.handleInbound()
 	go handler.handleOutbound()
-
 }
 
-func getWSHandler(s *pterodactyl.Server, w http.ResponseWriter, r *http.Request) (*Handler, error) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+func getWSHandler(s *pterodactyl.Server, c *gin.Context) (*Handler, error) {
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upgrade connection: %v", err)
 	}
@@ -102,9 +101,14 @@ func getWSHandler(s *pterodactyl.Server, w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate uuid: %v", err)
 	}
+	ctx, cancel := context.WithCancel(context.Background())
 	return &Handler{
-		conn:   conn,
-		server: s,
-		uuid:   u,
+		conn:    conn,
+		server:  s,
+		uuid:    u,
+		ctx:     ctx,
+		cancel:  cancel,
+		send:    make(chan *types.WebsocketEvent),
+		receive: make(chan *types.WebsocketEvent),
 	}, nil
 }
