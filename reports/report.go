@@ -186,7 +186,7 @@ func GetReport(name string) (report ReportData, reportFound bool) {
 		"reportedPlayer": name,
 	})
 	var reportData ReportData
-	// TODO Converte with bson.NewDecoder
+	// TODO Convert with bson.NewDecoder
 	if dataFound {
 		reportData.ReportedPlayer = data[0]["reportedPlayer"].(string)
 		reportData.ReporterID = data[0]["reporterID"].(string)

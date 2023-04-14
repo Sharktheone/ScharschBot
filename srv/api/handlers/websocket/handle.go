@@ -19,6 +19,8 @@ func (p *PSRVEvent) processEvent() {
 		p.sendPlayers()
 	case KickPlayer:
 		p.kickPlayer()
+	case ReportPlayer:
+		p.reportPlayer()
 	case BanPlayer:
 		p.banPlayer()
 	case UnbanPlayer:
@@ -57,6 +59,11 @@ func (p *PSRVEvent) sendPlayers() {
 
 // kickPlayer kick player on all servers
 func (p *PSRVEvent) kickPlayer() {
+
+}
+
+// reportPlayer report player
+func (p *PSRVEvent) reportPlayer() {
 
 }
 
