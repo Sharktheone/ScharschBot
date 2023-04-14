@@ -16,12 +16,12 @@ var (
 	footerIcon = config.Discord.FooterIcon
 )
 
-func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
+func PlayerJoin(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) *discordgo.MessageEmbed {
 	var (
-		owner         = whitelist.GetOwner(*PlayerName, s)
-		Title         = fmt.Sprintf("%v joined the game", PlayerName)
-		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		owner         = whitelist.GetOwner(e.Data.Player, s)
+		Title         = fmt.Sprintf("%v joined the game", e.Data.Player)
+		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", e.Data.Player)
+		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", e.Data.Player)
 		FooterText    string
 		Footer        *discordgo.MessageEmbedFooter
 	)
@@ -33,7 +33,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(owner.Players), len(owner.BannedPlayers), owner.MaxAccounts)
 			}
 		} else {
-			FooterText = fmt.Sprintf("%v is not whitelisted", PlayerName)
+			FooterText = fmt.Sprintf("%v is not whitelisted", e.Data.Player)
 		}
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -49,11 +49,11 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 	}
 	var (
 		color = 0x00FF00
-		Embed discordgo.MessageEmbed
+		Embed *discordgo.MessageEmbed
 	)
 	if serverConf.SRV.Footer {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Title,
@@ -63,11 +63,11 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 				Footer: Footer,
 			}
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    *PlayerName,
+					Name:    e.Data.Player,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},
@@ -76,7 +76,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 		}
 	} else {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Title,
@@ -85,11 +85,11 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 				},
 			}
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    *PlayerName,
+					Name:    e.Data.Player,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},
@@ -98,12 +98,12 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 	}
 	return Embed
 }
-func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
+func PlayerQuit(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) *discordgo.MessageEmbed {
 	var (
-		owner         = whitelist.GetOwner(*PlayerName, s)
-		Title         = fmt.Sprintf("%v left the game", PlayerName)
-		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
+		owner         = whitelist.GetOwner(e.Data.Player, s)
+		Title         = fmt.Sprintf("%v left the game", e.Data.Player)
+		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", e.Data.Player)
+		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", e.Data.Player)
 		FooterText    string
 		Footer        *discordgo.MessageEmbedFooter
 	)
@@ -115,7 +115,7 @@ func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *str
 				FooterText = fmt.Sprintf("%v • The owner has whitelisted %v accounts and %v are banned (max %v)", username, len(owner.Players), len(owner.BannedPlayers), owner.MaxAccounts)
 			}
 		} else {
-			FooterText = fmt.Sprintf("%v is not whitelisted", PlayerName)
+			FooterText = fmt.Sprintf("%v is not whitelisted", e.Data.Player)
 		}
 		if footerIcon {
 			Footer = &discordgo.MessageEmbedFooter{
@@ -129,12 +129,12 @@ func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *str
 		}
 	}
 	var (
-		Embed discordgo.MessageEmbed
+		Embed *discordgo.MessageEmbed
 		color = 0xFF0000
 	)
 	if serverConf.SRV.Footer {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Title,
@@ -145,11 +145,11 @@ func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *str
 			}
 
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    *PlayerName,
+					Name:    e.Data.Player,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},
@@ -158,7 +158,7 @@ func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *str
 		}
 	} else {
 		if serverConf.SRV.OneLine {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    Title,
@@ -167,11 +167,11 @@ func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *str
 				},
 			}
 		} else {
-			Embed = discordgo.MessageEmbed{
+			Embed = &discordgo.MessageEmbed{
 				Title: Title,
 				Color: color,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    *PlayerName,
+					Name:    e.Data.Player,
 					IconURL: AuthorIconUrl,
 					URL:     AuthorUrl,
 				},

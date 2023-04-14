@@ -4,6 +4,7 @@ import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/discord/embed/srvEmbed"
 	"Scharsch-Bot/types"
+	"fmt"
 )
 
 var (
@@ -78,14 +79,18 @@ func (p *PSRVEvent) unbanPlayer() {
 }
 
 func (p *PSRVEvent) playerJoined() {
+	p.h.server.OnlinePlayers.Players = append(p.h.server.OnlinePlayers.Players, &p.e.Data.Player)
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
-		p.h.server.OnlinePlayers.Players = append(p.h.server.OnlinePlayers.Players, &p.e.Data.Player)
+		messageEmbed := srvEmbed.PlayerJoin(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
+		p.session.SendEmbeds(p.h.server.Config.SRV.ChannelID, messageEmbed, "Join")
 	}
 }
 
 func (p *PSRVEvent) playerLeft() {
+	p.h.server.OnlinePlayers.Players = append(p.h.server.OnlinePlayers.Players, &p.e.Data.Player)
 	if p.h.server.Config.SRV.Events.PlayerJoinLeft {
-		p.h.server.OnlinePlayers.Players = append(p.h.server.OnlinePlayers.Players, &p.e.Data.Player)
+		messageEmbed := srvEmbed.PlayerQuit(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
+		p.session.SendEmbeds(p.h.server.Config.SRV.ChannelID, messageEmbed, "Left")
 	}
 }
 
