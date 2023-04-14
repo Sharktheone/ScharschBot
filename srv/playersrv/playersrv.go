@@ -13,9 +13,9 @@ var (
 )
 
 func CheckAccount(Name string) ([]string, []string) {
-	userID, onWhitelist := whitelist.GetOwner(Name)
+	owner := whitelist.GetOwner(Name)
 	if config.Whitelist.KickUnWhitelisted {
-		if !onWhitelist {
+		if !owner.Whitelisted {
 			command := fmt.Sprintf(config.Whitelist.KickCommand, Name)
 			for _, listedServer := range config.Whitelist.Servers {
 				for _, server := range config.Pterodactyl.Servers {
@@ -28,5 +28,5 @@ func CheckAccount(Name string) ([]string, []string) {
 			}
 		}
 	}
-	return whitelist.ListedAccountsOf(userID, false), whitelist.CheckBans(userID)
+	return owner.Players, owner.BannedPlayers
 }

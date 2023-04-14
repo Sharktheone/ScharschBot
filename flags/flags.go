@@ -4,10 +4,6 @@ import (
 	"flag"
 )
 
-var (
-	Dc string
-)
-
 func init() {
 	flag.Bool("pprof", false, "enable pprof")
 	flag.Int("pprof-port", 6060, "port for pprof")

@@ -902,21 +902,15 @@ func WhitelistUnBanAccount(PlayerName string, i *discordgo.InteractionCreate, s 
 	var (
 		username      = i.Member.User.String()
 		avatarURL     = i.Member.User.AvatarURL("40")
-		playerID, _   = whitelist.GetOwner(PlayerName)
-		Players       = whitelist.ListedAccountsOf(playerID, true)
-		roles, err    = s.GetRoles(playerID)
-		maxAccounts   = whitelist.GetMaxAccounts(roles)
+		owner         = whitelist.GetOwner(PlayerName)
 		Title         = fmt.Sprintf("%v is now unbanned from the whitelist", PlayerName)
 		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText    string
 		Footer        *discordgo.MessageEmbedFooter
 	)
-	if err != nil {
-		log.Printf("Error getting roles: %v", err)
-	}
-	if len(Players) > 0 {
-		FooterText = fmt.Sprintf("%v • He had whitelisted now %v accounts (max %v)", username, len(Players), maxAccounts)
+	if len(owner.PlayersWithBanned) > 0 {
+		FooterText = fmt.Sprintf("%v • He had whitelisted now %v accounts (max %v)", username, len(owner.PlayersWithBanned), owner.MaxAccounts)
 	} else {
 		FooterText = fmt.Sprintf("%v • No was not whitelisted", username)
 	}
@@ -1216,13 +1210,13 @@ func NewReport(PlayerName string, reason string, i *discordgo.InteractionCreate)
 		FooterText  = fmt.Sprintf("%v • Reason: %v", username, reason)
 		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		AuthorIcon  = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		PlayerID, _ = whitelist.GetOwner(PlayerName)
+		owner       = whitelist.GetOwner(PlayerName)
 		Fields      []*discordgo.MessageEmbedField
 		FooterIcon  = i.Member.User.AvatarURL("40")
 	)
 
-	log.Printf("Owner of %v is %v", PlayerName, PlayerID)
-	for _, Account := range whitelist.ListedAccountsOf(PlayerID, true) {
+	log.Printf("Owner of %v is %v", PlayerName, owner.ID)
+	for _, Account := range owner.PlayersWithBanned {
 		log.Printf("Account: %v", Account)
 		var (
 			FieldName string

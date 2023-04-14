@@ -3,6 +3,7 @@ package whitelist
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
+	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/discord/embed/banEmbed"
 	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
@@ -22,7 +23,19 @@ var (
 	addCommand          = config.Pterodactyl.WhitelistAddCommand
 	removeCommand       = config.Pterodactyl.WhitelistRemoveCommand
 	pterodactylEnabled  = config.Pterodactyl.Enabled
+	s                   = bot.Session
 )
+
+type Player struct {
+	ID                string
+	Whitelisted       bool
+	Name              string
+	Players           []string
+	PlayersWithBanned []string
+	BannedPlayers     []string
+	Roles             []string
+	MaxAccounts       int
+}
 
 func Add(username string, userID string, roles []string) (alreadyListed bool, existing bool, accountFree bool, allowed bool, mcBanned bool, dcBanned bool, banReason string) {
 	var addAllowed = false
@@ -342,7 +355,7 @@ func BanUserID(userID string, roles []string, banID string, banAccounts bool, re
 	return
 }
 
-func BanAccount(userID string, roles []string, account string, reason string, s *session.Session) (allowed bool, ownerID string) {
+func BanAccount(userID string, roles []string, account string, reason string, s *session.Session) (bool, *Player) {
 	var (
 		banAllowed = false
 	)
@@ -355,8 +368,8 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 		}
 	}
 
-	dcUser, found := GetOwner(account)
-	if found {
+	owner := GetOwner(account)
+	if owner.Whitelisted {
 		_, alreadyBanned := mongodb.Read(banCollection, bson.M{
 			"mcAccount": account,
 		})
@@ -365,22 +378,22 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 			log.Printf("%v is banning %v", userID, account)
 			mongodb.Write(banCollection, bson.D{
 				{"mcAccount", account},
-				{"dcUserID", dcUser},
+				{"dcUserID", owner.ID},
 				{"reason", reason},
 			})
 			mongodb.Remove(whitelistCollection, bson.M{
 				"mcAccount": account,
 			})
-			messageEmbedDM := banEmbed.DMBanAccount(account, false, dcUser, reason, s)
-			messageEmbedDMFailed := banEmbed.DMBanAccount(account, true, dcUser, reason, s)
-			if err := s.SendDM(dcUser, &discordgo.MessageSend{
+			messageEmbedDM := banEmbed.DMBanAccount(account, false, owner.ID, reason, s)
+			messageEmbedDMFailed := banEmbed.DMBanAccount(account, true, owner.ID, reason, s)
+			if err := s.SendDM(owner.ID, &discordgo.MessageSend{
 				Embed: &messageEmbedDM,
 			}, &discordgo.MessageSend{
-				Content: fmt.Sprintf("<@%v>", dcUser),
+				Content: fmt.Sprintf("<@%v>", owner),
 				Embed:   &messageEmbedDMFailed,
 			},
 			); err != nil {
-				log.Printf("Failed to send DM to %v: %v", dcUser, err)
+				log.Printf("Failed to send DM to %v: %v", owner, err)
 			}
 			if pterodactylEnabled {
 				command := fmt.Sprintf(removeCommand, account)
@@ -396,10 +409,10 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 			}
 		}
 	} else {
-		return
+		return false, nil
 	}
 
-	return banAllowed, dcUser
+	return banAllowed, owner
 }
 func UnBanUserID(userID string, roles []string, banID string, unbanAccounts bool, s *session.Session) (allowed bool) {
 	unBanAllowed := false
@@ -570,10 +583,7 @@ func RemoveMyAccounts(userID string) (hadListedAccounts bool, listedAccounts []s
 	return hasListedAccounts, accounts
 }
 
-func GetOwner(Account string) (ownerID string, onWhitelist bool) {
-
-	//TODO: return a owner struct with all the data, bans, roles, etc.
-
+func GetOwner(Account string) *Player {
 	var (
 		dataFound bool
 		result    []bson.M
@@ -593,7 +603,31 @@ func GetOwner(Account string) (ownerID string, onWhitelist bool) {
 			dcUser = fmt.Sprintf("%v", result[0]["dcUserID"])
 		}
 	}
-	return dcUser, dataFound
+	if dataFound {
+		roles, err := s.GetRoles(dcUser)
+		if err != nil {
+			log.Printf("Error while getting roles of %v: %v", dcUser, err)
+		}
+		return &Player{
+			ID:                dcUser,
+			Whitelisted:       dataFound,
+			Name:              Account,
+			Players:           ListedAccountsOf(dcUser, false),
+			PlayersWithBanned: ListedAccountsOf(dcUser, true),
+			BannedPlayers:     CheckBans(dcUser),
+			Roles:             roles,
+			MaxAccounts:       GetMaxAccounts(roles),
+		}
+	}
+	return &Player{
+		ID:            dcUser,
+		Whitelisted:   dataFound,
+		Name:          Account,
+		Players:       nil,
+		BannedPlayers: nil,
+		Roles:         nil,
+		MaxAccounts:   0,
+	}
 }
 
 func GetMaxAccounts(roleIDs []string) (maxAccounts int) {

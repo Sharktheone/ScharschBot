@@ -127,9 +127,9 @@ func Admin(s *session.Session, i *discordgo.InteractionCreate) {
 		var messageEmbed discordgo.MessageEmbed
 		if mongodb.Ready {
 
-			allowed, playerID := whitelist.BanAccount(i.Member.User.ID, i.Member.Roles, name, reason, s)
+			allowed, owner := whitelist.BanAccount(i.Member.User.ID, i.Member.Roles, name, reason, s)
 			if allowed {
-				messageEmbed = wEmbed.WhitelistBanAccount(name, playerID, reason, i, s)
+				messageEmbed = wEmbed.WhitelistBanAccount(name, owner.ID, reason, i, s)
 			} else {
 				messageEmbed = wEmbed.WhitelistBanAccountNotAllowed(name, i)
 			}

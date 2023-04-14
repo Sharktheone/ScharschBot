@@ -25,10 +25,10 @@ func (h *Handler) DecodePlayer(e *types.WebsocketEvent) (*PSRVEvent, error) {
 	if e.Data.Player == "" {
 		return pSrv, nil
 	}
-	if userID, onWhitelist := whitelist.GetOwner(e.Data.Player); onWhitelist {
-		pSrv.onWhitelist = &onWhitelist
-		pSrv.userID = &userID
-		if member, err := s.GetUserProfile(userID); err != nil {
+	if owner := whitelist.GetOwner(e.Data.Player); owner.Whitelisted {
+		pSrv.onWhitelist = &owner.Whitelisted
+		pSrv.userID = &owner.ID
+		if member, err := s.GetUserProfile(owner.ID); err != nil {
 			errMsg = fmt.Errorf("failed to get user profile: %v", err)
 			pSrv.footerIcon = &config.Discord.EmbedErrorIcon
 			pSrv.username = &e.Data.Player
@@ -41,7 +41,7 @@ func (h *Handler) DecodePlayer(e *types.WebsocketEvent) (*PSRVEvent, error) {
 			pSrv.member = member
 		}
 	} else {
-		pSrv.onWhitelist = &onWhitelist
+		pSrv.onWhitelist = &owner.Whitelisted
 		pSrv.footerIcon = &config.Discord.EmbedErrorIcon
 	}
 	playersrv.CheckAccount(strings.ToLower(e.Data.Player))
