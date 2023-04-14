@@ -18,7 +18,7 @@ var (
 
 func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		owner         = whitelist.GetOwner(*PlayerName)
+		owner         = whitelist.GetOwner(*PlayerName, s)
 		Title         = fmt.Sprintf("%v joined the game", PlayerName)
 		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
@@ -100,7 +100,7 @@ func PlayerJoin(serverConf conf.Server, PlayerName, footerIconURL, username *str
 }
 func PlayerQuit(serverConf conf.Server, PlayerName, footerIconURL, username *string, s *session.Session) discordgo.MessageEmbed {
 	var (
-		owner         = whitelist.GetOwner(*PlayerName)
+		owner         = whitelist.GetOwner(*PlayerName, s)
 		Title         = fmt.Sprintf("%v left the game", PlayerName)
 		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
@@ -185,7 +185,7 @@ func PlayerAdvancement(e *types.WebsocketEvent, serverConf *conf.Server, footerI
 	var (
 		PlayerName    = e.Data.Player
 		advancement   = advancements.Decode(e.Data.Advancement)
-		owner         = whitelist.GetOwner(PlayerName)
+		owner         = whitelist.GetOwner(PlayerName, s)
 		Title         = fmt.Sprintf("%v made the Advancement %v", PlayerName, advancement)
 		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
@@ -268,7 +268,7 @@ func PlayerAdvancement(e *types.WebsocketEvent, serverConf *conf.Server, footerI
 func PlayerDeath(e *types.WebsocketEvent, serverConf *conf.Server, footerIconURL, username *string, s *session.Session) *discordgo.MessageEmbed {
 	var (
 		PlayerName    = e.Data.Player
-		owner         = whitelist.GetOwner(PlayerName)
+		owner         = whitelist.GetOwner(PlayerName, s)
 		Title         = fmt.Sprintf("%v %v", PlayerName, e.Data.DeathMessage)
 		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
@@ -352,7 +352,7 @@ func Chat(eventJson *types.WebsocketEvent, serverConf *conf.Server, footerIconUR
 	var (
 		PlayerName    = eventJson.Data.Player
 		Message       = eventJson.Data.Message
-		owner         = whitelist.GetOwner(PlayerName)
+		owner         = whitelist.GetOwner(PlayerName, s)
 		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		FooterText    string

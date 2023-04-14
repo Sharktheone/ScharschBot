@@ -13,7 +13,7 @@ var (
 )
 
 func CheckAccount(Name string) ([]string, []string) {
-	owner := whitelist.GetOwner(Name)
+	owner := whitelist.GetOwner(Name, nil)
 	if config.Whitelist.KickUnWhitelisted {
 		if !owner.Whitelisted {
 			command := fmt.Sprintf(config.Whitelist.KickCommand, Name)

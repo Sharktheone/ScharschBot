@@ -3,7 +3,6 @@ package whitelist
 import (
 	"Scharsch-Bot/conf"
 	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/bot"
 	"Scharsch-Bot/discord/embed/banEmbed"
 	"Scharsch-Bot/discord/session"
 	"Scharsch-Bot/pterodactyl"
@@ -23,7 +22,6 @@ var (
 	addCommand          = config.Pterodactyl.WhitelistAddCommand
 	removeCommand       = config.Pterodactyl.WhitelistRemoveCommand
 	pterodactylEnabled  = config.Pterodactyl.Enabled
-	s                   = bot.Session
 )
 
 type Player struct {
@@ -368,7 +366,7 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 		}
 	}
 
-	owner := GetOwner(account)
+	owner := GetOwner(account, s)
 	if owner.Whitelisted {
 		_, alreadyBanned := mongodb.Read(banCollection, bson.M{
 			"mcAccount": account,
@@ -389,11 +387,11 @@ func BanAccount(userID string, roles []string, account string, reason string, s 
 			if err := s.SendDM(owner.ID, &discordgo.MessageSend{
 				Embed: &messageEmbedDM,
 			}, &discordgo.MessageSend{
-				Content: fmt.Sprintf("<@%v>", owner),
+				Content: fmt.Sprintf("<@%v>", owner.ID),
 				Embed:   &messageEmbedDMFailed,
 			},
 			); err != nil {
-				log.Printf("Failed to send DM to %v: %v", owner, err)
+				log.Printf("Failed to send DM to %v: %v", owner.ID, err)
 			}
 			if pterodactylEnabled {
 				command := fmt.Sprintf(removeCommand, account)
@@ -583,7 +581,7 @@ func RemoveMyAccounts(userID string) (hadListedAccounts bool, listedAccounts []s
 	return hasListedAccounts, accounts
 }
 
-func GetOwner(Account string) *Player {
+func GetOwner(Account string, s *session.Session) *Player {
 	var (
 		dataFound bool
 		result    []bson.M
@@ -604,9 +602,13 @@ func GetOwner(Account string) *Player {
 		}
 	}
 	if dataFound {
-		roles, err := s.GetRoles(dcUser)
-		if err != nil {
-			log.Printf("Error while getting roles of %v: %v", dcUser, err)
+		var roles []string
+		if s != nil {
+			var err error
+			roles, err = s.GetRoles(dcUser)
+			if err != nil {
+				log.Printf("Error while getting roles of %v: %v", dcUser, err)
+			}
 		}
 		return &Player{
 			ID:                dcUser,

@@ -902,7 +902,7 @@ func WhitelistUnBanAccount(PlayerName string, i *discordgo.InteractionCreate, s 
 	var (
 		username      = i.Member.User.String()
 		avatarURL     = i.Member.User.AvatarURL("40")
-		owner         = whitelist.GetOwner(PlayerName)
+		owner         = whitelist.GetOwner(PlayerName, s)
 		Title         = fmt.Sprintf("%v is now unbanned from the whitelist", PlayerName)
 		AuthorIconUrl = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
 		AuthorUrl     = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
@@ -1210,7 +1210,7 @@ func NewReport(PlayerName string, reason string, i *discordgo.InteractionCreate)
 		FooterText  = fmt.Sprintf("%v • Reason: %v", username, reason)
 		AuthorURL   = fmt.Sprintf("https://namemc.com/profile/%v", PlayerName)
 		AuthorIcon  = fmt.Sprintf("https://mc-heads.net/avatar/%v.png", PlayerName)
-		owner       = whitelist.GetOwner(PlayerName)
+		owner       = whitelist.GetOwner(PlayerName, nil)
 		Fields      []*discordgo.MessageEmbedField
 		FooterIcon  = i.Member.User.AvatarURL("40")
 	)

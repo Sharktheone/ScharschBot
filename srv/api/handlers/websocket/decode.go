@@ -25,7 +25,7 @@ func (h *Handler) DecodePlayer(e *types.WebsocketEvent) (*PSRVEvent, error) {
 	if e.Data.Player == "" {
 		return pSrv, nil
 	}
-	if owner := whitelist.GetOwner(e.Data.Player); owner.Whitelisted {
+	if owner := whitelist.GetOwner(e.Data.Player, s); owner.Whitelisted {
 		pSrv.onWhitelist = &owner.Whitelisted
 		pSrv.userID = &owner.ID
 		if member, err := s.GetUserProfile(owner.ID); err != nil {
