@@ -107,7 +107,7 @@ func (p *PSRVEvent) chatMessage() {
 			messageEmbed := srvEmbed.Chat(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
 			p.session.SendEmbeds(p.h.server.Config.SRV.ChannelID, messageEmbed, "Chat")
 		} else {
-
+			p.session.SendMessages(p.h.server.Config.SRV.ChannelID, fmt.Sprintf("%v%v %v", p.e.Data.Player, p.h.server.Config.Chat.Prefix, p.e.Data.Message), "Chat")
 		}
 	}
 }

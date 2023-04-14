@@ -58,6 +58,14 @@ func (s *Session) SendEmbeds(channelID []string, embed *discordgo.MessageEmbed, 
 	}
 }
 
+func (s *Session) SendMessages(channelID []string, message string, messageType string) {
+	for _, channel := range channelID {
+		if _, err := s.ChannelMessageSend(channel, message); err != nil {
+			log.Printf("Failed to send %v message: %v (channelID: %v)", messageType, err, channel)
+		}
+	}
+}
+
 func HasRole(member *discordgo.Member, roleIDs []string) bool {
 	return HasRoleID(member.Roles, roleIDs)
 }
