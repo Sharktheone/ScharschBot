@@ -10,14 +10,14 @@ func (h *Handler) handleInbound() {
 	for {
 		var data *types.WebsocketEvent
 		if err := h.conn.ReadJSON(&data); err != nil {
-			log.Printf("Failed to read websocket message: %v", err)
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseServiceRestart) {
+			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseServiceRestart) {
 				h.cancel()
 				if err := h.conn.Close(); err != nil {
 					log.Printf("Failed to close websocket connection: %v", err)
 				}
 				return
 			}
+			log.Printf("Failed to read websocket message: %v", err)
 		} else {
 			go h.handleEvents(data)
 		}
