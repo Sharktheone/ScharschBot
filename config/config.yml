@@ -79,8 +79,7 @@ pterodactyl:
           - <Channel ID>
         FooterIcon: true
         events:
-          join: false
-          quit: false
+          playerJoinLeft: true
           advancement: true
           death: true
     - serverID: <Server ID>
@@ -137,8 +136,7 @@ pterodactyl:
         Footer: false
         ChannelID:
         events:
-          join: false
-          quit: false
+          playerJoinLeft: true
           advancement: true
           death: true
     - serverID: <Server ID>
@@ -190,8 +188,7 @@ pterodactyl:
         roleID: 
           - <Role ID>
         events:
-          join: false
-          quit: false
+          playerJoinLeft: true
           advancement: true
           death: true
       srv:
