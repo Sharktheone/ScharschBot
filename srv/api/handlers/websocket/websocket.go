@@ -29,7 +29,7 @@ import (
 
 const (
 	SendPlayers       = "sendPlayers"
-	KickPlayer        = "lickPlayer"
+	KickPlayer        = "kickPlayer"
 	ReportPlayer      = "reportPlayer"
 	BanPlayer         = "banPlayer"
 	UnbanPlayer       = "unbanPlayer"
