@@ -16,6 +16,8 @@ import (
 
 var config = conf.GetConf()
 
+//TODO: Waitlist for whitelist, when server is offline
+
 func main() {
 	pprof.Start()
 	mongodb.Connect()

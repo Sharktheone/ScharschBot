@@ -68,6 +68,8 @@ func Add(username string, userID string, roles []string) (alreadyListed bool, ex
 				{"mcAccount", username},
 			})
 			if pterodactylEnabled {
+				// TODO: Update to use new pterodactyl package (WS)
+				// TODO: Add Waitlist if server is offline
 				command := fmt.Sprintf(addCommand, username)
 				for _, listedServer := range config.Whitelist.Servers {
 					for _, server := range config.Pterodactyl.Servers {
