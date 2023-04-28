@@ -20,9 +20,10 @@ func Start() {
 	log.Printf("Starting http server on port %v", *port)
 	r := gin.Default()
 	gin.SetMode(gin.DebugMode)
-	r.Use(gin.Recovery(), gin.BasicAuth(gin.Accounts{
-		*user: *password,
-	}))
+	//r.Use(gin.Recovery(), gin.BasicAuth(gin.Accounts{
+	//	*user: *password,
+	//}))
+	// TODO: Enable it again, when BasicAuth in Plugins
 	r.GET("/:serverID/ws", websocket.ServerWS)
 
 	if err := r.Run(fmt.Sprintf(":%v", *port)); err != nil {
