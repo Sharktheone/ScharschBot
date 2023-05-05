@@ -81,6 +81,7 @@ pterodactyl:
         events:
           playerJoinLeft: true
           advancement: true
+          rootAdvancements: false
           death: true
     - serverID: <Server ID>
       serverName: Farming
@@ -138,6 +139,7 @@ pterodactyl:
         events:
           playerJoinLeft: true
           advancement: true
+          rootAdvancements: false
           death: true
     - serverID: <Server ID>
       serverName: Lobby
@@ -190,6 +192,7 @@ pterodactyl:
         events:
           playerJoinLeft: true
           advancement: true
+          rootAdvancements: false
           death: true
       srv:
         Enabled: true

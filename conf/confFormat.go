@@ -140,9 +140,10 @@ type Server struct {
 		ChannelID  []string `yaml:"channelID"`
 		FooterIcon bool     `yaml:"footerIcon"`
 		Events     struct {
-			PlayerJoinLeft bool `yaml:"playerJoinLeft"`
-			Advancement    bool `yaml:"advancement"`
-			Death          bool `yaml:"death"`
+			PlayerJoinLeft   bool `yaml:"playerJoinLeft"`
+			Advancement      bool `yaml:"advancement"`
+			RootAdvancements bool `yaml:"rootAdvancements"`
+			Death            bool `yaml:"death"`
 		} `yaml:"events"`
 	} `yaml:"srv"`
 }

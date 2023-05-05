@@ -5,6 +5,7 @@ import (
 	"Scharsch-Bot/discord/embed/srvEmbed"
 	"Scharsch-Bot/types"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -127,6 +128,9 @@ func (p *PSRVEvent) playerDeath() {
 
 func (p *PSRVEvent) playerAdvancement() {
 	if p.h.server.Config.SRV.Events.Advancement {
+		if strings.Contains(p.e.Data.Advancement, "root") && !p.h.server.Config.SRV.Events.RootAdvancements {
+			return
+		}
 		messageEmbed := srvEmbed.PlayerAdvancement(p.e, p.h.server.Config, p.footerIcon, p.username, p.session)
 		p.session.SendEmbeds(p.h.server.Config.SRV.ChannelID, &messageEmbed, "Advancement")
 	}
