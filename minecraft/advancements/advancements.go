@@ -4,7 +4,6 @@ import (
 	"Scharsch-Bot/config"
 	"Scharsch-Bot/flags"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -41,8 +40,11 @@ func GetLang() (lang map[string]interface{}) {
 
 func Decode(path string) (name string) {
 	lang := GetLang()
-	path = strings.ReplaceAll(path, "/", ".")
-	fullPath := fmt.Sprintf("advancements.%s.title", path)
-	advancementName := lang[fullPath].(string)
-	return advancementName
+	entry := lang[path]
+
+	if advancementName, ok := entry.(string); ok {
+		return advancementName
+	}
+
+	return path
 }
