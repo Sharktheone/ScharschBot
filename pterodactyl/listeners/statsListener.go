@@ -16,7 +16,9 @@ func StatsListener(ctx context.Context, server *conf.Server, stats chan *pteroda
 	)
 	c := cron.New()
 	if err := c.AddFunc(fmt.Sprintf("@every %v", server.ChannelInfo.Interval), func() {
-		serversrv.ChannelStats(status, server)
+		if status != nil {
+			serversrv.ChannelStats(status, server)
+		}
 	}); err != nil {
 		log.Panicf("Failed to add cron job: %v for server %v ", err, server.ServerID)
 	}
