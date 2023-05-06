@@ -15,10 +15,16 @@ import (
 
 // Bot => Server: SendPlayers
 // Bot => Server: KickPlayer
+// Bot => Server: ReportPlayer
 // Bot => Server: BanPlayer
 // Bot => Server: UnbanPlayer
 // Bot => Server: SendCommand
 // Bot => Server: SendChatMessage
+// Bot => Server: AuthSuccess
+// Bot => Server: AuthFailed
+// Bot => Server: Error
+// Bot => Server: WhitelistedPlayers
+//
 // Server => Bot: PlayerJoined
 // Server => Bot: PlayerLeft
 // Server => Bot: Players
@@ -26,25 +32,28 @@ import (
 // Server => Bot: PlayerDeath
 // Server => Bot: PlayerAdvancement
 // Server => Bot: Auth
-
+// Server => Bot: Error
 const (
-	SendPlayers       = "sendPlayers"
-	KickPlayer        = "kickPlayer"
-	ReportPlayer      = "reportPlayer"
-	BanPlayer         = "banPlayer"
-	UnbanPlayer       = "unbanPlayer"
-	SendCommand       = "sendCommand"
-	SendChatMessage   = "sendChatMessage"
-	PlayerJoined      = "playerJoined"
-	PlayerLeft        = "playerLeft"
-	Players           = "players"
-	ChatMessage       = "chatMessage"
-	PlayerDeath       = "playerDeath"
-	PlayerAdvancement = "playerAdvancement"
-	Auth              = "auth"
-	AuthSuccess       = "authSuccess"
-	AuthFailed        = "authFailed"
-	Error             = "error"
+	SendPlayers        = "sendPlayers"
+	KickPlayer         = "kickPlayer"
+	ReportPlayer       = "reportPlayer"
+	BanPlayer          = "banPlayer"
+	UnbanPlayer        = "unbanPlayer"
+	SendCommand        = "sendCommand"
+	SendChatMessage    = "sendChatMessage"
+	WhitelistAdd       = "whitelistAdd"
+	WhitelistRemove    = "whitelistRemove"
+	WhitelistedPlayers = "whitelistedPlayers"
+	PlayerJoined       = "playerJoined"
+	PlayerLeft         = "playerLeft"
+	Players            = "players"
+	ChatMessage        = "chatMessage"
+	PlayerDeath        = "playerDeath"
+	PlayerAdvancement  = "playerAdvancement"
+	Auth               = "auth"
+	AuthSuccess        = "authSuccess"
+	AuthFailed         = "authFailed"
+	Error              = "error"
 )
 
 type Handler struct {
