@@ -36,7 +36,11 @@ func CheckRoles() {
 						for i, player := range server.OnlinePlayers.Players {
 							if player == player {
 								players := server.OnlinePlayers.Players
-								server.OnlinePlayers.Players = append(players[:i], players[i+1:]...)
+								if i == len(players)-1 {
+									server.OnlinePlayers.Players = players[:i]
+								} else {
+									server.OnlinePlayers.Players = append(players[:i], players[i+1:]...)
+								}
 							}
 						}
 						server.OnlinePlayers.Mu.Unlock()
