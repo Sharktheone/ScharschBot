@@ -1,9 +1,9 @@
 package pterodactyl
 
 import (
-	"Scharsch-Bot/conf"
 	"context"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
 	"github.com/fasthttp/websocket"
 	"sync"
 )

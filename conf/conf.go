@@ -1,9 +1,9 @@
 package conf
 
 import (
-	"Scharsch-Bot/config"
-	"Scharsch-Bot/flags"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/config"
+	"github.com/Sharktheone/ScharschBot/flags"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"

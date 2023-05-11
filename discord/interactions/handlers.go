@@ -1,8 +1,8 @@
 package interactions
 
 import (
-	"Scharsch-Bot/discord/interactions/handlers"
-	"Scharsch-Bot/discord/session"
+	"github.com/Sharktheone/ScharschBot/discord/interactions/handlers"
+	"github.com/Sharktheone/ScharschBot/discord/session"
 	"github.com/bwmarrin/discordgo"
 )
 

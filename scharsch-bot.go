@@ -1,13 +1,13 @@
 package main
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/diagnostics/pprof"
-	"Scharsch-Bot/discord/bot"
-	"Scharsch-Bot/discord/embed/wEmbed"
-	"Scharsch-Bot/srv"
-	"Scharsch-Bot/whitelist/checkroles"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/database/mongodb"
+	"github.com/Sharktheone/ScharschBot/diagnostics/pprof"
+	"github.com/Sharktheone/ScharschBot/discord/bot"
+	"github.com/Sharktheone/ScharschBot/discord/embed/wEmbed"
+	"github.com/Sharktheone/ScharschBot/srv"
+	"github.com/Sharktheone/ScharschBot/whitelist/checkroles"
 	"github.com/robfig/cron"
 	"log"
 	"os"

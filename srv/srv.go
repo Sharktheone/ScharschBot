@@ -1,11 +1,11 @@
 package srv
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/pterodactyl"
-	"Scharsch-Bot/pterodactyl/listeners"
-	"Scharsch-Bot/srv/api"
 	"context"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
+	"github.com/Sharktheone/ScharschBot/pterodactyl/listeners"
+	"github.com/Sharktheone/ScharschBot/srv/api"
 	"log"
 )
 

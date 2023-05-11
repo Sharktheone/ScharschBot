@@ -1,10 +1,10 @@
 package playersrv
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/pterodactyl"
-	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
+	"github.com/Sharktheone/ScharschBot/whitelist/whitelist"
 	"log"
 )
 

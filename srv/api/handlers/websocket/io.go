@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"Scharsch-Bot/types"
+	"github.com/Sharktheone/ScharschBot/types"
 	"github.com/fasthttp/websocket"
 	"log"
 )

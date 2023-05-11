@@ -1,12 +1,12 @@
 package srvEmbed
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/session"
-	"Scharsch-Bot/minecraft/advancements"
-	"Scharsch-Bot/types"
-	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/discord/session"
+	"github.com/Sharktheone/ScharschBot/minecraft/advancements"
+	"github.com/Sharktheone/ScharschBot/types"
+	"github.com/Sharktheone/ScharschBot/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 )
 

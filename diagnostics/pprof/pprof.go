@@ -1,8 +1,8 @@
 package pprof
 
 import (
-	"Scharsch-Bot/flags"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/flags"
 	"log"
 	"net/http"
 	_ "net/http/pprof"

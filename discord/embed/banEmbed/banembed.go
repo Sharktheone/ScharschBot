@@ -1,9 +1,9 @@
 package banEmbed
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/session"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/discord/session"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )

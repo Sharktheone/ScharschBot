@@ -1,12 +1,12 @@
 package whitelist
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/embed/banEmbed"
-	"Scharsch-Bot/discord/session"
-	"Scharsch-Bot/pterodactyl"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/database/mongodb"
+	"github.com/Sharktheone/ScharschBot/discord/embed/banEmbed"
+	"github.com/Sharktheone/ScharschBot/discord/session"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"io"

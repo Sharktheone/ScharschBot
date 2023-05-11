@@ -1,9 +1,9 @@
 package pEmbed
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/pterodactyl"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
 	"github.com/bwmarrin/discordgo"
 )
 

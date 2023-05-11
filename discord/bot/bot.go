@@ -1,11 +1,11 @@
 package bot
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/console"
-	"Scharsch-Bot/discord/interactions"
-	"Scharsch-Bot/discord/session"
-	"Scharsch-Bot/flags"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/console"
+	"github.com/Sharktheone/ScharschBot/discord/interactions"
+	"github.com/Sharktheone/ScharschBot/discord/session"
+	"github.com/Sharktheone/ScharschBot/flags"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )

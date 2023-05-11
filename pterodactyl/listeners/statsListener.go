@@ -1,11 +1,11 @@
 package listeners
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/pterodactyl"
-	"Scharsch-Bot/srv/serversrv"
 	"context"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
+	"github.com/Sharktheone/ScharschBot/srv/serversrv"
 	"github.com/robfig/cron"
 	"log"
 )

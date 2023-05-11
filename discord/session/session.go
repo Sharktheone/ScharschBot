@@ -1,8 +1,8 @@
 package session
 
 import (
-	"Scharsch-Bot/conf"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )

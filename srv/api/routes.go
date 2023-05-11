@@ -1,10 +1,10 @@
 package api
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/flags"
-	"Scharsch-Bot/srv/api/handlers/websocket"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/flags"
+	"github.com/Sharktheone/ScharschBot/srv/api/handlers/websocket"
 	"github.com/gin-gonic/gin"
 	"log"
 )

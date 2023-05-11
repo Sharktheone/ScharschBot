@@ -1,7 +1,7 @@
 package interactions
 
 import (
-	"Scharsch-Bot/discord/interactions/cmds"
+	"github.com/Sharktheone/ScharschBot/discord/interactions/cmds"
 	"github.com/bwmarrin/discordgo"
 )
 

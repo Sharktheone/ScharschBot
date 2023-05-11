@@ -1,9 +1,9 @@
 package advancements
 
 import (
-	"Scharsch-Bot/config"
-	"Scharsch-Bot/flags"
 	"encoding/json"
+	"github.com/Sharktheone/ScharschBot/config"
+	"github.com/Sharktheone/ScharschBot/flags"
 	"log"
 	"os"
 	"strings"

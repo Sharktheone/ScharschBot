@@ -1,10 +1,10 @@
 package websocket
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/embed/srvEmbed"
-	"Scharsch-Bot/types"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/discord/embed/srvEmbed"
+	"github.com/Sharktheone/ScharschBot/types"
 	"strings"
 )
 

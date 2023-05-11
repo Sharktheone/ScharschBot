@@ -1,11 +1,11 @@
 package websocket
 
 import (
-	"Scharsch-Bot/discord/session"
-	"Scharsch-Bot/pterodactyl"
-	"Scharsch-Bot/types"
 	"context"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/discord/session"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
+	"github.com/Sharktheone/ScharschBot/types"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fasthttp/websocket"
 	"github.com/gin-gonic/gin"

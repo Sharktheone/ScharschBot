@@ -1,10 +1,10 @@
 package listeners
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/pterodactyl"
-	"Scharsch-Bot/srv/serversrv"
 	"context"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
+	"github.com/Sharktheone/ScharschBot/srv/serversrv"
 )
 
 func StatusListener(ctx context.Context, server *conf.Server, data chan *pterodactyl.ChanData) {

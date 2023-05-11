@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/database/mongodb"
-	"Scharsch-Bot/discord/embed/wEmbed"
-	"Scharsch-Bot/discord/session"
-	"Scharsch-Bot/reports"
-	"Scharsch-Bot/whitelist/whitelist"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/database/mongodb"
+	"github.com/Sharktheone/ScharschBot/discord/embed/wEmbed"
+	"github.com/Sharktheone/ScharschBot/discord/session"
+	"github.com/Sharktheone/ScharschBot/reports"
+	"github.com/Sharktheone/ScharschBot/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"strings"

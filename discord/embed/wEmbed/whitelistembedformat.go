@@ -1,11 +1,11 @@
 package wEmbed
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/session"
-	"Scharsch-Bot/reports"
-	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/discord/session"
+	"github.com/Sharktheone/ScharschBot/reports"
+	"github.com/Sharktheone/ScharschBot/whitelist/whitelist"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )

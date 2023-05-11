@@ -1,10 +1,10 @@
 package listeners
 
 import (
-	"Scharsch-Bot/conf"
-	"Scharsch-Bot/discord/bot"
 	"context"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/conf"
+	"github.com/Sharktheone/ScharschBot/discord/bot"
 	"log"
 )
 

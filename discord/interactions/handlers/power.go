@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"Scharsch-Bot/discord/embed/pEmbed"
-	"Scharsch-Bot/discord/session"
-	"Scharsch-Bot/pterodactyl"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/discord/embed/pEmbed"
+	"github.com/Sharktheone/ScharschBot/discord/session"
+	"github.com/Sharktheone/ScharschBot/pterodactyl"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )

@@ -1,11 +1,11 @@
 package websocket
 
 import (
-	"Scharsch-Bot/discord/bot"
-	"Scharsch-Bot/srv/playersrv"
-	"Scharsch-Bot/types"
-	"Scharsch-Bot/whitelist/whitelist"
 	"fmt"
+	"github.com/Sharktheone/ScharschBot/discord/bot"
+	"github.com/Sharktheone/ScharschBot/srv/playersrv"
+	"github.com/Sharktheone/ScharschBot/types"
+	"github.com/Sharktheone/ScharschBot/whitelist/whitelist"
 	"strings"
 )
 

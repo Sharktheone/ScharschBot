@@ -1,4 +1,4 @@
-module Scharsch-Bot
+module github.com/Sharktheone/ScharschBot
 
 go 1.20
 
